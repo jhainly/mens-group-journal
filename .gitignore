@@ -1,8 +1,18 @@
-.next
-node_modules
-out
-dist
+# dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+dist/
+
+# local environment
 .env
 .env.local
+
+# Amplify generated local output
+.amplify/
 amplify_outputs.json
+
+# TypeScript
 *.tsbuildinfo
