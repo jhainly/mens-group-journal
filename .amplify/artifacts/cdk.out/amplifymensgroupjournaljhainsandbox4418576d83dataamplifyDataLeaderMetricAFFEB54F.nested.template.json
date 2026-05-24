@@ -1,0 +1,2434 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource34AABBA9Outputsamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataAmplifyTableManagerTableMa977281D5": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "LeaderMetricTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource34AABBA9Outputsamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataAmplifyTableManagerTableMa977281D5"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "LeaderMetric-",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "metricId",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "groupId",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "metricId",
+      "keyType": "HASH"
+     }
+    ],
+    "globalSecondaryIndexes": [
+     {
+      "indexName": "leaderMetricsByGroupId",
+      "keySchema": [
+       {
+        "attributeName": "groupId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/LeaderMetricTable/Default/Default"
+   }
+  },
+  "LeaderMetricIAMRoleABDAAE28": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "LeaderMetric-",
+                {
+                 "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "LeaderMetric-",
+                {
+                 "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "LeaderMetricIAMRolee40b46-",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/LeaderMetricIAMRole/Resource"
+   }
+  },
+  "LeaderMetricDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "LeaderMetricTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "LeaderMetricTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "LeaderMetricIAMRoleABDAAE28",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "LeaderMetricIAMRoleABDAAE28"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/LeaderMetricDataSource/Resource"
+   }
+  },
+  "QuerygetLeaderMetricpreAuth0FunctionQuerygetLeaderMetricpreAuth0FunctionAppSyncFunctionC374909A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetLeaderMetricpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/b0199a33911aead117c7ba9777bc9d7c8b4bd2d8c4c2f5341d217e5f3cceea00.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QuerygetLeaderMetricpreAuth0Function/QuerygetLeaderMetricpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetLeaderMetricauth0FunctionQuerygetLeaderMetricauth0FunctionAppSyncFunction91A5761C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetLeaderMetricauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7cea5adb3bcdd3ceff1cc93b7c4e176d71302b069b0969e0a351d77601b0f4e4.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QuerygetLeaderMetricauth0Function/QuerygetLeaderMetricauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetLeaderMetricpostAuth0FunctionQuerygetLeaderMetricpostAuth0FunctionAppSyncFunctionC887149D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetLeaderMetricpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QuerygetLeaderMetricpostAuth0Function/QuerygetLeaderMetricpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetLeaderMetricDataResolverFnQueryGetLeaderMetricDataResolverFnAppSyncFunctionD9403C74": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "LeaderMetricDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetLeaderMetricDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "LeaderMetricDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QueryGetLeaderMetricDataResolverFn/QueryGetLeaderMetricDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetLeaderMetricResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "getLeaderMetric",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetLeaderMetricpreAuth0FunctionQuerygetLeaderMetricpreAuth0FunctionAppSyncFunctionC374909A",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetLeaderMetricauth0FunctionQuerygetLeaderMetricauth0FunctionAppSyncFunction91A5761C",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetLeaderMetricpostAuth0FunctionQuerygetLeaderMetricpostAuth0FunctionAppSyncFunctionC887149D",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetLeaderMetricDataResolverFnQueryGetLeaderMetricDataResolverFnAppSyncFunctionD9403C74",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getLeaderMetric\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "LeaderMetricTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/queryGetLeaderMetricResolver"
+   }
+  },
+  "QuerylistLeaderMetricspreAuth0FunctionQuerylistLeaderMetricspreAuth0FunctionAppSyncFunction00417732": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistLeaderMetricspreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/8c2999df4f41474b42b1ac4e4df2db9343b308d5c055c6bb85534e1e0197d3f8.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QuerylistLeaderMetricspreAuth0Function/QuerylistLeaderMetricspreAuth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistLeaderMetricsauth0FunctionQuerylistLeaderMetricsauth0FunctionAppSyncFunction30DB60B8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistLeaderMetricsauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7cea5adb3bcdd3ceff1cc93b7c4e176d71302b069b0969e0a351d77601b0f4e4.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QuerylistLeaderMetricsauth0Function/QuerylistLeaderMetricsauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistLeaderMetricspostAuth0FunctionQuerylistLeaderMetricspostAuth0FunctionAppSyncFunction5CEA2128": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistLeaderMetricspostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QuerylistLeaderMetricspostAuth0Function/QuerylistLeaderMetricspostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListLeaderMetricsDataResolverFnQueryListLeaderMetricsDataResolverFnAppSyncFunctionAAD5CEDB": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "LeaderMetricDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListLeaderMetricsDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "LeaderMetricDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QueryListLeaderMetricsDataResolverFn/QueryListLeaderMetricsDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListLeaderMetricResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "listLeaderMetrics",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistLeaderMetricspreAuth0FunctionQuerylistLeaderMetricspreAuth0FunctionAppSyncFunction00417732",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistLeaderMetricsauth0FunctionQuerylistLeaderMetricsauth0FunctionAppSyncFunction30DB60B8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistLeaderMetricspostAuth0FunctionQuerylistLeaderMetricspostAuth0FunctionAppSyncFunction5CEA2128",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListLeaderMetricsDataResolverFnQueryListLeaderMetricsDataResolverFnAppSyncFunctionAAD5CEDB",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listLeaderMetrics\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "LeaderMetricTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/queryListLeaderMetricsResolver"
+   }
+  },
+  "MutationcreateLeaderMetricinit0FunctionMutationcreateLeaderMetricinit0FunctionAppSyncFunction9B3F4431": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateLeaderMetricinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3cf32e28e3985b88b598dacbcc9a81cbb12cab62b6507082eb20a0702d3c197e.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationcreateLeaderMetricinit0Function/MutationcreateLeaderMetricinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateLeaderMetricpreAuth0FunctionMutationcreateLeaderMetricpreAuth0FunctionAppSyncFunction90FBAB65": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateLeaderMetricpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6e7ac92b93f79c7347f3915f8a185cc5cee677b4a420b48990bac76843ba7f0f.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationcreateLeaderMetricpreAuth0Function/MutationcreateLeaderMetricpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateLeaderMetricauth0FunctionMutationcreateLeaderMetricauth0FunctionAppSyncFunctionCB17BAE5": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateLeaderMetricauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/8ab91d8206ca57e932ea3ec379808ce3e499d77741c75a79f26d17789a9d8bc4.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationcreateLeaderMetricauth0Function/MutationcreateLeaderMetricauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateLeaderMetricpostAuth0FunctionMutationcreateLeaderMetricpostAuth0FunctionAppSyncFunction6C0E1185": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateLeaderMetricpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationcreateLeaderMetricpostAuth0Function/MutationcreateLeaderMetricpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreateLeaderMetricDataResolverFnMutationCreateLeaderMetricDataResolverFnAppSyncFunctionC0351770": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "LeaderMetricDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreateLeaderMetricDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a21eae8f6debad8eb7a4c3a1e0c9772ee4cbf96b9a029bae1f0bf2fc4abb1ce7.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "LeaderMetricDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationCreateLeaderMetricDataResolverFn/MutationCreateLeaderMetricDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreateLeaderMetricResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "createLeaderMetric",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreateLeaderMetricinit0FunctionMutationcreateLeaderMetricinit0FunctionAppSyncFunction9B3F4431",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateLeaderMetricpreAuth0FunctionMutationcreateLeaderMetricpreAuth0FunctionAppSyncFunction90FBAB65",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateLeaderMetricauth0FunctionMutationcreateLeaderMetricauth0FunctionAppSyncFunctionCB17BAE5",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateLeaderMetricpostAuth0FunctionMutationcreateLeaderMetricpostAuth0FunctionAppSyncFunction6C0E1185",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreateLeaderMetricDataResolverFnMutationCreateLeaderMetricDataResolverFnAppSyncFunctionC0351770",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createLeaderMetric\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "LeaderMetricTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/mutationCreateLeaderMetricResolver"
+   }
+  },
+  "MutationupdateLeaderMetricinit0FunctionMutationupdateLeaderMetricinit0FunctionAppSyncFunction4FB54060": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateLeaderMetricinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationupdateLeaderMetricinit0Function/MutationupdateLeaderMetricinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateLeaderMetricpreAuth0FunctionMutationupdateLeaderMetricpreAuth0FunctionAppSyncFunction3F5C578C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateLeaderMetricpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6e7ac92b93f79c7347f3915f8a185cc5cee677b4a420b48990bac76843ba7f0f.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationupdateLeaderMetricpreAuth0Function/MutationupdateLeaderMetricpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateLeaderMetricauth0FunctionMutationupdateLeaderMetricauth0FunctionAppSyncFunctionBF6B8DF9": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "LeaderMetricDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateLeaderMetricauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4a761eff8d82a84b899358d295b2a6d36d46d167cdb1231792a691f656bc31b9.vtl"
+    }
+   },
+   "DependsOn": [
+    "LeaderMetricDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationupdateLeaderMetricauth0Function/MutationupdateLeaderMetricauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateLeaderMetricpostAuth0FunctionMutationupdateLeaderMetricpostAuth0FunctionAppSyncFunction089A0BB4": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateLeaderMetricpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationupdateLeaderMetricpostAuth0Function/MutationupdateLeaderMetricpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdateLeaderMetricDataResolverFnMutationUpdateLeaderMetricDataResolverFnAppSyncFunction4D582619": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "LeaderMetricDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdateLeaderMetricDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "LeaderMetricDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationUpdateLeaderMetricDataResolverFn/MutationUpdateLeaderMetricDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdateLeaderMetricResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "updateLeaderMetric",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdateLeaderMetricinit0FunctionMutationupdateLeaderMetricinit0FunctionAppSyncFunction4FB54060",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateLeaderMetricpreAuth0FunctionMutationupdateLeaderMetricpreAuth0FunctionAppSyncFunction3F5C578C",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateLeaderMetricauth0FunctionMutationupdateLeaderMetricauth0FunctionAppSyncFunctionBF6B8DF9",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateLeaderMetricpostAuth0FunctionMutationupdateLeaderMetricpostAuth0FunctionAppSyncFunction089A0BB4",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdateLeaderMetricDataResolverFnMutationUpdateLeaderMetricDataResolverFnAppSyncFunction4D582619",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateLeaderMetric\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "LeaderMetricTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/mutationUpdateLeaderMetricResolver"
+   }
+  },
+  "MutationdeleteLeaderMetricpreAuth0FunctionMutationdeleteLeaderMetricpreAuth0FunctionAppSyncFunction04C603E2": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteLeaderMetricpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0943149752aec576c1584d1e5f22d3e8954de1e9243000a3e0b3c70c60ead13a.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationdeleteLeaderMetricpreAuth0Function/MutationdeleteLeaderMetricpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteLeaderMetricauth0FunctionMutationdeleteLeaderMetricauth0FunctionAppSyncFunction6768EE46": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "LeaderMetricDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteLeaderMetricauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/b3e914abeae601ffba553f884c33cb4f7387005589bfdc2bc3b7afb0a8af954d.vtl"
+    }
+   },
+   "DependsOn": [
+    "LeaderMetricDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationdeleteLeaderMetricauth0Function/MutationdeleteLeaderMetricauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteLeaderMetricpostAuth0FunctionMutationdeleteLeaderMetricpostAuth0FunctionAppSyncFunction4D0079F0": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteLeaderMetricpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationdeleteLeaderMetricpostAuth0Function/MutationdeleteLeaderMetricpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeleteLeaderMetricDataResolverFnMutationDeleteLeaderMetricDataResolverFnAppSyncFunction39BB1A59": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "LeaderMetricDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeleteLeaderMetricDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "LeaderMetricDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/MutationDeleteLeaderMetricDataResolverFn/MutationDeleteLeaderMetricDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeleteLeaderMetricResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "deleteLeaderMetric",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteLeaderMetricpreAuth0FunctionMutationdeleteLeaderMetricpreAuth0FunctionAppSyncFunction04C603E2",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteLeaderMetricauth0FunctionMutationdeleteLeaderMetricauth0FunctionAppSyncFunction6768EE46",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteLeaderMetricpostAuth0FunctionMutationdeleteLeaderMetricpostAuth0FunctionAppSyncFunction4D0079F0",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeleteLeaderMetricDataResolverFnMutationDeleteLeaderMetricDataResolverFnAppSyncFunction39BB1A59",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteLeaderMetric\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "LeaderMetricTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/mutationDeleteLeaderMetricResolver"
+   }
+  },
+  "SubscriptiononCreateLeaderMetricauth0FunctionSubscriptiononCreateLeaderMetricauth0FunctionAppSyncFunction88321CEA": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateLeaderMetricauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c65214f5290bf5e24371c7718b3389aa352640a56a7316ecc501c1b750664eea.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptiononCreateLeaderMetricauth0Function/SubscriptiononCreateLeaderMetricauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateLeaderMetricpostAuth0FunctionSubscriptiononCreateLeaderMetricpostAuth0FunctionAppSyncFunctionCF3C281B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateLeaderMetricpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptiononCreateLeaderMetricpostAuth0Function/SubscriptiononCreateLeaderMetricpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreateLeaderMetricDataResolverFnSubscriptionOnCreateLeaderMetricDataResolverFnAppSyncFunction0D7B2086": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreateLeaderMetricDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptionOnCreateLeaderMetricDataResolverFn/SubscriptionOnCreateLeaderMetricDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateLeaderMetricResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "onCreateLeaderMetric",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateLeaderMetricauth0FunctionSubscriptiononCreateLeaderMetricauth0FunctionAppSyncFunction88321CEA",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateLeaderMetricpostAuth0FunctionSubscriptiononCreateLeaderMetricpostAuth0FunctionAppSyncFunctionCF3C281B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreateLeaderMetricDataResolverFnSubscriptionOnCreateLeaderMetricDataResolverFnAppSyncFunction0D7B2086",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateLeaderMetric\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/subscriptionOnCreateLeaderMetricResolver"
+   }
+  },
+  "SubscriptiononUpdateLeaderMetricauth0FunctionSubscriptiononUpdateLeaderMetricauth0FunctionAppSyncFunction5FB87506": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateLeaderMetricauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c65214f5290bf5e24371c7718b3389aa352640a56a7316ecc501c1b750664eea.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptiononUpdateLeaderMetricauth0Function/SubscriptiononUpdateLeaderMetricauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateLeaderMetricpostAuth0FunctionSubscriptiononUpdateLeaderMetricpostAuth0FunctionAppSyncFunctionC0086CDC": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateLeaderMetricpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptiononUpdateLeaderMetricpostAuth0Function/SubscriptiononUpdateLeaderMetricpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdateLeaderMetricDataResolverFnSubscriptionOnUpdateLeaderMetricDataResolverFnAppSyncFunctionBCA9277E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdateLeaderMetricDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptionOnUpdateLeaderMetricDataResolverFn/SubscriptionOnUpdateLeaderMetricDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateLeaderMetricResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "onUpdateLeaderMetric",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateLeaderMetricauth0FunctionSubscriptiononUpdateLeaderMetricauth0FunctionAppSyncFunction5FB87506",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateLeaderMetricpostAuth0FunctionSubscriptiononUpdateLeaderMetricpostAuth0FunctionAppSyncFunctionC0086CDC",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdateLeaderMetricDataResolverFnSubscriptionOnUpdateLeaderMetricDataResolverFnAppSyncFunctionBCA9277E",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateLeaderMetric\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/subscriptionOnUpdateLeaderMetricResolver"
+   }
+  },
+  "SubscriptiononDeleteLeaderMetricauth0FunctionSubscriptiononDeleteLeaderMetricauth0FunctionAppSyncFunction76CEAD76": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteLeaderMetricauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c65214f5290bf5e24371c7718b3389aa352640a56a7316ecc501c1b750664eea.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptiononDeleteLeaderMetricauth0Function/SubscriptiononDeleteLeaderMetricauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteLeaderMetricpostAuth0FunctionSubscriptiononDeleteLeaderMetricpostAuth0FunctionAppSyncFunction3401B774": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteLeaderMetricpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptiononDeleteLeaderMetricpostAuth0Function/SubscriptiononDeleteLeaderMetricpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeleteLeaderMetricDataResolverFnSubscriptionOnDeleteLeaderMetricDataResolverFnAppSyncFunction99A03F2E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeleteLeaderMetricDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/SubscriptionOnDeleteLeaderMetricDataResolverFn/SubscriptionOnDeleteLeaderMetricDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteLeaderMetricResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "onDeleteLeaderMetric",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteLeaderMetricauth0FunctionSubscriptiononDeleteLeaderMetricauth0FunctionAppSyncFunction76CEAD76",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteLeaderMetricpostAuth0FunctionSubscriptiononDeleteLeaderMetricpostAuth0FunctionAppSyncFunction3401B774",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeleteLeaderMetricDataResolverFnSubscriptionOnDeleteLeaderMetricDataResolverFnAppSyncFunction99A03F2E",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteLeaderMetric\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/subscriptionOnDeleteLeaderMetricResolver"
+   }
+  },
+  "QuerylistLeaderMetricByGroupIdauth0FunctionQuerylistLeaderMetricByGroupIdauth0FunctionAppSyncFunctionD661B14D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistLeaderMetricByGroupIdauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7cea5adb3bcdd3ceff1cc93b7c4e176d71302b069b0969e0a351d77601b0f4e4.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QuerylistLeaderMetricByGroupIdauth0Function/QuerylistLeaderMetricByGroupIdauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistLeaderMetricByGroupIdpostAuth0FunctionQuerylistLeaderMetricByGroupIdpostAuth0FunctionAppSyncFunctionDA3268BD": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistLeaderMetricByGroupIdpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QuerylistLeaderMetricByGroupIdpostAuth0Function/QuerylistLeaderMetricByGroupIdpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListLeaderMetricByGroupIdDataResolverFnQueryListLeaderMetricByGroupIdDataResolverFnAppSyncFunctionB3385705": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "LeaderMetricDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListLeaderMetricByGroupIdDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/edce68e92c45be6776e2f4c8a377c0c5f19abe27cd1ec0d6b5c80110e76856fa.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/098c998f215c333f57348ca8912f66057ae6b574fe34013033dc54362ee2372c.vtl"
+    }
+   },
+   "DependsOn": [
+    "LeaderMetricDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/QueryListLeaderMetricByGroupIdDataResolverFn/QueryListLeaderMetricByGroupIdDataResolverFn.AppSyncFunction"
+   }
+  },
+  "QuerylistLeaderMetricByGroupIdResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "listLeaderMetricByGroupId",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistLeaderMetricByGroupIdauth0FunctionQuerylistLeaderMetricByGroupIdauth0FunctionAppSyncFunctionD661B14D",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistLeaderMetricByGroupIdpostAuth0FunctionQuerylistLeaderMetricByGroupIdpostAuth0FunctionAppSyncFunctionDA3268BD",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListLeaderMetricByGroupIdDataResolverFnQueryListLeaderMetricByGroupIdDataResolverFnAppSyncFunctionB3385705",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listLeaderMetricByGroupId\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "LeaderMetricTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/queryListLeaderMetricByGroupIdResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WO0W6DMAxFv6XvwVth/YAV1Mdtgr1XJjEoJSQodlpViH+foFOnPV0f+ci+OeSHAvY7vHGmzZA528L8QSxkGkE9qLLzXxhxJKG4Qhm8sWKDVzVxSFGTKhNLGP+w888Zb3yezd3jGEwL39g6OiKTsjjCXAf3sIOjReE08d1rmKtNr9oKBZvnyf90Sl6vJcrgO9uniFuj38/uSnFRXJyRmYThfQ3FBRyTHkjWAsvqfiaZkqht3Qj21veL8sEQXPjlmr/B/gCvuwtbm8XkxY4E9SN/AOnBlp82AQAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/LeaderMetric/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttLeaderMetricTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "LeaderMetricTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "GetAtt:LeaderMetricTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttLeaderMetricTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "LeaderMetric-",
+      {
+       "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "GetAtt:LeaderMetricTable:Name"
+      ]
+     ]
+    }
+   }
+  }
+ }
+}

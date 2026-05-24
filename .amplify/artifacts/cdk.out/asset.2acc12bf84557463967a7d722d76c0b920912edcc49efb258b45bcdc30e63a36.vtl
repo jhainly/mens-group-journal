@@ -1,0 +1,6 @@
+## [Start] Set the primary key. **
+$util.qr($ctx.stash.metadata.put("modelObjectKey", {
+  "progressId": $util.dynamodb.toDynamoDB($ctx.args.progressId)
+}))
+## [End] Set the primary key. **
+{}

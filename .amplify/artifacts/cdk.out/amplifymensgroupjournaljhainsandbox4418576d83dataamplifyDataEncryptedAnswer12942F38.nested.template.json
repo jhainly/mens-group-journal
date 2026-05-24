@@ -1,0 +1,2858 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource34AABBA9Outputsamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataAmplifyTableManagerTableMa977281D5": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef": {
+   "Type": "String"
+  },
+  "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "EncryptedAnswerTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource34AABBA9Outputsamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataAmplifyTableManagerTableMa977281D5"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "EncryptedAnswer-",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "answerId",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "userId",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "groupId",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "programId",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "answerId",
+      "keyType": "HASH"
+     }
+    ],
+    "globalSecondaryIndexes": [
+     {
+      "indexName": "encryptedAnswersByUserId",
+      "keySchema": [
+       {
+        "attributeName": "userId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "indexName": "encryptedAnswersByGroupId",
+      "keySchema": [
+       {
+        "attributeName": "groupId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "indexName": "encryptedAnswersByProgramId",
+      "keySchema": [
+       {
+        "attributeName": "programId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/EncryptedAnswerTable/Default/Default"
+   }
+  },
+  "EncryptedAnswerIAMRole7F069937": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "EncryptedAnswer-",
+                {
+                 "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "EncryptedAnswer-",
+                {
+                 "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "EncryptedAnswerIAMRof502ac-",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/EncryptedAnswerIAMRole/Resource"
+   }
+  },
+  "EncryptedAnswerDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "EncryptedAnswerTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "EncryptedAnswerTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerIAMRole7F069937",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "EncryptedAnswerIAMRole7F069937"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/EncryptedAnswerDataSource/Resource"
+   }
+  },
+  "QuerygetEncryptedAnswerpreAuth0FunctionQuerygetEncryptedAnswerpreAuth0FunctionAppSyncFunction7267AC26": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetEncryptedAnswerpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/b3b7efd5f8361e5ad66c6cceed4fb768be2ecbd6d7b7931b5119e53417bd015a.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerygetEncryptedAnswerpreAuth0Function/QuerygetEncryptedAnswerpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetEncryptedAnswerauth0FunctionQuerygetEncryptedAnswerauth0FunctionAppSyncFunction798DB548": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetEncryptedAnswerauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0f92e99bcb81a1be9f728ca16332154faffe519356aba777fb42d560a3fe2b8b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerygetEncryptedAnswerauth0Function/QuerygetEncryptedAnswerauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetEncryptedAnswerpostAuth0FunctionQuerygetEncryptedAnswerpostAuth0FunctionAppSyncFunctionE31C9A9F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetEncryptedAnswerpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerygetEncryptedAnswerpostAuth0Function/QuerygetEncryptedAnswerpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetEncryptedAnswerDataResolverFnQueryGetEncryptedAnswerDataResolverFnAppSyncFunctionC8443B6A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetEncryptedAnswerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QueryGetEncryptedAnswerDataResolverFn/QueryGetEncryptedAnswerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetEncryptedAnswerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "getEncryptedAnswer",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetEncryptedAnswerpreAuth0FunctionQuerygetEncryptedAnswerpreAuth0FunctionAppSyncFunction7267AC26",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetEncryptedAnswerauth0FunctionQuerygetEncryptedAnswerauth0FunctionAppSyncFunction798DB548",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetEncryptedAnswerpostAuth0FunctionQuerygetEncryptedAnswerpostAuth0FunctionAppSyncFunctionE31C9A9F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetEncryptedAnswerDataResolverFnQueryGetEncryptedAnswerDataResolverFnAppSyncFunctionC8443B6A",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getEncryptedAnswer\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "EncryptedAnswerTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/queryGetEncryptedAnswerResolver"
+   }
+  },
+  "QuerylistEncryptedAnswerspreAuth0FunctionQuerylistEncryptedAnswerspreAuth0FunctionAppSyncFunction1BCF0FF6": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswerspreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/381408bfbeda9f7765ed9bb11a613db553c9c6b7f00fd87ce036d9b647d0b378.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswerspreAuth0Function/QuerylistEncryptedAnswerspreAuth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistEncryptedAnswersauth0FunctionQuerylistEncryptedAnswersauth0FunctionAppSyncFunction0C1EC0DB": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswersauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0f92e99bcb81a1be9f728ca16332154faffe519356aba777fb42d560a3fe2b8b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswersauth0Function/QuerylistEncryptedAnswersauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistEncryptedAnswerspostAuth0FunctionQuerylistEncryptedAnswerspostAuth0FunctionAppSyncFunctionAECB00B9": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswerspostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswerspostAuth0Function/QuerylistEncryptedAnswerspostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListEncryptedAnswersDataResolverFnQueryListEncryptedAnswersDataResolverFnAppSyncFunction0D463003": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListEncryptedAnswersDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QueryListEncryptedAnswersDataResolverFn/QueryListEncryptedAnswersDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListEncryptedAnswerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "listEncryptedAnswers",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswerspreAuth0FunctionQuerylistEncryptedAnswerspreAuth0FunctionAppSyncFunction1BCF0FF6",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswersauth0FunctionQuerylistEncryptedAnswersauth0FunctionAppSyncFunction0C1EC0DB",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswerspostAuth0FunctionQuerylistEncryptedAnswerspostAuth0FunctionAppSyncFunctionAECB00B9",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListEncryptedAnswersDataResolverFnQueryListEncryptedAnswersDataResolverFnAppSyncFunction0D463003",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listEncryptedAnswers\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "EncryptedAnswerTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/queryListEncryptedAnswersResolver"
+   }
+  },
+  "MutationcreateEncryptedAnswerinit0FunctionMutationcreateEncryptedAnswerinit0FunctionAppSyncFunctionB5E1CE87": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateEncryptedAnswerinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3cf32e28e3985b88b598dacbcc9a81cbb12cab62b6507082eb20a0702d3c197e.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationcreateEncryptedAnswerinit0Function/MutationcreateEncryptedAnswerinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateEncryptedAnswerpreAuth0FunctionMutationcreateEncryptedAnswerpreAuth0FunctionAppSyncFunction3B963F38": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateEncryptedAnswerpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/646ff95f1f29239d6721a3aec973e6a989f77d5762e7ca40800eb5e748e74039.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationcreateEncryptedAnswerpreAuth0Function/MutationcreateEncryptedAnswerpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateEncryptedAnswerauth0FunctionMutationcreateEncryptedAnswerauth0FunctionAppSyncFunction2F92259F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateEncryptedAnswerauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/ec5f58ea529df9c2109772d5f55605385f3be029452402275a637f607d6a22fe.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationcreateEncryptedAnswerauth0Function/MutationcreateEncryptedAnswerauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateEncryptedAnswerpostAuth0FunctionMutationcreateEncryptedAnswerpostAuth0FunctionAppSyncFunction72BC9E4B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateEncryptedAnswerpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationcreateEncryptedAnswerpostAuth0Function/MutationcreateEncryptedAnswerpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreateEncryptedAnswerDataResolverFnMutationCreateEncryptedAnswerDataResolverFnAppSyncFunction44802A46": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreateEncryptedAnswerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7f03f71f2504f27d4c99b2d59f4338777f2576d06c8650e7775aba9317b5a4d7.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationCreateEncryptedAnswerDataResolverFn/MutationCreateEncryptedAnswerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreateEncryptedAnswerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "createEncryptedAnswer",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreateEncryptedAnswerinit0FunctionMutationcreateEncryptedAnswerinit0FunctionAppSyncFunctionB5E1CE87",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateEncryptedAnswerpreAuth0FunctionMutationcreateEncryptedAnswerpreAuth0FunctionAppSyncFunction3B963F38",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateEncryptedAnswerauth0FunctionMutationcreateEncryptedAnswerauth0FunctionAppSyncFunction2F92259F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateEncryptedAnswerpostAuth0FunctionMutationcreateEncryptedAnswerpostAuth0FunctionAppSyncFunction72BC9E4B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreateEncryptedAnswerDataResolverFnMutationCreateEncryptedAnswerDataResolverFnAppSyncFunction44802A46",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createEncryptedAnswer\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "EncryptedAnswerTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/mutationCreateEncryptedAnswerResolver"
+   }
+  },
+  "MutationupdateEncryptedAnswerinit0FunctionMutationupdateEncryptedAnswerinit0FunctionAppSyncFunction4749F0A1": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateEncryptedAnswerinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationupdateEncryptedAnswerinit0Function/MutationupdateEncryptedAnswerinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateEncryptedAnswerpreAuth0FunctionMutationupdateEncryptedAnswerpreAuth0FunctionAppSyncFunction6BE1A437": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateEncryptedAnswerpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/646ff95f1f29239d6721a3aec973e6a989f77d5762e7ca40800eb5e748e74039.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationupdateEncryptedAnswerpreAuth0Function/MutationupdateEncryptedAnswerpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateEncryptedAnswerauth0FunctionMutationupdateEncryptedAnswerauth0FunctionAppSyncFunctionE25E49F6": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateEncryptedAnswerauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/d96fd006b4062a5000f0462b5c08cfa810189398d9f74d59f1605ea6063641ff.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationupdateEncryptedAnswerauth0Function/MutationupdateEncryptedAnswerauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateEncryptedAnswerpostAuth0FunctionMutationupdateEncryptedAnswerpostAuth0FunctionAppSyncFunctionF20DEBF6": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateEncryptedAnswerpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationupdateEncryptedAnswerpostAuth0Function/MutationupdateEncryptedAnswerpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdateEncryptedAnswerDataResolverFnMutationUpdateEncryptedAnswerDataResolverFnAppSyncFunction128043CF": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdateEncryptedAnswerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationUpdateEncryptedAnswerDataResolverFn/MutationUpdateEncryptedAnswerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdateEncryptedAnswerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "updateEncryptedAnswer",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdateEncryptedAnswerinit0FunctionMutationupdateEncryptedAnswerinit0FunctionAppSyncFunction4749F0A1",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateEncryptedAnswerpreAuth0FunctionMutationupdateEncryptedAnswerpreAuth0FunctionAppSyncFunction6BE1A437",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateEncryptedAnswerauth0FunctionMutationupdateEncryptedAnswerauth0FunctionAppSyncFunctionE25E49F6",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateEncryptedAnswerpostAuth0FunctionMutationupdateEncryptedAnswerpostAuth0FunctionAppSyncFunctionF20DEBF6",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdateEncryptedAnswerDataResolverFnMutationUpdateEncryptedAnswerDataResolverFnAppSyncFunction128043CF",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateEncryptedAnswer\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "EncryptedAnswerTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/mutationUpdateEncryptedAnswerResolver"
+   }
+  },
+  "MutationdeleteEncryptedAnswerpreAuth0FunctionMutationdeleteEncryptedAnswerpreAuth0FunctionAppSyncFunction2A4DCE3E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteEncryptedAnswerpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c2cbf8e9158bac318c80ec8e473e7a6feccb03c23a3787e5043b4465a34768d5.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationdeleteEncryptedAnswerpreAuth0Function/MutationdeleteEncryptedAnswerpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteEncryptedAnswerauth0FunctionMutationdeleteEncryptedAnswerauth0FunctionAppSyncFunction2FA3FD65": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteEncryptedAnswerauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a5b1d1bfc2aa63cbae5105a32b4ebe4d3cd8c9d7d98c49c64de3de0a5952b1f6.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationdeleteEncryptedAnswerauth0Function/MutationdeleteEncryptedAnswerauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteEncryptedAnswerpostAuth0FunctionMutationdeleteEncryptedAnswerpostAuth0FunctionAppSyncFunction80472441": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteEncryptedAnswerpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationdeleteEncryptedAnswerpostAuth0Function/MutationdeleteEncryptedAnswerpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeleteEncryptedAnswerDataResolverFnMutationDeleteEncryptedAnswerDataResolverFnAppSyncFunction6AD521D3": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeleteEncryptedAnswerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/MutationDeleteEncryptedAnswerDataResolverFn/MutationDeleteEncryptedAnswerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeleteEncryptedAnswerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "deleteEncryptedAnswer",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteEncryptedAnswerpreAuth0FunctionMutationdeleteEncryptedAnswerpreAuth0FunctionAppSyncFunction2A4DCE3E",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteEncryptedAnswerauth0FunctionMutationdeleteEncryptedAnswerauth0FunctionAppSyncFunction2FA3FD65",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteEncryptedAnswerpostAuth0FunctionMutationdeleteEncryptedAnswerpostAuth0FunctionAppSyncFunction80472441",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeleteEncryptedAnswerDataResolverFnMutationDeleteEncryptedAnswerDataResolverFnAppSyncFunction6AD521D3",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteEncryptedAnswer\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "EncryptedAnswerTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/mutationDeleteEncryptedAnswerResolver"
+   }
+  },
+  "SubscriptiononCreateEncryptedAnswerauth0FunctionSubscriptiononCreateEncryptedAnswerauth0FunctionAppSyncFunction110BA2E5": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateEncryptedAnswerauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c2b583f47d0079dcef445f6b4940bfab88908e99fd38fe303dcee2102a8af699.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptiononCreateEncryptedAnswerauth0Function/SubscriptiononCreateEncryptedAnswerauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateEncryptedAnswerpostAuth0FunctionSubscriptiononCreateEncryptedAnswerpostAuth0FunctionAppSyncFunctionBB3D5B06": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateEncryptedAnswerpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptiononCreateEncryptedAnswerpostAuth0Function/SubscriptiononCreateEncryptedAnswerpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreateEncryptedAnswerDataResolverFnSubscriptionOnCreateEncryptedAnswerDataResolverFnAppSyncFunctionBEC5B855": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreateEncryptedAnswerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptionOnCreateEncryptedAnswerDataResolverFn/SubscriptionOnCreateEncryptedAnswerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateEncryptedAnswerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "onCreateEncryptedAnswer",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateEncryptedAnswerauth0FunctionSubscriptiononCreateEncryptedAnswerauth0FunctionAppSyncFunction110BA2E5",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateEncryptedAnswerpostAuth0FunctionSubscriptiononCreateEncryptedAnswerpostAuth0FunctionAppSyncFunctionBB3D5B06",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreateEncryptedAnswerDataResolverFnSubscriptionOnCreateEncryptedAnswerDataResolverFnAppSyncFunctionBEC5B855",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateEncryptedAnswer\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/subscriptionOnCreateEncryptedAnswerResolver"
+   }
+  },
+  "SubscriptiononUpdateEncryptedAnswerauth0FunctionSubscriptiononUpdateEncryptedAnswerauth0FunctionAppSyncFunction0344D3F4": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateEncryptedAnswerauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c2b583f47d0079dcef445f6b4940bfab88908e99fd38fe303dcee2102a8af699.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptiononUpdateEncryptedAnswerauth0Function/SubscriptiononUpdateEncryptedAnswerauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateEncryptedAnswerpostAuth0FunctionSubscriptiononUpdateEncryptedAnswerpostAuth0FunctionAppSyncFunctionE857BCC8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateEncryptedAnswerpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptiononUpdateEncryptedAnswerpostAuth0Function/SubscriptiononUpdateEncryptedAnswerpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdateEncryptedAnswerDataResolverFnSubscriptionOnUpdateEncryptedAnswerDataResolverFnAppSyncFunction42F10D78": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdateEncryptedAnswerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptionOnUpdateEncryptedAnswerDataResolverFn/SubscriptionOnUpdateEncryptedAnswerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateEncryptedAnswerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "onUpdateEncryptedAnswer",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateEncryptedAnswerauth0FunctionSubscriptiononUpdateEncryptedAnswerauth0FunctionAppSyncFunction0344D3F4",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateEncryptedAnswerpostAuth0FunctionSubscriptiononUpdateEncryptedAnswerpostAuth0FunctionAppSyncFunctionE857BCC8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdateEncryptedAnswerDataResolverFnSubscriptionOnUpdateEncryptedAnswerDataResolverFnAppSyncFunction42F10D78",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateEncryptedAnswer\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/subscriptionOnUpdateEncryptedAnswerResolver"
+   }
+  },
+  "SubscriptiononDeleteEncryptedAnswerauth0FunctionSubscriptiononDeleteEncryptedAnswerauth0FunctionAppSyncFunction9C41421A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteEncryptedAnswerauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c2b583f47d0079dcef445f6b4940bfab88908e99fd38fe303dcee2102a8af699.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptiononDeleteEncryptedAnswerauth0Function/SubscriptiononDeleteEncryptedAnswerauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteEncryptedAnswerpostAuth0FunctionSubscriptiononDeleteEncryptedAnswerpostAuth0FunctionAppSyncFunction28935506": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteEncryptedAnswerpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptiononDeleteEncryptedAnswerpostAuth0Function/SubscriptiononDeleteEncryptedAnswerpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeleteEncryptedAnswerDataResolverFnSubscriptionOnDeleteEncryptedAnswerDataResolverFnAppSyncFunction2FC3A49C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeleteEncryptedAnswerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/SubscriptionOnDeleteEncryptedAnswerDataResolverFn/SubscriptionOnDeleteEncryptedAnswerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteEncryptedAnswerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "onDeleteEncryptedAnswer",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteEncryptedAnswerauth0FunctionSubscriptiononDeleteEncryptedAnswerauth0FunctionAppSyncFunction9C41421A",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteEncryptedAnswerpostAuth0FunctionSubscriptiononDeleteEncryptedAnswerpostAuth0FunctionAppSyncFunction28935506",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeleteEncryptedAnswerDataResolverFnSubscriptionOnDeleteEncryptedAnswerDataResolverFnAppSyncFunction2FC3A49C",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteEncryptedAnswer\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/subscriptionOnDeleteEncryptedAnswerResolver"
+   }
+  },
+  "QuerylistEncryptedAnswerByUserIdauth0FunctionQuerylistEncryptedAnswerByUserIdauth0FunctionAppSyncFunctionCEF872EA": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswerByUserIdauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/01d80052fd543d27a2601e27a6761e946d2ab77768d31f9b697d99a0ee29431f.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswerByUserIdauth0Function/QuerylistEncryptedAnswerByUserIdauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistEncryptedAnswerByUserIdpostAuth0FunctionQuerylistEncryptedAnswerByUserIdpostAuth0FunctionAppSyncFunctionEA028DAB": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswerByUserIdpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswerByUserIdpostAuth0Function/QuerylistEncryptedAnswerByUserIdpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListEncryptedAnswerByUserIdDataResolverFnQueryListEncryptedAnswerByUserIdDataResolverFnAppSyncFunction4B838779": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListEncryptedAnswerByUserIdDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/79135222721d5cf2b405671a69438b2744d50dac7224296a58cfcf418bbddc0b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/098c998f215c333f57348ca8912f66057ae6b574fe34013033dc54362ee2372c.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QueryListEncryptedAnswerByUserIdDataResolverFn/QueryListEncryptedAnswerByUserIdDataResolverFn.AppSyncFunction"
+   }
+  },
+  "QuerylistEncryptedAnswerByUserIdResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "listEncryptedAnswerByUserId",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswerByUserIdauth0FunctionQuerylistEncryptedAnswerByUserIdauth0FunctionAppSyncFunctionCEF872EA",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswerByUserIdpostAuth0FunctionQuerylistEncryptedAnswerByUserIdpostAuth0FunctionAppSyncFunctionEA028DAB",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListEncryptedAnswerByUserIdDataResolverFnQueryListEncryptedAnswerByUserIdDataResolverFnAppSyncFunction4B838779",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listEncryptedAnswerByUserId\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "EncryptedAnswerTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/queryListEncryptedAnswerByUserIdResolver"
+   }
+  },
+  "QuerylistEncryptedAnswerByGroupIdauth0FunctionQuerylistEncryptedAnswerByGroupIdauth0FunctionAppSyncFunction3E6E37CC": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswerByGroupIdauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0f92e99bcb81a1be9f728ca16332154faffe519356aba777fb42d560a3fe2b8b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswerByGroupIdauth0Function/QuerylistEncryptedAnswerByGroupIdauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistEncryptedAnswerByGroupIdpostAuth0FunctionQuerylistEncryptedAnswerByGroupIdpostAuth0FunctionAppSyncFunctionE797C03A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswerByGroupIdpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswerByGroupIdpostAuth0Function/QuerylistEncryptedAnswerByGroupIdpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListEncryptedAnswerByGroupIdDataResolverFnQueryListEncryptedAnswerByGroupIdDataResolverFnAppSyncFunctionCF164BEC": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListEncryptedAnswerByGroupIdDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/07ad1464ad21dbce5071480540a031d9628cf9837c539e82147338fa3a91a3f2.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/098c998f215c333f57348ca8912f66057ae6b574fe34013033dc54362ee2372c.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QueryListEncryptedAnswerByGroupIdDataResolverFn/QueryListEncryptedAnswerByGroupIdDataResolverFn.AppSyncFunction"
+   }
+  },
+  "QuerylistEncryptedAnswerByGroupIdResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "listEncryptedAnswerByGroupId",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswerByGroupIdauth0FunctionQuerylistEncryptedAnswerByGroupIdauth0FunctionAppSyncFunction3E6E37CC",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswerByGroupIdpostAuth0FunctionQuerylistEncryptedAnswerByGroupIdpostAuth0FunctionAppSyncFunctionE797C03A",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListEncryptedAnswerByGroupIdDataResolverFnQueryListEncryptedAnswerByGroupIdDataResolverFnAppSyncFunctionCF164BEC",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listEncryptedAnswerByGroupId\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "EncryptedAnswerTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/queryListEncryptedAnswerByGroupIdResolver"
+   }
+  },
+  "QuerylistEncryptedAnswerByProgramIdauth0FunctionQuerylistEncryptedAnswerByProgramIdauth0FunctionAppSyncFunctionB78235EE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswerByProgramIdauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0f92e99bcb81a1be9f728ca16332154faffe519356aba777fb42d560a3fe2b8b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswerByProgramIdauth0Function/QuerylistEncryptedAnswerByProgramIdauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistEncryptedAnswerByProgramIdpostAuth0FunctionQuerylistEncryptedAnswerByProgramIdpostAuth0FunctionAppSyncFunctionAC181548": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPINONEDSF141397FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistEncryptedAnswerByProgramIdpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QuerylistEncryptedAnswerByProgramIdpostAuth0Function/QuerylistEncryptedAnswerByProgramIdpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListEncryptedAnswerByProgramIdDataResolverFnQueryListEncryptedAnswerByProgramIdDataResolverFnAppSyncFunction910E1303": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "EncryptedAnswerDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListEncryptedAnswerByProgramIdDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/39bb41701c2e0e55e482c22e6fade27445320fed383404cc64d21a109e41c414.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/098c998f215c333f57348ca8912f66057ae6b574fe34013033dc54362ee2372c.vtl"
+    }
+   },
+   "DependsOn": [
+    "EncryptedAnswerDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/QueryListEncryptedAnswerByProgramIdDataResolverFn/QueryListEncryptedAnswerByProgramIdDataResolverFn.AppSyncFunction"
+   }
+  },
+  "QuerylistEncryptedAnswerByProgramIdResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+    },
+    "FieldName": "listEncryptedAnswerByProgramId",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswerByProgramIdauth0FunctionQuerylistEncryptedAnswerByProgramIdauth0FunctionAppSyncFunctionB78235EE",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistEncryptedAnswerByProgramIdpostAuth0FunctionQuerylistEncryptedAnswerByProgramIdpostAuth0FunctionAppSyncFunctionAC181548",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListEncryptedAnswerByProgramIdDataResolverFnQueryListEncryptedAnswerByProgramIdDataResolverFnAppSyncFunction910E1303",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listEncryptedAnswerByProgramId\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "EncryptedAnswerTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthauthenticatedUserRoleA699DA24Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthunauthenticatedUserRole0012DCBBRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83authNestedStackauthNestedStackResourceE3466330Outputsamplifymensgroupjournaljhainsandbox4418576d83authamplifyAuthIdentityPool66F07734Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/queryListEncryptedAnswerByProgramIdResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WO0W6DMAxFv6XvwVth/YAV1Mdtgr1XJjEoJSQodlpViH+foFOnPV0f+ci+OeSHAvY7vHGmzZA528L8QSxkGkE9qLLzXxhxJKG4Qhm8sWKDVzVxSFGTKhNLGP+w888Zb3yezd3jGEwL39g6OiKTsjjCXAf3sIOjReE08d1rmKtNr9oKBZvnyf90Sl6vJcrgO9uniFuj38/uSnFRXJyRmYThfQ3FBRyTHkjWAsvqfiaZkqht3Qj21veL8sEQXPjlmr/B/gCvuwtbm8XkxY4E9SN/AOnBlp82AQAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-mensgroupjournal-jhain-sandbox-4418576d83/data/amplifyData/EncryptedAnswer/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttEncryptedAnswerTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "EncryptedAnswerTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "GetAtt:EncryptedAnswerTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttEncryptedAnswerTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "EncryptedAnswer-",
+      {
+       "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifymensgroupjournaljhainsandbox4418576d83dataamplifyDataGraphQLAPI5116FB75ApiId"
+       },
+       "GetAtt:EncryptedAnswerTable:Name"
+      ]
+     ]
+    }
+   }
+  }
+ }
+}

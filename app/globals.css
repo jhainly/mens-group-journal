@@ -1,0 +1,316 @@
+:root {
+  color-scheme: light;
+  --background: #f7f5f0;
+  --surface: #fffdf8;
+  --surface-strong: #f0ede6;
+  --text: #1d1d1b;
+  --muted: #68645d;
+  --line: #d9d4ca;
+  --accent: #2f5d50;
+  --accent-strong: #204238;
+  --warn: #8a4b2f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--background);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.shell {
+  margin: 0 auto;
+  max-width: 1040px;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.topbar {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding-bottom: 16px;
+}
+
+.brand {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nav a,
+.nav-button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  min-height: auto;
+  padding: 0;
+}
+
+.nav-button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.main {
+  padding: 24px 0 48px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.import-preview-grid {
+  align-items: start;
+}
+
+.panel,
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.stack {
+  display: grid;
+  gap: 14px;
+}
+
+.row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 2rem;
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+}
+
+h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+p,
+li {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.button {
+  align-items: center;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: #fff;
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+.button.secondary {
+  background: transparent;
+  color: var(--accent-strong);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field label {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.field input,
+.field textarea,
+.field select {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  min-height: 42px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.field textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.field textarea.journal-textarea {
+  min-height: 42px;
+  overflow: hidden;
+  resize: none;
+}
+
+.field:has(.journal-textarea) + .field:has(.journal-textarea) {
+  margin-top: 14px;
+}
+
+.compact-field {
+  min-width: min(100%, 280px);
+}
+
+.metric {
+  background: var(--surface-strong);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.metric strong {
+  display: block;
+  font-size: 1.35rem;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.section-block {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.section-layout {
+  align-items: flex-start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 26px minmax(0, 1fr);
+}
+
+.section-content {
+  display: grid;
+  gap: 14px;
+}
+
+.section-check {
+  align-items: center;
+  display: inline-flex;
+  min-height: 24px;
+  padding-top: 2px;
+}
+
+.section-check input {
+  height: 18px;
+  margin: 0;
+  width: 18px;
+}
+
+.render-preview {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.render-preview-header,
+.render-preview-section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.render-preview-section h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0;
+}
+
+.scripture {
+  border-left: 3px solid var(--accent);
+  color: var(--text);
+  padding-left: 12px;
+}
+
+.warning {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+@media (max-width: 680px) {
+  .shell {
+    padding: 16px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    display: grid;
+  }
+
+  .nav {
+    gap: 8px 12px;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+}

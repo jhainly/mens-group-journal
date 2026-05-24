@@ -1,0 +1,986 @@
+type UserProfile @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  displayName: String!
+  email: AWSEmail
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Group @aws_iam @aws_cognito_user_pools {
+  groupId: ID!
+  name: String!
+  joinCodeHash: String
+  activeProgramId: String
+  createdByUserId: String!
+  leaderUserIds: [String]
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type GroupMembership @aws_iam @aws_cognito_user_pools {
+  membershipId: ID!
+  groupId: ID!
+  userId: ID!
+  role: GroupMembershipRole
+  displayName: String!
+  joinedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type ProgramSnapshot @aws_iam @aws_cognito_user_pools {
+  programId: ID!
+  groupId: ID!
+  title: String!
+  version: String!
+  contentHash: String!
+  content: AWSJSON!
+  publishedByUserId: String!
+  publishedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type SectionProgress @aws_iam @aws_cognito_user_pools {
+  progressId: ID!
+  userId: ID!
+  groupId: ID!
+  programId: ID!
+  weekNumber: Int!
+  dayNumber: Int!
+  sectionId: String!
+  completed: Boolean!
+  pointsEarned: Int!
+  updatedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+}
+
+type EncryptedAnswer @aws_iam @aws_cognito_user_pools {
+  answerId: ID!
+  userId: ID!
+  groupId: ID!
+  programId: ID!
+  weekNumber: Int!
+  dayNumber: Int!
+  sectionId: String!
+  promptId: String!
+  ciphertext: String!
+  iv: String!
+  salt: String!
+  keyDerivation: String!
+  iterations: Int!
+  algorithm: String!
+  version: Int!
+  updatedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+}
+
+type UserScore @aws_iam @aws_cognito_user_pools {
+  scoreId: ID!
+  userId: ID!
+  groupId: ID!
+  programId: ID!
+  displayName: String!
+  weekNumber: Int!
+  weeklyScore: Int!
+  cumulativeScore: Int!
+  updatedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+}
+
+type LeaderMetric @aws_iam @aws_cognito_user_pools {
+  metricId: ID!
+  groupId: ID!
+  programId: ID!
+  memberCount: Int!
+  activeMemberCount: Int!
+  cumulativeCompletionCount: Int!
+  updatedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+}
+
+enum GroupMembershipRole {
+  member
+  leader
+  admin
+}
+
+input AmplifyAIConversationTurnErrorInput {
+  errorType: String!
+  message: String!
+}
+
+input ModelStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelBooleanInput {
+  ne: Boolean
+  eq: Boolean
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelSubscriptionStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  in: [String]
+  notIn: [String]
+}
+
+input ModelSubscriptionIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  in: [Int]
+  notIn: [Int]
+}
+
+input ModelSubscriptionFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  in: [Float]
+  notIn: [Float]
+}
+
+input ModelSubscriptionBooleanInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelSubscriptionIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  in: [ID]
+  notIn: [ID]
+}
+
+enum ModelAttributeTypes {
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+  _null
+}
+
+input ModelSizeInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelUserProfileConnection @aws_iam @aws_cognito_user_pools {
+  items: [UserProfile]!
+  nextToken: String
+}
+
+input ModelUserProfileFilterInput {
+  userId: ModelIDInput
+  displayName: ModelStringInput
+  email: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  and: [ModelUserProfileFilterInput]
+  or: [ModelUserProfileFilterInput]
+  not: ModelUserProfileFilterInput
+}
+
+type Query {
+  getUserProfile(userId: ID!): UserProfile @aws_iam @aws_cognito_user_pools
+  listUserProfiles(userId: ID, filter: ModelUserProfileFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelUserProfileConnection @aws_iam @aws_cognito_user_pools
+  getGroup(groupId: ID!): Group @aws_iam @aws_cognito_user_pools
+  listGroups(groupId: ID, filter: ModelGroupFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelGroupConnection @aws_iam @aws_cognito_user_pools
+  listGroupByJoinCodeHash(joinCodeHash: String!, sortDirection: ModelSortDirection, filter: ModelGroupFilterInput, limit: Int, nextToken: String): ModelGroupConnection @aws_iam @aws_cognito_user_pools
+  getGroupMembership(membershipId: ID!): GroupMembership @aws_iam @aws_cognito_user_pools
+  listGroupMemberships(membershipId: ID, filter: ModelGroupMembershipFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelGroupMembershipConnection @aws_iam @aws_cognito_user_pools
+  listGroupMembershipByGroupId(groupId: ID!, sortDirection: ModelSortDirection, filter: ModelGroupMembershipFilterInput, limit: Int, nextToken: String): ModelGroupMembershipConnection @aws_iam @aws_cognito_user_pools
+  listGroupMembershipByUserId(userId: ID!, sortDirection: ModelSortDirection, filter: ModelGroupMembershipFilterInput, limit: Int, nextToken: String): ModelGroupMembershipConnection @aws_iam @aws_cognito_user_pools
+  getProgramSnapshot(programId: ID!): ProgramSnapshot @aws_iam @aws_cognito_user_pools
+  listProgramSnapshots(programId: ID, filter: ModelProgramSnapshotFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelProgramSnapshotConnection @aws_iam @aws_cognito_user_pools
+  listProgramSnapshotByGroupId(groupId: ID!, sortDirection: ModelSortDirection, filter: ModelProgramSnapshotFilterInput, limit: Int, nextToken: String): ModelProgramSnapshotConnection @aws_iam @aws_cognito_user_pools
+  getSectionProgress(progressId: ID!): SectionProgress @aws_iam @aws_cognito_user_pools
+  listSectionProgresses(progressId: ID, filter: ModelSectionProgressFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelSectionProgressConnection @aws_iam @aws_cognito_user_pools
+  listSectionProgressByUserId(userId: ID!, sortDirection: ModelSortDirection, filter: ModelSectionProgressFilterInput, limit: Int, nextToken: String): ModelSectionProgressConnection @aws_iam @aws_cognito_user_pools
+  listSectionProgressByGroupId(groupId: ID!, sortDirection: ModelSortDirection, filter: ModelSectionProgressFilterInput, limit: Int, nextToken: String): ModelSectionProgressConnection @aws_iam @aws_cognito_user_pools
+  listSectionProgressByProgramId(programId: ID!, sortDirection: ModelSortDirection, filter: ModelSectionProgressFilterInput, limit: Int, nextToken: String): ModelSectionProgressConnection @aws_iam @aws_cognito_user_pools
+  getEncryptedAnswer(answerId: ID!): EncryptedAnswer @aws_iam @aws_cognito_user_pools
+  listEncryptedAnswers(answerId: ID, filter: ModelEncryptedAnswerFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelEncryptedAnswerConnection @aws_iam @aws_cognito_user_pools
+  listEncryptedAnswerByUserId(userId: ID!, sortDirection: ModelSortDirection, filter: ModelEncryptedAnswerFilterInput, limit: Int, nextToken: String): ModelEncryptedAnswerConnection @aws_iam @aws_cognito_user_pools
+  listEncryptedAnswerByGroupId(groupId: ID!, sortDirection: ModelSortDirection, filter: ModelEncryptedAnswerFilterInput, limit: Int, nextToken: String): ModelEncryptedAnswerConnection @aws_iam @aws_cognito_user_pools
+  listEncryptedAnswerByProgramId(programId: ID!, sortDirection: ModelSortDirection, filter: ModelEncryptedAnswerFilterInput, limit: Int, nextToken: String): ModelEncryptedAnswerConnection @aws_iam @aws_cognito_user_pools
+  getUserScore(scoreId: ID!): UserScore @aws_iam @aws_cognito_user_pools
+  listUserScores(scoreId: ID, filter: ModelUserScoreFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelUserScoreConnection @aws_iam @aws_cognito_user_pools
+  listUserScoreByUserId(userId: ID!, sortDirection: ModelSortDirection, filter: ModelUserScoreFilterInput, limit: Int, nextToken: String): ModelUserScoreConnection @aws_iam @aws_cognito_user_pools
+  listUserScoreByGroupId(groupId: ID!, sortDirection: ModelSortDirection, filter: ModelUserScoreFilterInput, limit: Int, nextToken: String): ModelUserScoreConnection @aws_iam @aws_cognito_user_pools
+  getLeaderMetric(metricId: ID!): LeaderMetric @aws_iam @aws_cognito_user_pools
+  listLeaderMetrics(metricId: ID, filter: ModelLeaderMetricFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelLeaderMetricConnection @aws_iam @aws_cognito_user_pools
+  listLeaderMetricByGroupId(groupId: ID!, sortDirection: ModelSortDirection, filter: ModelLeaderMetricFilterInput, limit: Int, nextToken: String): ModelLeaderMetricConnection @aws_iam @aws_cognito_user_pools
+}
+
+input ModelUserProfileConditionInput {
+  displayName: ModelStringInput
+  email: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserProfileConditionInput]
+  or: [ModelUserProfileConditionInput]
+  not: ModelUserProfileConditionInput
+  userId: ModelStringInput
+}
+
+input CreateUserProfileInput {
+  userId: ID!
+  displayName: String!
+  email: AWSEmail
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateUserProfileInput {
+  userId: ID!
+  displayName: String
+  email: AWSEmail
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteUserProfileInput {
+  userId: ID!
+}
+
+type Mutation {
+  createUserProfile(input: CreateUserProfileInput!, condition: ModelUserProfileConditionInput): UserProfile @aws_iam @aws_cognito_user_pools
+  updateUserProfile(input: UpdateUserProfileInput!, condition: ModelUserProfileConditionInput): UserProfile @aws_iam @aws_cognito_user_pools
+  deleteUserProfile(input: DeleteUserProfileInput!, condition: ModelUserProfileConditionInput): UserProfile @aws_iam @aws_cognito_user_pools
+  createGroup(input: CreateGroupInput!, condition: ModelGroupConditionInput): Group @aws_iam @aws_cognito_user_pools
+  updateGroup(input: UpdateGroupInput!, condition: ModelGroupConditionInput): Group @aws_iam @aws_cognito_user_pools
+  deleteGroup(input: DeleteGroupInput!, condition: ModelGroupConditionInput): Group @aws_iam @aws_cognito_user_pools
+  createGroupMembership(input: CreateGroupMembershipInput!, condition: ModelGroupMembershipConditionInput): GroupMembership @aws_iam @aws_cognito_user_pools
+  updateGroupMembership(input: UpdateGroupMembershipInput!, condition: ModelGroupMembershipConditionInput): GroupMembership @aws_iam @aws_cognito_user_pools
+  deleteGroupMembership(input: DeleteGroupMembershipInput!, condition: ModelGroupMembershipConditionInput): GroupMembership @aws_iam @aws_cognito_user_pools
+  createProgramSnapshot(input: CreateProgramSnapshotInput!, condition: ModelProgramSnapshotConditionInput): ProgramSnapshot @aws_iam @aws_cognito_user_pools
+  updateProgramSnapshot(input: UpdateProgramSnapshotInput!, condition: ModelProgramSnapshotConditionInput): ProgramSnapshot @aws_iam @aws_cognito_user_pools
+  deleteProgramSnapshot(input: DeleteProgramSnapshotInput!, condition: ModelProgramSnapshotConditionInput): ProgramSnapshot @aws_iam @aws_cognito_user_pools
+  createSectionProgress(input: CreateSectionProgressInput!, condition: ModelSectionProgressConditionInput): SectionProgress @aws_iam @aws_cognito_user_pools
+  updateSectionProgress(input: UpdateSectionProgressInput!, condition: ModelSectionProgressConditionInput): SectionProgress @aws_iam @aws_cognito_user_pools
+  deleteSectionProgress(input: DeleteSectionProgressInput!, condition: ModelSectionProgressConditionInput): SectionProgress @aws_iam @aws_cognito_user_pools
+  createEncryptedAnswer(input: CreateEncryptedAnswerInput!, condition: ModelEncryptedAnswerConditionInput): EncryptedAnswer @aws_iam @aws_cognito_user_pools
+  updateEncryptedAnswer(input: UpdateEncryptedAnswerInput!, condition: ModelEncryptedAnswerConditionInput): EncryptedAnswer @aws_iam @aws_cognito_user_pools
+  deleteEncryptedAnswer(input: DeleteEncryptedAnswerInput!, condition: ModelEncryptedAnswerConditionInput): EncryptedAnswer @aws_iam @aws_cognito_user_pools
+  createUserScore(input: CreateUserScoreInput!, condition: ModelUserScoreConditionInput): UserScore @aws_iam @aws_cognito_user_pools
+  updateUserScore(input: UpdateUserScoreInput!, condition: ModelUserScoreConditionInput): UserScore @aws_iam @aws_cognito_user_pools
+  deleteUserScore(input: DeleteUserScoreInput!, condition: ModelUserScoreConditionInput): UserScore @aws_iam @aws_cognito_user_pools
+  createLeaderMetric(input: CreateLeaderMetricInput!, condition: ModelLeaderMetricConditionInput): LeaderMetric @aws_iam @aws_cognito_user_pools
+  updateLeaderMetric(input: UpdateLeaderMetricInput!, condition: ModelLeaderMetricConditionInput): LeaderMetric @aws_iam @aws_cognito_user_pools
+  deleteLeaderMetric(input: DeleteLeaderMetricInput!, condition: ModelLeaderMetricConditionInput): LeaderMetric @aws_iam @aws_cognito_user_pools
+}
+
+input ModelSubscriptionUserProfileFilterInput {
+  displayName: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  and: [ModelSubscriptionUserProfileFilterInput]
+  or: [ModelSubscriptionUserProfileFilterInput]
+  userId: ModelStringInput
+}
+
+type Subscription {
+  onCreateUserProfile(filter: ModelSubscriptionUserProfileFilterInput, userId: String): UserProfile @aws_subscribe(mutations: ["createUserProfile"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUserProfile(filter: ModelSubscriptionUserProfileFilterInput, userId: String): UserProfile @aws_subscribe(mutations: ["updateUserProfile"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUserProfile(filter: ModelSubscriptionUserProfileFilterInput, userId: String): UserProfile @aws_subscribe(mutations: ["deleteUserProfile"]) @aws_iam @aws_cognito_user_pools
+  onCreateGroup(filter: ModelSubscriptionGroupFilterInput): Group @aws_subscribe(mutations: ["createGroup"]) @aws_iam @aws_cognito_user_pools
+  onUpdateGroup(filter: ModelSubscriptionGroupFilterInput): Group @aws_subscribe(mutations: ["updateGroup"]) @aws_iam @aws_cognito_user_pools
+  onDeleteGroup(filter: ModelSubscriptionGroupFilterInput): Group @aws_subscribe(mutations: ["deleteGroup"]) @aws_iam @aws_cognito_user_pools
+  onCreateGroupMembership(filter: ModelSubscriptionGroupMembershipFilterInput, userId: String): GroupMembership @aws_subscribe(mutations: ["createGroupMembership"]) @aws_iam @aws_cognito_user_pools
+  onUpdateGroupMembership(filter: ModelSubscriptionGroupMembershipFilterInput, userId: String): GroupMembership @aws_subscribe(mutations: ["updateGroupMembership"]) @aws_iam @aws_cognito_user_pools
+  onDeleteGroupMembership(filter: ModelSubscriptionGroupMembershipFilterInput, userId: String): GroupMembership @aws_subscribe(mutations: ["deleteGroupMembership"]) @aws_iam @aws_cognito_user_pools
+  onCreateProgramSnapshot(filter: ModelSubscriptionProgramSnapshotFilterInput): ProgramSnapshot @aws_subscribe(mutations: ["createProgramSnapshot"]) @aws_iam @aws_cognito_user_pools
+  onUpdateProgramSnapshot(filter: ModelSubscriptionProgramSnapshotFilterInput): ProgramSnapshot @aws_subscribe(mutations: ["updateProgramSnapshot"]) @aws_iam @aws_cognito_user_pools
+  onDeleteProgramSnapshot(filter: ModelSubscriptionProgramSnapshotFilterInput): ProgramSnapshot @aws_subscribe(mutations: ["deleteProgramSnapshot"]) @aws_iam @aws_cognito_user_pools
+  onCreateSectionProgress(filter: ModelSubscriptionSectionProgressFilterInput, userId: String): SectionProgress @aws_subscribe(mutations: ["createSectionProgress"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSectionProgress(filter: ModelSubscriptionSectionProgressFilterInput, userId: String): SectionProgress @aws_subscribe(mutations: ["updateSectionProgress"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSectionProgress(filter: ModelSubscriptionSectionProgressFilterInput, userId: String): SectionProgress @aws_subscribe(mutations: ["deleteSectionProgress"]) @aws_iam @aws_cognito_user_pools
+  onCreateEncryptedAnswer(filter: ModelSubscriptionEncryptedAnswerFilterInput, userId: String): EncryptedAnswer @aws_subscribe(mutations: ["createEncryptedAnswer"]) @aws_iam @aws_cognito_user_pools
+  onUpdateEncryptedAnswer(filter: ModelSubscriptionEncryptedAnswerFilterInput, userId: String): EncryptedAnswer @aws_subscribe(mutations: ["updateEncryptedAnswer"]) @aws_iam @aws_cognito_user_pools
+  onDeleteEncryptedAnswer(filter: ModelSubscriptionEncryptedAnswerFilterInput, userId: String): EncryptedAnswer @aws_subscribe(mutations: ["deleteEncryptedAnswer"]) @aws_iam @aws_cognito_user_pools
+  onCreateUserScore(filter: ModelSubscriptionUserScoreFilterInput, userId: String): UserScore @aws_subscribe(mutations: ["createUserScore"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUserScore(filter: ModelSubscriptionUserScoreFilterInput, userId: String): UserScore @aws_subscribe(mutations: ["updateUserScore"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUserScore(filter: ModelSubscriptionUserScoreFilterInput, userId: String): UserScore @aws_subscribe(mutations: ["deleteUserScore"]) @aws_iam @aws_cognito_user_pools
+  onCreateLeaderMetric(filter: ModelSubscriptionLeaderMetricFilterInput): LeaderMetric @aws_subscribe(mutations: ["createLeaderMetric"]) @aws_iam @aws_cognito_user_pools
+  onUpdateLeaderMetric(filter: ModelSubscriptionLeaderMetricFilterInput): LeaderMetric @aws_subscribe(mutations: ["updateLeaderMetric"]) @aws_iam @aws_cognito_user_pools
+  onDeleteLeaderMetric(filter: ModelSubscriptionLeaderMetricFilterInput): LeaderMetric @aws_subscribe(mutations: ["deleteLeaderMetric"]) @aws_iam @aws_cognito_user_pools
+}
+
+type ModelGroupConnection @aws_iam @aws_cognito_user_pools {
+  items: [Group]!
+  nextToken: String
+}
+
+input ModelGroupFilterInput {
+  groupId: ModelIDInput
+  name: ModelStringInput
+  joinCodeHash: ModelStringInput
+  activeProgramId: ModelStringInput
+  createdByUserId: ModelStringInput
+  leaderUserIds: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  and: [ModelGroupFilterInput]
+  or: [ModelGroupFilterInput]
+  not: ModelGroupFilterInput
+}
+
+input ModelGroupConditionInput {
+  name: ModelStringInput
+  joinCodeHash: ModelStringInput
+  activeProgramId: ModelStringInput
+  createdByUserId: ModelStringInput
+  leaderUserIds: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelGroupConditionInput]
+  or: [ModelGroupConditionInput]
+  not: ModelGroupConditionInput
+}
+
+input CreateGroupInput {
+  groupId: ID!
+  name: String!
+  joinCodeHash: String
+  activeProgramId: String
+  createdByUserId: String!
+  leaderUserIds: [String]
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateGroupInput {
+  groupId: ID!
+  name: String
+  joinCodeHash: String
+  activeProgramId: String
+  createdByUserId: String
+  leaderUserIds: [String]
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteGroupInput {
+  groupId: ID!
+}
+
+input ModelSubscriptionGroupFilterInput {
+  groupId: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  joinCodeHash: ModelSubscriptionStringInput
+  activeProgramId: ModelSubscriptionStringInput
+  createdByUserId: ModelSubscriptionStringInput
+  leaderUserIds: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  and: [ModelSubscriptionGroupFilterInput]
+  or: [ModelSubscriptionGroupFilterInput]
+}
+
+type ModelGroupMembershipConnection @aws_iam @aws_cognito_user_pools {
+  items: [GroupMembership]!
+  nextToken: String
+}
+
+input ModelGroupMembershipRoleInput {
+  eq: GroupMembershipRole
+  ne: GroupMembershipRole
+}
+
+input ModelGroupMembershipFilterInput {
+  membershipId: ModelIDInput
+  groupId: ModelIDInput
+  userId: ModelIDInput
+  role: ModelGroupMembershipRoleInput
+  displayName: ModelStringInput
+  joinedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelGroupMembershipFilterInput]
+  or: [ModelGroupMembershipFilterInput]
+  not: ModelGroupMembershipFilterInput
+}
+
+input ModelGroupMembershipConditionInput {
+  groupId: ModelIDInput
+  userId: ModelIDInput
+  role: ModelGroupMembershipRoleInput
+  displayName: ModelStringInput
+  joinedAt: ModelStringInput
+  and: [ModelGroupMembershipConditionInput]
+  or: [ModelGroupMembershipConditionInput]
+  not: ModelGroupMembershipConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateGroupMembershipInput {
+  membershipId: ID!
+  groupId: ID!
+  userId: ID!
+  role: GroupMembershipRole
+  displayName: String!
+  joinedAt: AWSDateTime!
+}
+
+input UpdateGroupMembershipInput {
+  membershipId: ID!
+  groupId: ID
+  userId: ID
+  role: GroupMembershipRole
+  displayName: String
+  joinedAt: AWSDateTime
+}
+
+input DeleteGroupMembershipInput {
+  membershipId: ID!
+}
+
+input ModelSubscriptionGroupMembershipFilterInput {
+  membershipId: ModelSubscriptionIDInput
+  groupId: ModelSubscriptionIDInput
+  role: ModelSubscriptionStringInput
+  displayName: ModelSubscriptionStringInput
+  joinedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionGroupMembershipFilterInput]
+  or: [ModelSubscriptionGroupMembershipFilterInput]
+  userId: ModelStringInput
+}
+
+type ModelProgramSnapshotConnection @aws_iam @aws_cognito_user_pools {
+  items: [ProgramSnapshot]!
+  nextToken: String
+}
+
+input ModelProgramSnapshotFilterInput {
+  programId: ModelIDInput
+  groupId: ModelIDInput
+  title: ModelStringInput
+  version: ModelStringInput
+  contentHash: ModelStringInput
+  content: ModelStringInput
+  publishedByUserId: ModelStringInput
+  publishedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelProgramSnapshotFilterInput]
+  or: [ModelProgramSnapshotFilterInput]
+  not: ModelProgramSnapshotFilterInput
+}
+
+input ModelProgramSnapshotConditionInput {
+  groupId: ModelIDInput
+  title: ModelStringInput
+  version: ModelStringInput
+  contentHash: ModelStringInput
+  content: ModelStringInput
+  publishedByUserId: ModelStringInput
+  publishedAt: ModelStringInput
+  and: [ModelProgramSnapshotConditionInput]
+  or: [ModelProgramSnapshotConditionInput]
+  not: ModelProgramSnapshotConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateProgramSnapshotInput {
+  programId: ID!
+  groupId: ID!
+  title: String!
+  version: String!
+  contentHash: String!
+  content: AWSJSON!
+  publishedByUserId: String!
+  publishedAt: AWSDateTime!
+}
+
+input UpdateProgramSnapshotInput {
+  programId: ID!
+  groupId: ID
+  title: String
+  version: String
+  contentHash: String
+  content: AWSJSON
+  publishedByUserId: String
+  publishedAt: AWSDateTime
+}
+
+input DeleteProgramSnapshotInput {
+  programId: ID!
+}
+
+input ModelSubscriptionProgramSnapshotFilterInput {
+  programId: ModelSubscriptionIDInput
+  groupId: ModelSubscriptionIDInput
+  title: ModelSubscriptionStringInput
+  version: ModelSubscriptionStringInput
+  contentHash: ModelSubscriptionStringInput
+  content: ModelSubscriptionStringInput
+  publishedByUserId: ModelSubscriptionStringInput
+  publishedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionProgramSnapshotFilterInput]
+  or: [ModelSubscriptionProgramSnapshotFilterInput]
+}
+
+type ModelSectionProgressConnection @aws_iam @aws_cognito_user_pools {
+  items: [SectionProgress]!
+  nextToken: String
+}
+
+input ModelSectionProgressFilterInput {
+  progressId: ModelIDInput
+  userId: ModelIDInput
+  groupId: ModelIDInput
+  programId: ModelIDInput
+  weekNumber: ModelIntInput
+  dayNumber: ModelIntInput
+  sectionId: ModelStringInput
+  completed: ModelBooleanInput
+  pointsEarned: ModelIntInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  and: [ModelSectionProgressFilterInput]
+  or: [ModelSectionProgressFilterInput]
+  not: ModelSectionProgressFilterInput
+}
+
+input ModelSectionProgressConditionInput {
+  userId: ModelIDInput
+  groupId: ModelIDInput
+  programId: ModelIDInput
+  weekNumber: ModelIntInput
+  dayNumber: ModelIntInput
+  sectionId: ModelStringInput
+  completed: ModelBooleanInput
+  pointsEarned: ModelIntInput
+  updatedAt: ModelStringInput
+  and: [ModelSectionProgressConditionInput]
+  or: [ModelSectionProgressConditionInput]
+  not: ModelSectionProgressConditionInput
+  createdAt: ModelStringInput
+}
+
+input CreateSectionProgressInput {
+  progressId: ID!
+  userId: ID!
+  groupId: ID!
+  programId: ID!
+  weekNumber: Int!
+  dayNumber: Int!
+  sectionId: String!
+  completed: Boolean!
+  pointsEarned: Int!
+  updatedAt: AWSDateTime
+}
+
+input UpdateSectionProgressInput {
+  progressId: ID!
+  userId: ID
+  groupId: ID
+  programId: ID
+  weekNumber: Int
+  dayNumber: Int
+  sectionId: String
+  completed: Boolean
+  pointsEarned: Int
+  updatedAt: AWSDateTime
+}
+
+input DeleteSectionProgressInput {
+  progressId: ID!
+}
+
+input ModelSubscriptionSectionProgressFilterInput {
+  progressId: ModelSubscriptionIDInput
+  groupId: ModelSubscriptionIDInput
+  programId: ModelSubscriptionIDInput
+  weekNumber: ModelSubscriptionIntInput
+  dayNumber: ModelSubscriptionIntInput
+  sectionId: ModelSubscriptionStringInput
+  completed: ModelSubscriptionBooleanInput
+  pointsEarned: ModelSubscriptionIntInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionSectionProgressFilterInput]
+  or: [ModelSubscriptionSectionProgressFilterInput]
+  userId: ModelStringInput
+}
+
+type ModelEncryptedAnswerConnection @aws_iam @aws_cognito_user_pools {
+  items: [EncryptedAnswer]!
+  nextToken: String
+}
+
+input ModelEncryptedAnswerFilterInput {
+  answerId: ModelIDInput
+  userId: ModelIDInput
+  groupId: ModelIDInput
+  programId: ModelIDInput
+  weekNumber: ModelIntInput
+  dayNumber: ModelIntInput
+  sectionId: ModelStringInput
+  promptId: ModelStringInput
+  ciphertext: ModelStringInput
+  iv: ModelStringInput
+  salt: ModelStringInput
+  keyDerivation: ModelStringInput
+  iterations: ModelIntInput
+  algorithm: ModelStringInput
+  version: ModelIntInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  and: [ModelEncryptedAnswerFilterInput]
+  or: [ModelEncryptedAnswerFilterInput]
+  not: ModelEncryptedAnswerFilterInput
+}
+
+input ModelEncryptedAnswerConditionInput {
+  userId: ModelIDInput
+  groupId: ModelIDInput
+  programId: ModelIDInput
+  weekNumber: ModelIntInput
+  dayNumber: ModelIntInput
+  sectionId: ModelStringInput
+  promptId: ModelStringInput
+  ciphertext: ModelStringInput
+  iv: ModelStringInput
+  salt: ModelStringInput
+  keyDerivation: ModelStringInput
+  iterations: ModelIntInput
+  algorithm: ModelStringInput
+  version: ModelIntInput
+  updatedAt: ModelStringInput
+  and: [ModelEncryptedAnswerConditionInput]
+  or: [ModelEncryptedAnswerConditionInput]
+  not: ModelEncryptedAnswerConditionInput
+  createdAt: ModelStringInput
+}
+
+input CreateEncryptedAnswerInput {
+  answerId: ID!
+  userId: ID!
+  groupId: ID!
+  programId: ID!
+  weekNumber: Int!
+  dayNumber: Int!
+  sectionId: String!
+  promptId: String!
+  ciphertext: String!
+  iv: String!
+  salt: String!
+  keyDerivation: String!
+  iterations: Int!
+  algorithm: String!
+  version: Int!
+  updatedAt: AWSDateTime
+}
+
+input UpdateEncryptedAnswerInput {
+  answerId: ID!
+  userId: ID
+  groupId: ID
+  programId: ID
+  weekNumber: Int
+  dayNumber: Int
+  sectionId: String
+  promptId: String
+  ciphertext: String
+  iv: String
+  salt: String
+  keyDerivation: String
+  iterations: Int
+  algorithm: String
+  version: Int
+  updatedAt: AWSDateTime
+}
+
+input DeleteEncryptedAnswerInput {
+  answerId: ID!
+}
+
+input ModelSubscriptionEncryptedAnswerFilterInput {
+  answerId: ModelSubscriptionIDInput
+  groupId: ModelSubscriptionIDInput
+  programId: ModelSubscriptionIDInput
+  weekNumber: ModelSubscriptionIntInput
+  dayNumber: ModelSubscriptionIntInput
+  sectionId: ModelSubscriptionStringInput
+  promptId: ModelSubscriptionStringInput
+  ciphertext: ModelSubscriptionStringInput
+  iv: ModelSubscriptionStringInput
+  salt: ModelSubscriptionStringInput
+  keyDerivation: ModelSubscriptionStringInput
+  iterations: ModelSubscriptionIntInput
+  algorithm: ModelSubscriptionStringInput
+  version: ModelSubscriptionIntInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionEncryptedAnswerFilterInput]
+  or: [ModelSubscriptionEncryptedAnswerFilterInput]
+  userId: ModelStringInput
+}
+
+type ModelUserScoreConnection @aws_iam @aws_cognito_user_pools {
+  items: [UserScore]!
+  nextToken: String
+}
+
+input ModelUserScoreFilterInput {
+  scoreId: ModelIDInput
+  userId: ModelIDInput
+  groupId: ModelIDInput
+  programId: ModelIDInput
+  displayName: ModelStringInput
+  weekNumber: ModelIntInput
+  weeklyScore: ModelIntInput
+  cumulativeScore: ModelIntInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  and: [ModelUserScoreFilterInput]
+  or: [ModelUserScoreFilterInput]
+  not: ModelUserScoreFilterInput
+}
+
+input ModelUserScoreConditionInput {
+  userId: ModelIDInput
+  groupId: ModelIDInput
+  programId: ModelIDInput
+  displayName: ModelStringInput
+  weekNumber: ModelIntInput
+  weeklyScore: ModelIntInput
+  cumulativeScore: ModelIntInput
+  updatedAt: ModelStringInput
+  and: [ModelUserScoreConditionInput]
+  or: [ModelUserScoreConditionInput]
+  not: ModelUserScoreConditionInput
+  createdAt: ModelStringInput
+}
+
+input CreateUserScoreInput {
+  scoreId: ID!
+  userId: ID!
+  groupId: ID!
+  programId: ID!
+  displayName: String!
+  weekNumber: Int!
+  weeklyScore: Int!
+  cumulativeScore: Int!
+  updatedAt: AWSDateTime
+}
+
+input UpdateUserScoreInput {
+  scoreId: ID!
+  userId: ID
+  groupId: ID
+  programId: ID
+  displayName: String
+  weekNumber: Int
+  weeklyScore: Int
+  cumulativeScore: Int
+  updatedAt: AWSDateTime
+}
+
+input DeleteUserScoreInput {
+  scoreId: ID!
+}
+
+input ModelSubscriptionUserScoreFilterInput {
+  scoreId: ModelSubscriptionIDInput
+  groupId: ModelSubscriptionIDInput
+  programId: ModelSubscriptionIDInput
+  displayName: ModelSubscriptionStringInput
+  weekNumber: ModelSubscriptionIntInput
+  weeklyScore: ModelSubscriptionIntInput
+  cumulativeScore: ModelSubscriptionIntInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionUserScoreFilterInput]
+  or: [ModelSubscriptionUserScoreFilterInput]
+  userId: ModelStringInput
+}
+
+type ModelLeaderMetricConnection @aws_iam @aws_cognito_user_pools {
+  items: [LeaderMetric]!
+  nextToken: String
+}
+
+input ModelLeaderMetricFilterInput {
+  metricId: ModelIDInput
+  groupId: ModelIDInput
+  programId: ModelIDInput
+  memberCount: ModelIntInput
+  activeMemberCount: ModelIntInput
+  cumulativeCompletionCount: ModelIntInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  and: [ModelLeaderMetricFilterInput]
+  or: [ModelLeaderMetricFilterInput]
+  not: ModelLeaderMetricFilterInput
+}
+
+input ModelLeaderMetricConditionInput {
+  groupId: ModelIDInput
+  programId: ModelIDInput
+  memberCount: ModelIntInput
+  activeMemberCount: ModelIntInput
+  cumulativeCompletionCount: ModelIntInput
+  updatedAt: ModelStringInput
+  and: [ModelLeaderMetricConditionInput]
+  or: [ModelLeaderMetricConditionInput]
+  not: ModelLeaderMetricConditionInput
+  createdAt: ModelStringInput
+}
+
+input CreateLeaderMetricInput {
+  metricId: ID!
+  groupId: ID!
+  programId: ID!
+  memberCount: Int!
+  activeMemberCount: Int!
+  cumulativeCompletionCount: Int!
+  updatedAt: AWSDateTime
+}
+
+input UpdateLeaderMetricInput {
+  metricId: ID!
+  groupId: ID
+  programId: ID
+  memberCount: Int
+  activeMemberCount: Int
+  cumulativeCompletionCount: Int
+  updatedAt: AWSDateTime
+}
+
+input DeleteLeaderMetricInput {
+  metricId: ID!
+}
+
+input ModelSubscriptionLeaderMetricFilterInput {
+  metricId: ModelSubscriptionIDInput
+  groupId: ModelSubscriptionIDInput
+  programId: ModelSubscriptionIDInput
+  memberCount: ModelSubscriptionIntInput
+  activeMemberCount: ModelSubscriptionIntInput
+  cumulativeCompletionCount: ModelSubscriptionIntInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionLeaderMetricFilterInput]
+  or: [ModelSubscriptionLeaderMetricFilterInput]
+}

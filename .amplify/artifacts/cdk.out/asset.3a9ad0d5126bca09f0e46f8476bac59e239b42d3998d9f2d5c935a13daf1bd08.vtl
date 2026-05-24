@@ -1,0 +1,19 @@
+## [Start] Set query expression for key **
+#if( !$util.isNull($ctx.args.sortDirection) )
+  $util.error("sortDirection is not supported for List operations without a Sort key defined.", "InvalidArgumentsError")
+#end
+#set( $modelQueryExpression = {} )
+#if( !$util.isNull($ctx.args.membershipId) )
+  #set( $modelQueryExpression.expression = "#membershipId = :membershipId" )
+  #set( $modelQueryExpression.expressionNames = {
+  "#membershipId": "membershipId"
+} )
+  #set( $modelQueryExpression.expressionValues = {
+  ":membershipId": {
+      "S": "$ctx.args.membershipId"
+  }
+} )
+#end
+## [End] Set query expression for key **
+$util.qr($ctx.stash.put("modelQueryExpression", $modelQueryExpression))
+{}

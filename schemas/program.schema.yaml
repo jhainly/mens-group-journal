@@ -1,0 +1,24 @@
+program:
+  id: rooted-men-v1
+  title: Rooted Men
+  version: "1.0.0"
+  description: A short discipleship and journaling program.
+weeks:
+  - weekNumber: 1
+    title: Foundation
+    summary: Identity, confession, and daily obedience.
+    days:
+      - dayNumber: 1
+        title: Begin Honestly
+        sections:
+          - id: identity
+            title: Identity
+            body: Consider what you are carrying into this week.
+            points: 10
+            scripture:
+              - reference: Psalm 139:23-24
+                text: Search me, God, and know my heart; test me and know my anxious thoughts.
+            prompts:
+              - id: prompt-1
+                label: What do you need to bring into the light today?
+                optional: true
