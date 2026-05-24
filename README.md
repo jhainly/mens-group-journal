@@ -1,78 +1,45 @@
 # Men's Group Journal
 
-Private guided journaling and discipleship app for men's groups. Built with Next.js, TypeScript, AWS Amplify, Amazon Cognito, and DynamoDB-backed Amplify Data.
+Private guided journaling and discipleship app for men's groups.
 
-## What This V1 Scaffold Includes
+The app is built with Next.js, TypeScript, AWS Amplify, Amazon Cognito, and DynamoDB-backed Amplify Data. It is mobile-browser friendly, text-focused, and designed around weekly group programs with private client-side encrypted journal answers.
 
-- Mobile-first Next.js app shell with member and admin routes.
-- Cognito sign-in and account creation forms with display name capture.
-- Group join and leader group management screens wired to Amplify Data.
-- Route guards for member-only and admin-only pages using Cognito sessions and Cognito groups.
-- YAML program schema, TypeScript types, and import validation.
-- Admin YAML preview and publish flow with deterministic content hash for immutable program snapshots.
-- Program/week/day journal views with optional reflection prompts.
-- Client-side AES-GCM encryption utility using the Web Crypto API.
-- Scoring utility for weekly and cumulative points.
-- Leaderboard view with member names and scores.
-- PDF export utility stub.
-- DynamoDB data model in [docs/dynamodb-data-model.md](./docs/dynamodb-data-model.md).
+## Current V1 Features
 
-## Proposed Project Structure
+- Cognito account creation, verification, login, logout, and route protection.
+- Display-name capture during account creation.
+- Group join flow by group code.
+- Member dashboard with weekly score, cumulative score, and week/day navigation.
+- Program day screen with Wednesday-to-Tuesday day labels.
+- Daily sections for mind, spirit, body, end-of-day reflection, and bonus point items.
+- Section-level completion checkboxes and scoring.
+- Optional plain-text reflections encrypted in the browser before storage.
+- Leaderboard showing member names and scores.
+- Admin group management.
+- Admin YAML import with validation and rendered content preview before publishing.
+- Immutable published program snapshots by content hash.
+- PDF export utility stub for future personal journal export.
+
+## Project Structure
 
 ```text
-app/                         Next.js App Router pages
-  auth/                      Login/signup scaffold
+app/                         Next.js App Router routes
+  auth/                      Login page
+  create-account/            Account creation and verification
   join/                      Group code join flow
-  dashboard/                 Member dashboard and program navigator
-  program/week/[...]/        Week/day journal screens
+  dashboard/                 Member dashboard and week selector
+  program/week/[...]/        Program day journal screens
   leaderboard/               Group score visibility
   admin/groups/              Leader group management
-  admin/import/              YAML import, validation, preview, publish stub
-components/                  Shared UI components
-data/                        Sample program and demo rows
+  admin/import/              YAML import, validation, rendered preview, publish
+components/                  Shared UI and feature components
+data/                        Sample program content
 docs/                        Architecture notes
 lib/                         Amplify, validation, encryption, scoring, export utilities
 schemas/                     Example YAML program schema
 types/                       Domain and program TypeScript types
 amplify/                     Amplify Gen 2 auth and data backend
 ```
-
-## Encryption Model
-
-Journal answers are encrypted in the browser before storage. The backend should never receive plaintext answers.
-
-The intended flow:
-
-1. Users authenticate with Cognito email/password.
-2. The browser keeps account-linked journal key material in session storage after login or account creation.
-3. `lib/encryption.ts` derives an AES-GCM key from that client-side material with PBKDF2-SHA-256, a random salt, and 310,000 iterations.
-4. Each answer is encrypted locally with a random 96-bit IV.
-5. The app sends only ciphertext, IV, salt, algorithm, key derivation metadata, prompt identity, and non-sensitive scoring/completion metadata to DynamoDB.
-6. Raw encryption key material is never stored in DynamoDB, app models, analytics, or server logs.
-7. Decryption happens only in the browser for the authenticated account.
-8. There is intentionally no recovery mechanism for encrypted journal content if the user loses access to the account-linked key material.
-
-Implementation rules:
-
-- API request types for answers must not include plaintext fields.
-- Server actions, route handlers, logs, and validation errors must never print answer bodies.
-- Leader/admin queries must be unable to read another user's `ANSWER#` rows.
-- PDF export must decrypt locally and render in the browser from local plaintext.
-
-## YAML Program Shape
-
-See [schemas/program.schema.yaml](./schemas/program.schema.yaml).
-
-Top-level fields:
-
-- `program`: id, title, version, optional description.
-- `weeks`: arbitrary-length list.
-- `days`: arbitrary-length list per week.
-- `sections`: structured content blocks with points.
-- `scripture`: embedded reference/text blocks. No external Bible API is required.
-- `prompts`: optional reflection prompts.
-
-Published programs should be stored as immutable snapshots with a content hash. A group has exactly one `ACTIVE_PROGRAM` pointer at a time.
 
 ## Local Setup
 
@@ -88,9 +55,25 @@ Run the app:
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open:
 
-Journal reflection encryption requires the browser Web Crypto API. For local testing, use `http://localhost:3000` on the same machine. If you test from another device on your network, `http://192.168.x.x:3000` may not allow Web Crypto because it is not a secure origin. Use HTTPS for LAN testing:
+```text
+http://localhost:3000
+```
+
+Run checks:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+## Local HTTPS
+
+Journal reflection encryption requires the browser Web Crypto API. `localhost` works for same-machine testing. A LAN URL like `http://192.168.x.x:3000` may not allow Web Crypto because it is not a secure origin.
+
+For LAN testing, use:
 
 ```bash
 npm run dev:https
@@ -98,22 +81,9 @@ npm run dev:https
 
 Then open the HTTPS URL shown by Next.js.
 
-Type-check:
-
-```bash
-npm run typecheck
-```
-
-Other checks:
-
-```bash
-npm run lint
-npm run build
-```
-
 ## Amplify Setup
 
-The Amplify Gen 2 backend is defined in:
+The backend is defined in:
 
 - `amplify/auth/resource.ts`
 - `amplify/data/resource.ts`
@@ -125,18 +95,71 @@ Run a sandbox backend:
 npx ampx sandbox
 ```
 
-That generates a real `amplify_outputs.json` for Cognito and Data. A local ignored `{}` placeholder exists so the app can build before sandbox generation; the sandbox output should replace it.
+That generates `amplify_outputs.json` for Cognito and Amplify Data. This file is ignored because it is local environment output.
 
-RBAC:
+## Security Model
 
-- Cognito group `ADMINS` can access admin routes.
-- Cognito group `LEADERS` can access leader/admin group management routes.
-- Members must be authenticated to access dashboard, program days, and leaderboard.
+Journal answers must be encrypted in the browser before storage. The backend should never receive plaintext journal answers.
 
-## Remaining Hardening Tasks
+Current flow:
 
-- Move join-code verification into a custom server-side mutation so clients never query join-code hashes directly.
-- Replace the session-storage journal key handoff with a wrapped per-user journal key envelope.
+1. User authenticates with Cognito.
+2. The browser keeps account-linked journal key material in session storage after login.
+3. `lib/encryption.ts` derives an AES-GCM key with PBKDF2-SHA-256, random salt, and 310,000 iterations.
+4. Each answer is encrypted locally with a random IV.
+5. The app stores only ciphertext, IV, salt, algorithm metadata, prompt identity, completion status, and scoring metadata.
+6. There is intentionally no recovery mechanism for encrypted journal content if the user loses access to the encryption secret.
+
+Rules:
+
+- Do not send plaintext answers to APIs, logs, analytics, or DynamoDB.
+- Do not expose another member's encrypted answers to leaders or admins.
+- PDF export must decrypt locally in the browser.
+
+## Program YAML
+
+Programs contain:
+
+- `program`: id, title, version, description
+- `weeks`
+- `days`
+- `sections`
+- `scripture`
+- `prompts`
+- point values
+
+See:
+
+```text
+schemas/program.schema.yaml
+```
+
+Admins can paste YAML into `/admin/import`, validate it, preview the rendered member experience, and publish it to a group.
+
+## RBAC
+
+- `ADMINS`: admin routes and group management.
+- `LEADERS`: leader/admin group management routes.
+- Authenticated members: dashboard, program days, leaderboard, and join flow.
+
+## Git Notes
+
+Generated local artifacts are intentionally ignored:
+
+- `.amplify/`
+- `.next/`
+- `node_modules/`
+- `amplify_outputs.json`
+- local environment files
+
+Keep the repository outside OneDrive to avoid file-locking issues with `.git/objects`.
+
+## Remaining Work
+
+- Move join-code verification into a custom server-side mutation.
+- Replace the temporary session-storage journal key handoff with a wrapped per-user journal key envelope.
+- Load active groups/program snapshots from persisted data instead of sample content.
+- Persist and rehydrate prior answers and completion status in the UI.
 - Build local-only PDF rendering from decrypted answers.
 - Add tests for YAML validation, encryption round trips, scoring, and authorization rules.
-- Add group-scoped authorization beyond global `ADMINS` and `LEADERS` roles if one deployment will host unrelated groups.
+- Add group-scoped authorization beyond global `ADMINS` and `LEADERS` roles.
