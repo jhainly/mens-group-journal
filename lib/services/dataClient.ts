@@ -20,6 +20,24 @@ export type UserGroupSummary = {
   name: string;
   role?: "member" | "leader" | "admin" | null;
 };
+export type AdminGroupSummary = {
+  activeProgramId?: string;
+  groupId: string;
+  joinCodeFingerprint?: string | null;
+  memberCount: number;
+  leaderCount: number;
+  name: string;
+};
+export type AdminGroupMember = {
+  displayName: string;
+  joinedAt: string;
+  membershipId: string;
+  role?: "member" | "leader" | "admin" | null;
+  userId: string;
+};
+export type AdminGroupDetail = AdminGroupSummary & {
+  members: AdminGroupMember[];
+};
 
 export async function ensureUserProfile(displayName?: string): Promise<ServiceResult<void>> {
   try {
@@ -158,6 +176,85 @@ export async function listCurrentUserGroups(): Promise<ServiceResult<UserGroupSu
       data: groups
         .filter((group): group is UserGroupSummary => Boolean(group))
         .sort((left, right) => left.name.localeCompare(right.name))
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function listAdminGroups(): Promise<ServiceResult<AdminGroupSummary[]>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const groups = await client.models.Group.list();
+    const summaries = await Promise.all(
+      groups.data.map(async (group) => {
+        const memberships = await client.models.GroupMembership.list({
+          filter: {
+            groupId: {
+              eq: group.groupId
+            }
+          }
+        });
+
+        return {
+          activeProgramId: group.activeProgramId ?? undefined,
+          groupId: group.groupId,
+          joinCodeFingerprint: getJoinCodeFingerprint(group.joinCodeHash),
+          leaderCount: memberships.data.filter((membership) => isLeaderRole(membership.role)).length,
+          memberCount: memberships.data.length,
+          name: group.name
+        } satisfies AdminGroupSummary;
+      })
+    );
+
+    return {
+      ok: true,
+      data: summaries.sort((left, right) => left.name.localeCompare(right.name))
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function getAdminGroupDetail(groupId: string): Promise<ServiceResult<AdminGroupDetail>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const group = await client.models.Group.get({ groupId });
+
+    if (!group.data) {
+      return { ok: false, error: "Group not found." };
+    }
+
+    const memberships = await client.models.GroupMembership.list({
+      filter: {
+        groupId: {
+          eq: groupId
+        }
+      }
+    });
+    const members = memberships.data
+      .map((membership) => ({
+        displayName: membership.displayName,
+        joinedAt: membership.joinedAt,
+        membershipId: membership.membershipId,
+        role: membership.role,
+        userId: membership.userId
+      }))
+      .sort((left, right) => sortMembers(left, right));
+
+    return {
+      ok: true,
+      data: {
+        activeProgramId: group.data.activeProgramId ?? undefined,
+        groupId: group.data.groupId,
+        joinCodeFingerprint: getJoinCodeFingerprint(group.data.joinCodeHash),
+        leaderCount: members.filter((member) => isLeaderRole(member.role)).length,
+        memberCount: members.length,
+        members,
+        name: group.data.name
+      }
     };
   } catch (error) {
     return serviceError(error);
@@ -478,6 +575,25 @@ async function upsert(create: () => Promise<unknown>, update: () => Promise<unkn
 
 function hasData(value: unknown): boolean {
   return Boolean(value && typeof value === "object" && "data" in value && value.data);
+}
+
+function getJoinCodeFingerprint(joinCodeHash?: string | null): string | null {
+  return joinCodeHash ? joinCodeHash.slice(0, 10) : null;
+}
+
+function isLeaderRole(role: AdminGroupMember["role"]): boolean {
+  return role === "leader" || role === "admin";
+}
+
+function sortMembers(left: AdminGroupMember, right: AdminGroupMember): number {
+  const leftLeader = isLeaderRole(left.role);
+  const rightLeader = isLeaderRole(right.role);
+
+  if (leftLeader !== rightLeader) {
+    return leftLeader ? -1 : 1;
+  }
+
+  return left.displayName.localeCompare(right.displayName);
 }
 
 async function getDisplayName(userId: string): Promise<string> {

@@ -96,6 +96,10 @@ button {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+.grid.three {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 .import-preview-grid {
   align-items: start;
 }
@@ -111,6 +115,12 @@ button {
 .stack {
   display: grid;
   gap: 14px;
+}
+
+.tight-stack {
+  gap: 4px;
+  justify-items: end;
+  text-align: right;
 }
 
 .row {
@@ -229,6 +239,13 @@ li {
   font-size: 1.35rem;
 }
 
+.metric small {
+  color: var(--muted);
+  display: block;
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
 .list {
   display: grid;
   gap: 10px;
@@ -296,6 +313,14 @@ li {
   font-weight: 700;
 }
 
+.role-label {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 680px) {
   .shell {
     padding: 16px;
@@ -312,5 +337,10 @@ li {
 
   h1 {
     font-size: 1.75rem;
+  }
+
+  .tight-stack {
+    justify-items: start;
+    text-align: left;
   }
 }

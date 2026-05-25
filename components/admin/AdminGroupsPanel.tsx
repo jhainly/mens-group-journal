@@ -1,15 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { setSelectedGroupId } from "@/lib/groupSelection";
-import { createGroup } from "@/lib/services/dataClient";
+import {
+  createGroup,
+  listAdminGroups,
+  type AdminGroupSummary
+} from "@/lib/services/dataClient";
 
 export function AdminGroupsPanel() {
   const [name, setName] = useState("");
   const [joinCode, setJoinCode] = useState("");
+  const [groups, setGroups] = useState<AdminGroupSummary[]>([]);
+  const [directoryStatus, setDirectoryStatus] = useState("Loading groups...");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    void refreshGroups();
+  }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,6 +37,20 @@ export function AdminGroupsPanel() {
     setMessage("Group created and selected.");
     setName("");
     setJoinCode("");
+    await refreshGroups();
+  }
+
+  async function refreshGroups() {
+    setDirectoryStatus("Loading groups...");
+    const result = await listAdminGroups();
+
+    if (!result.ok) {
+      setDirectoryStatus(result.error);
+      return;
+    }
+
+    setGroups(result.data);
+    setDirectoryStatus(result.data.length > 0 ? "" : "No groups have been created yet.");
   }
 
   return (
@@ -57,14 +81,54 @@ export function AdminGroupsPanel() {
       </form>
 
       <section className="panel stack">
-        <h2>Leader metrics</h2>
-        <p>Leaders see cumulative participation metrics only. They do not receive answers or section-level details.</p>
-        <div className="grid two">
-          <div className="metric">
-            <span>Members</span>
-            <strong>0</strong>
+        <div className="row">
+          <div>
+            <p className="eyebrow">Groups</p>
+            <h2>Existing groups</h2>
+            <p>Admins can review group access and membership. Journal answers are never shown here.</p>
           </div>
+          <button className="button secondary" onClick={refreshGroups} type="button">
+            Refresh
+          </button>
         </div>
+        {groups.length > 0 ? (
+          <ul className="list">
+            {groups.map((group) => (
+              <li className="card stack" key={group.groupId}>
+                <div className="row">
+                  <div>
+                    <h3>{group.name}</h3>
+                    <p className="muted">Group ID: {group.groupId}</p>
+                  </div>
+                  <Link className="button secondary" href={`/admin/groups/${group.groupId}`}>
+                    View members
+                  </Link>
+                </div>
+                <div className="grid three">
+                  <div className="metric">
+                    <span>Members</span>
+                    <strong>{group.memberCount}</strong>
+                  </div>
+                  <div className="metric">
+                    <span>Leaders</span>
+                    <strong>{group.leaderCount}</strong>
+                  </div>
+                  <div className="metric">
+                    <span>Join code</span>
+                    <strong>{group.joinCodeFingerprint ? "Protected" : "Unavailable"}</strong>
+                    {group.joinCodeFingerprint ? (
+                      <small>Fingerprint: {group.joinCodeFingerprint}</small>
+                    ) : (
+                      <small>Existing codes are stored as non-reversible hashes.</small>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">{directoryStatus}</p>
+        )}
       </section>
     </div>
   );
