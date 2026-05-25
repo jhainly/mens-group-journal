@@ -14,6 +14,12 @@ type DataClient = ReturnType<typeof generateClient<Schema>>;
 let dataClient: DataClient | null = null;
 
 export type ServiceResult<T> = { ok: true; data: T } | { ok: false; error: string };
+export type UserGroupSummary = {
+  activeProgramId?: string;
+  groupId: string;
+  name: string;
+  role?: "member" | "leader" | "admin" | null;
+};
 
 export async function ensureUserProfile(displayName?: string): Promise<ServiceResult<void>> {
   try {
@@ -113,6 +119,46 @@ export async function joinGroupByCode(groupCode: string): Promise<ServiceResult<
     });
 
     return { ok: true, data: group.groupId };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function listCurrentUserGroups(): Promise<ServiceResult<UserGroupSummary[]>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const memberships = await client.models.GroupMembership.list({
+      filter: {
+        userId: {
+          eq: user.userId
+        }
+      }
+    });
+    const groups: Array<UserGroupSummary | null> = await Promise.all(
+      memberships.data.map(async (membership) => {
+        const group = await client.models.Group.get({ groupId: membership.groupId });
+
+        if (!group.data) {
+          return null;
+        }
+
+        return {
+          activeProgramId: group.data.activeProgramId ?? undefined,
+          groupId: group.data.groupId,
+          name: group.data.name,
+          role: membership.role
+        } satisfies UserGroupSummary;
+      })
+    );
+
+    return {
+      ok: true,
+      data: groups
+        .filter((group): group is UserGroupSummary => Boolean(group))
+        .sort((left, right) => left.name.localeCompare(right.name))
+    };
   } catch (error) {
     return serviceError(error);
   }

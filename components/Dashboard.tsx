@@ -1,24 +1,72 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ProgramNavigator } from "@/components/ProgramNavigator";
-import { getCurrentUserScoreSummary } from "@/lib/services/dataClient";
+import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
+import {
+  getCurrentUserScoreSummary,
+  listCurrentUserGroups,
+  type UserGroupSummary
+} from "@/lib/services/dataClient";
 import type { ScoreSummary } from "@/lib/scoring";
 import type { Program } from "@/types/program";
 
 type DashboardProps = {
-  groupId: string;
   initialWeekNumber: number;
   program: Program;
 };
 
-export function Dashboard({ groupId, initialWeekNumber, program }: DashboardProps) {
+export function Dashboard({ initialWeekNumber, program }: DashboardProps) {
   const [selectedWeekNumber, setSelectedWeekNumber] = useState(initialWeekNumber);
   const [scores, setScores] = useState<ScoreSummary>(() => getEmptyScores(program, initialWeekNumber));
+  const [groups, setGroups] = useState<UserGroupSummary[]>([]);
+  const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
+  const [groupStatus, setGroupStatus] = useState("Loading group...");
   const [status, setStatus] = useState("Loading scores...");
 
   useEffect(() => {
     let cancelled = false;
+
+    setGroupStatus("Loading group...");
+
+    void listCurrentUserGroups().then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (!result.ok) {
+        setGroupStatus(result.error);
+        setStatus("");
+        return;
+      }
+
+      const selectedGroup = resolveSelectedGroup(result.data);
+      setGroups(result.data);
+      setActiveGroup(selectedGroup);
+
+      if (selectedGroup) {
+        setSelectedGroupId(selectedGroup.groupId);
+        setGroupStatus("");
+      } else {
+        setGroupStatus("Join a group to start tracking progress.");
+        setStatus("");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!activeGroup) {
+      return () => {
+        cancelled = true;
+      };
+    }
 
     setStatus("Loading scores...");
     setScores((current) => ({
@@ -27,7 +75,11 @@ export function Dashboard({ groupId, initialWeekNumber, program }: DashboardProp
       maxWeeklyScore: getMaxWeeklyScore(program, selectedWeekNumber)
     }));
 
-    void getCurrentUserScoreSummary({ groupId, program, activeWeekNumber: selectedWeekNumber }).then((result) => {
+    void getCurrentUserScoreSummary({
+      groupId: activeGroup.groupId,
+      program,
+      activeWeekNumber: selectedWeekNumber
+    }).then((result) => {
       if (cancelled) {
         return;
       }
@@ -44,16 +96,39 @@ export function Dashboard({ groupId, initialWeekNumber, program }: DashboardProp
     return () => {
       cancelled = true;
     };
-  }, [groupId, program, selectedWeekNumber]);
+  }, [activeGroup, program, selectedWeekNumber]);
+
+  function changeGroup(groupId: string) {
+    const nextGroup = groups.find((group) => group.groupId === groupId) ?? null;
+
+    if (!nextGroup) {
+      return;
+    }
+
+    setSelectedGroupId(nextGroup.groupId);
+    setActiveGroup(nextGroup);
+  }
 
   return (
     <div className="stack">
       <section className="panel stack">
         <div>
           <p className="eyebrow">Current group</p>
-          <h1>{program.program.title}</h1>
-          <p>{program.program.description}</p>
+          <h1>{activeGroup?.name ?? "No group selected"}</h1>
+          <p>{program.program.title}: {program.program.description}</p>
         </div>
+        {groups.length > 1 ? (
+          <label className="field compact-field">
+            <span>Group</span>
+            <select value={activeGroup?.groupId ?? ""} onChange={(event) => changeGroup(event.target.value)}>
+              {groups.map((group) => (
+                <option key={group.groupId} value={group.groupId}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <div className="grid two">
           <div className="metric">
             <span>Weekly score</span>
@@ -64,6 +139,14 @@ export function Dashboard({ groupId, initialWeekNumber, program }: DashboardProp
             <strong>{scores.cumulativeScore}/{scores.maxCumulativeScore}</strong>
           </div>
         </div>
+        {!activeGroup ? (
+          <div className="row">
+            <Link className="button" href="/join">
+              Join group
+            </Link>
+          </div>
+        ) : null}
+        {groupStatus ? <p className="muted">{groupStatus}</p> : null}
         {status ? <p className="muted">{status}</p> : null}
       </section>
       <ProgramNavigator

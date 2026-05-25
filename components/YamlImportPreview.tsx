@@ -1,12 +1,17 @@
 "use client";
 
 import yaml from "js-yaml";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { sampleProgram } from "@/data/sampleProgram";
 import { formatPoints } from "@/lib/format";
+import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramDayLabel } from "@/lib/programDays";
 import { validateProgramYaml } from "@/lib/programValidation";
-import { publishProgram } from "@/lib/services/dataClient";
+import {
+  listCurrentUserGroups,
+  publishProgram,
+  type UserGroupSummary
+} from "@/lib/services/dataClient";
 import type { ProgramDay, ProgramImportPreview, ProgramSection, ProgramWeek } from "@/types/program";
 
 const exampleYaml = yaml.dump(
@@ -23,11 +28,39 @@ const exampleYaml = yaml.dump(
 export function YamlImportPreview() {
   const [source, setSource] = useState(exampleYaml);
   const [groupId, setGroupId] = useState("");
+  const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [preview, setPreview] = useState<ProgramImportPreview | null>(null);
   const [selectedWeekNumber, setSelectedWeekNumber] = useState(1);
   const [selectedDayNumber, setSelectedDayNumber] = useState(1);
   const [errors, setErrors] = useState<string[]>([]);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void listCurrentUserGroups().then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (!result.ok) {
+        setMessage(result.error);
+        return;
+      }
+
+      const selectedGroup = resolveSelectedGroup(result.data);
+      setGroups(result.data);
+
+      if (selectedGroup) {
+        setGroupId(selectedGroup.groupId);
+        setSelectedGroupId(selectedGroup.groupId);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function validate() {
     const result = await validateProgramYaml(source);
@@ -51,6 +84,7 @@ export function YamlImportPreview() {
       return;
     }
 
+    setSelectedGroupId(groupId);
     const result = await publishProgram(groupId, preview);
     setMessage(result.ok ? "Program published." : result.error);
   }
@@ -74,10 +108,20 @@ export function YamlImportPreview() {
           <span>Program content</span>
           <textarea value={source} onChange={(event) => setSource(event.target.value)} />
         </label>
-        <label className="field">
-          <span>Group id</span>
-          <input value={groupId} onChange={(event) => setGroupId(event.target.value)} placeholder="Group to publish into" />
-        </label>
+        {groups.length > 0 ? (
+          <label className="field">
+            <span>Group</span>
+            <select value={groupId} onChange={(event) => setGroupId(event.target.value)}>
+              {groups.map((group) => (
+                <option key={group.groupId} value={group.groupId}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <p className="muted">Create a group before publishing a program.</p>
+        )}
         <button className="button" type="button" onClick={validate}>
           Preview program
         </button>

@@ -14,5 +14,5 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     ? requestedWeekNumber
     : 1;
 
-  return <Dashboard groupId="demo-group" initialWeekNumber={initialWeekNumber} program={sampleProgram} />;
+  return <Dashboard initialWeekNumber={initialWeekNumber} program={sampleProgram} />;
 }

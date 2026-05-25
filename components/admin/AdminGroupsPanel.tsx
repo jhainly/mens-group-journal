@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { setSelectedGroupId } from "@/lib/groupSelection";
 import { createGroup } from "@/lib/services/dataClient";
 
 export function AdminGroupsPanel() {
@@ -22,7 +23,8 @@ export function AdminGroupsPanel() {
       return;
     }
 
-    setMessage("Group created.");
+    setSelectedGroupId(result.data);
+    setMessage("Group created and selected.");
     setName("");
     setJoinCode("");
   }

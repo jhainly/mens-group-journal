@@ -20,5 +20,5 @@ export default async function DayPage({ params }: DayPageProps) {
     notFound();
   }
 
-  return <DayJournal weekNumber={week.weekNumber} day={day} program={sampleProgram} groupId="demo-group" />;
+  return <DayJournal weekNumber={week.weekNumber} day={day} program={sampleProgram} />;
 }

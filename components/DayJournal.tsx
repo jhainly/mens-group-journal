@@ -1,32 +1,72 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { canEncryptJournalAnswers, getJournalEncryptionRequirementMessage } from "@/lib/encryption";
 import { formatPoints } from "@/lib/format";
+import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramDayLabel } from "@/lib/programDays";
-import { saveJournalDay } from "@/lib/services/dataClient";
+import {
+  listCurrentUserGroups,
+  saveJournalDay,
+  type UserGroupSummary
+} from "@/lib/services/dataClient";
 import type { Program } from "@/types/program";
 import type { ProgramDay } from "@/types/program";
 
 export function DayJournal({
   weekNumber,
   day,
-  program,
-  groupId
+  program
 }: {
   weekNumber: number;
   day: ProgramDay;
   program: Program;
-  groupId: string;
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [completedSectionIds, setCompletedSectionIds] = useState<string[]>([]);
+  const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
+  const [groupStatus, setGroupStatus] = useState("Loading group...");
   const [savedCount, setSavedCount] = useState(0);
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    let cancelled = false;
+
+    void listCurrentUserGroups().then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (!result.ok) {
+        setGroupStatus(result.error);
+        return;
+      }
+
+      const selectedGroup = resolveSelectedGroup(result.data);
+      setActiveGroup(selectedGroup);
+
+      if (selectedGroup) {
+        setSelectedGroupId(selectedGroup.groupId);
+        setGroupStatus("");
+      } else {
+        setGroupStatus("Join a group before saving progress.");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function save() {
     setMessage("");
+
+    if (!activeGroup) {
+      setMessage("Join a group before saving progress.");
+      return;
+    }
+
     const hasReflections = Object.values(answers).some((answer) => answer.trim());
 
     if (hasReflections && !canEncryptJournalAnswers()) {
@@ -35,7 +75,7 @@ export function DayJournal({
     }
 
     const result = await saveJournalDay({
-      groupId,
+      groupId: activeGroup.groupId,
       program,
       weekNumber,
       dayNumber: day.dayNumber,
@@ -93,8 +133,12 @@ export function DayJournal({
         <div>
           <p className="eyebrow">Week {weekNumber}</p>
           <h1>{getProgramDayLabel(day.dayNumber)}: {day.title}</h1>
-          <p>Your reflections are private and stay connected to your account.</p>
+          <p>
+            Your reflections are private and stay connected to your account
+            {activeGroup ? ` in ${activeGroup.name}.` : "."}
+          </p>
         </div>
+        {groupStatus ? <p className="muted">{groupStatus}</p> : null}
       </section>
 
       {day.sections.map((section) => (
@@ -140,7 +184,7 @@ export function DayJournal({
       ))}
 
       <div className="row">
-        <button className="button" onClick={save} type="button">
+        <button className="button" disabled={!activeGroup} onClick={save} type="button">
           Save reflection
         </button>
         <span>{savedCount > 0 ? `${savedCount} reflection saved.` : "No saved reflection yet."}</span>

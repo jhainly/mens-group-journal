@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { setSelectedGroupId } from "@/lib/groupSelection";
 import { joinGroupByCode } from "@/lib/services/dataClient";
 
 export function JoinGroupForm() {
@@ -22,6 +23,7 @@ export function JoinGroupForm() {
       return;
     }
 
+    setSelectedGroupId(result.data);
     router.push("/dashboard");
     router.refresh();
   }
