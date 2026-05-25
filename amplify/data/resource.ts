@@ -28,6 +28,9 @@ const schema = a.schema({
       joinCodeHash: a.string().authorization((allow) => [
         allow.groups(["ADMINS", "LEADERS"]).to(["read", "create", "update"])
       ]),
+      joinCode: a.string().authorization((allow) => [
+        allow.groups(["ADMINS", "LEADERS"]).to(["read", "create", "update"])
+      ]),
       activeProgramId: a.string(),
       createdByUserId: a.string().required().authorization((allow) => [
         allow.groups(["ADMINS", "LEADERS"]),
@@ -174,3 +177,4 @@ export const data = defineData({
     fieldLogLevel: "none"
   }
 });
+

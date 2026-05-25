@@ -23,7 +23,7 @@ export type UserGroupSummary = {
 export type AdminGroupSummary = {
   activeProgramId?: string;
   groupId: string;
-  joinCodeFingerprint?: string | null;
+  joinCode?: string | null;
   memberCount: number;
   leaderCount: number;
   name: string;
@@ -84,6 +84,7 @@ export async function createGroup(name: string, joinCode: string): Promise<Servi
     await client.models.Group.create({
       groupId,
       name,
+      joinCode: joinCode.trim(),
       joinCodeHash: await hashJoinCode(joinCode),
       createdByUserId: user.userId,
       leaderUserIds: [user.userId],
@@ -200,7 +201,7 @@ export async function listAdminGroups(): Promise<ServiceResult<AdminGroupSummary
         return {
           activeProgramId: group.activeProgramId ?? undefined,
           groupId: group.groupId,
-          joinCodeFingerprint: getJoinCodeFingerprint(group.joinCodeHash),
+          joinCode: group.joinCode ?? null,
           leaderCount: memberships.data.filter((membership) => isLeaderRole(membership.role)).length,
           memberCount: memberships.data.length,
           name: group.name
@@ -249,7 +250,7 @@ export async function getAdminGroupDetail(groupId: string): Promise<ServiceResul
       data: {
         activeProgramId: group.data.activeProgramId ?? undefined,
         groupId: group.data.groupId,
-        joinCodeFingerprint: getJoinCodeFingerprint(group.data.joinCodeHash),
+        joinCode: group.data.joinCode ?? null,
         leaderCount: members.filter((member) => isLeaderRole(member.role)).length,
         memberCount: members.length,
         members,
@@ -577,9 +578,7 @@ function hasData(value: unknown): boolean {
   return Boolean(value && typeof value === "object" && "data" in value && value.data);
 }
 
-function getJoinCodeFingerprint(joinCodeHash?: string | null): string | null {
-  return joinCodeHash ? joinCodeHash.slice(0, 10) : null;
-}
+
 
 function isLeaderRole(role: AdminGroupMember["role"]): boolean {
   return role === "leader" || role === "admin";
@@ -614,3 +613,4 @@ function serviceError(error: unknown): ServiceResult<never> {
   }
   return { ok: false, error: "The request could not be completed." };
 }
+

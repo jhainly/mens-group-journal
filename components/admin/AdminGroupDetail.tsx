@@ -76,11 +76,11 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
           </div>
           <div className="metric">
             <span>Join code</span>
-            <strong>{group.joinCodeFingerprint ? "Protected" : "Unavailable"}</strong>
-            {group.joinCodeFingerprint ? (
-              <small>Fingerprint: {group.joinCodeFingerprint}</small>
+            <strong>{group.joinCode ?? "Unavailable"}</strong>
+            {group.joinCode ? (
+              <small>Visible to admins.</small>
             ) : (
-              <small>Existing codes are stored as non-reversible hashes.</small>
+              <small>Reset this group&apos;s code to make it visible here.</small>
             )}
           </div>
         </div>
@@ -132,3 +132,4 @@ function formatDate(value: string): string {
     dateStyle: "medium"
   }).format(new Date(value));
 }
+
