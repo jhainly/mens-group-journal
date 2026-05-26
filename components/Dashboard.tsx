@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { JournalExportButton } from "@/components/JournalExportButton";
 import { ProgramNavigator } from "@/components/ProgramNavigator";
 import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import {
@@ -150,6 +151,16 @@ export function Dashboard({ initialWeekNumber, program }: DashboardProps) {
         {status ? <p className="muted">{status}</p> : null}
       </section>
       <ProgramNavigator
+        action={
+          activeGroup ? (
+            <JournalExportButton
+              groupId={activeGroup.groupId}
+              groupName={activeGroup.name}
+              program={program}
+              weekNumber={selectedWeekNumber}
+            />
+          ) : null
+        }
         onSelectedWeekNumberChange={setSelectedWeekNumber}
         program={program}
         selectedWeekNumber={selectedWeekNumber}

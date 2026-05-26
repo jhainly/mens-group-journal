@@ -57,7 +57,11 @@ export function CreateAccountForm() {
       <div>
         <p className="eyebrow">New account</p>
         <h1>{needsConfirmation ? "Verify account" : "Create account"}</h1>
-        <p>{needsConfirmation ? "Enter the code sent to your email." : "Choose the name your group will see."}</p>
+        <p>
+          {needsConfirmation
+            ? "Enter the code sent to your email."
+            : "Choose the name your Lifepoint Church group will see."}
+        </p>
       </div>
       <label className="field">
         <span>Email</span>

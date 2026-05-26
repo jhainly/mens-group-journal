@@ -6,8 +6,8 @@ import { ConfigureAmplify } from "@/components/ConfigureAmplify";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Men's Group Journal",
-  description: "Private guided journaling and discipleship for men's groups"
+  title: "Lifepoint Men's Group Journal",
+  description: "Private guided journaling and discipleship for Lifepoint Church men's groups"
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <div className="shell">
           <header className="topbar">
             <Link className="brand" href="/dashboard">
-              Men&apos;s Group Journal
+              Lifepoint Men&apos;s Group Journal
             </Link>
             <AppNav />
           </header>

@@ -33,7 +33,7 @@ export function JoinGroupForm() {
       <div>
         <p className="eyebrow">Group access</p>
         <h1>Join a group</h1>
-        <p>Enter the private code from your group leader to join the current program.</p>
+        <p>Enter the private code from your Lifepoint Church group leader to join the current program.</p>
       </div>
       <label className="field">
         <span>Group code</span>

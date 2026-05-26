@@ -395,10 +395,10 @@ const weekSeeds: WeekSeed[] = [
 
 export const sampleProgram: Program = {
   program: {
-    id: "rooted-men-v1",
-    title: "Rooted Men",
+    id: "lifepoint-mens-group-v1",
+    title: "Lifepoint Men's Group",
     version: "1.0.0",
-    description: "A guided program for daily attention to mind, spirit, body, and honest reflection."
+    description: "A Lifepoint Church program for daily attention to mind, spirit, body, and honest reflection."
   },
   weeks: weekSeeds.map((week, weekIndex) => ({
     weekNumber: weekIndex + 1,

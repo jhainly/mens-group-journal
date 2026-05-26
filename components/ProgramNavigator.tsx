@@ -1,17 +1,19 @@
 "use client";
 
 import { useMemo } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { getProgramDayLabel } from "@/lib/programDays";
 import type { Program } from "@/types/program";
 
 type ProgramNavigatorProps = {
+  action?: ReactNode;
   onSelectedWeekNumberChange: (weekNumber: number) => void;
   program: Program;
   selectedWeekNumber: number;
 };
 
-export function ProgramNavigator({ onSelectedWeekNumberChange, program, selectedWeekNumber }: ProgramNavigatorProps) {
+export function ProgramNavigator({ action, onSelectedWeekNumberChange, program, selectedWeekNumber }: ProgramNavigatorProps) {
   const selectedWeek = useMemo(
     () => program.weeks.find((week) => week.weekNumber === selectedWeekNumber) ?? program.weeks[0],
     [program.weeks, selectedWeekNumber]
@@ -57,6 +59,7 @@ export function ProgramNavigator({ onSelectedWeekNumberChange, program, selected
           <h2>{selectedWeek.title}</h2>
           {selectedWeek.summary ? <p>{selectedWeek.summary}</p> : null}
         </div>
+        {action ? <div>{action}</div> : null}
 
         <div className="grid two">
           <div className="metric">

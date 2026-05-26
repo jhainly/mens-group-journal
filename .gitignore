@@ -16,3 +16,6 @@ amplify_outputs.json
 
 # TypeScript
 *.tsbuildinfo
+
+# local diagnostic logs
+.codex-dev-*.log

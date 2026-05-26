@@ -3,10 +3,12 @@
 import { generateClient } from "aws-amplify/data";
 import { getCurrentUser, fetchUserAttributes } from "aws-amplify/auth";
 import { configureAmplify } from "@/lib/amplifyClient";
-import { encryptJournalAnswer } from "@/lib/encryption";
+import { decryptJournalAnswer, encryptJournalAnswer, type EncryptedPayload } from "@/lib/encryption";
 import { getJournalEncryptionSecret } from "@/lib/journalKey";
 import { calculateScores, sectionKey, type CompletedSectionKey, type ScoreSummary } from "@/lib/scoring";
 import type { Schema } from "@/amplify/data/resource";
+import type { JournalExportInput } from "@/lib/pdfExport";
+import type { SectionProgress } from "@/types/domain";
 import type { Program, ProgramImportPreview } from "@/types/program";
 
 type DataClient = ReturnType<typeof generateClient<Schema>>;
@@ -37,6 +39,12 @@ export type AdminGroupMember = {
 };
 export type AdminGroupDetail = AdminGroupSummary & {
   members: AdminGroupMember[];
+};
+export type JournalDayState = {
+  answers: Record<string, string>;
+  completedSectionIds: string[];
+  encryptedAnswerCount: number;
+  warning?: string;
 };
 
 export async function ensureUserProfile(displayName?: string): Promise<ServiceResult<void>> {
@@ -354,6 +362,229 @@ export async function getCurrentUserScoreSummary(input: {
   }
 }
 
+export async function loadJournalExport(input: {
+  groupId: string;
+  groupName?: string;
+  program: Program;
+  weekNumber?: number;
+}): Promise<ServiceResult<JournalExportInput>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const [progress, encryptedAnswers] = await Promise.all([
+      client.models.SectionProgress.list({
+        filter: {
+          userId: {
+            eq: user.userId
+          },
+          groupId: {
+            eq: input.groupId
+          },
+          programId: {
+            eq: input.program.program.id
+          },
+          ...(input.weekNumber
+            ? {
+                weekNumber: {
+                  eq: input.weekNumber
+                }
+              }
+            : {})
+        }
+      }),
+      client.models.EncryptedAnswer.list({
+        filter: {
+          userId: {
+            eq: user.userId
+          },
+          groupId: {
+            eq: input.groupId
+          },
+          programId: {
+            eq: input.program.program.id
+          },
+          ...(input.weekNumber
+            ? {
+                weekNumber: {
+                  eq: input.weekNumber
+                }
+              }
+            : {})
+        }
+      })
+    ]);
+    const secret = getJournalEncryptionSecret();
+
+    if (encryptedAnswers.data.length > 0 && !secret) {
+      return { ok: false, error: "Sign in again before exporting saved reflections." };
+    }
+
+    const decryptedAnswers: Record<string, string> = {};
+
+    if (secret) {
+      for (const answer of encryptedAnswers.data) {
+        decryptedAnswers[answer.promptId] = await decryptJournalAnswer(
+          {
+            algorithm: "AES-GCM",
+            ciphertext: answer.ciphertext,
+            iterations: answer.iterations,
+            iv: answer.iv,
+            keyDerivation: "PBKDF2-SHA-256",
+            salt: answer.salt,
+            version: 1
+          } satisfies EncryptedPayload,
+          secret
+        );
+      }
+    }
+
+    const progressRows: SectionProgress[] = progress.data.map((row) => ({
+      completed: row.completed,
+      dayNumber: row.dayNumber,
+      groupId: row.groupId,
+      pointsEarned: row.pointsEarned,
+      programId: row.programId,
+      sectionId: row.sectionId,
+      updatedAt: row.updatedAt,
+      userId: row.userId,
+      weekNumber: row.weekNumber
+    }));
+    const completedSections = new Set<CompletedSectionKey>(
+      progressRows
+        .filter((row) => row.completed)
+        .map((row) => sectionKey(row.weekNumber, row.dayNumber, row.sectionId))
+    );
+    const weeklyTotals = Object.fromEntries(
+      input.program.weeks.map((week) => {
+        const score = calculateScores(input.program, week.weekNumber, completedSections);
+        return [
+          week.weekNumber,
+          {
+            maxScore: score.maxWeeklyScore,
+            score: score.weeklyScore
+          }
+        ];
+      })
+    );
+    const cumulative = calculateScores(input.program, input.program.weeks[0]?.weekNumber ?? 1, completedSections);
+
+    return {
+      ok: true,
+      data: {
+        cumulativeScore: cumulative.cumulativeScore,
+        decryptedAnswers,
+        displayName: await getDisplayName(user.userId),
+        exportedAt: new Date().toISOString(),
+        groupName: input.groupName,
+        maxCumulativeScore: cumulative.maxCumulativeScore,
+        program: input.program,
+        progress: progressRows,
+        weekNumber: input.weekNumber,
+        weeklyTotals
+      }
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function loadJournalDay(input: {
+  groupId: string;
+  program: Program;
+  weekNumber: number;
+  dayNumber: number;
+}): Promise<ServiceResult<JournalDayState>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const [progress, encryptedAnswers] = await Promise.all([
+      client.models.SectionProgress.list({
+        filter: {
+          userId: {
+            eq: user.userId
+          },
+          groupId: {
+            eq: input.groupId
+          },
+          programId: {
+            eq: input.program.program.id
+          },
+          weekNumber: {
+            eq: input.weekNumber
+          },
+          dayNumber: {
+            eq: input.dayNumber
+          },
+          completed: {
+            eq: true
+          }
+        }
+      }),
+      client.models.EncryptedAnswer.list({
+        filter: {
+          userId: {
+            eq: user.userId
+          },
+          groupId: {
+            eq: input.groupId
+          },
+          programId: {
+            eq: input.program.program.id
+          },
+          weekNumber: {
+            eq: input.weekNumber
+          },
+          dayNumber: {
+            eq: input.dayNumber
+          }
+        }
+      })
+    ]);
+    const secret = getJournalEncryptionSecret();
+    const answers: Record<string, string> = {};
+    let warning: string | undefined;
+
+    if (encryptedAnswers.data.length > 0 && !secret) {
+      warning = "Sign in again to decrypt saved reflections.";
+    }
+
+    if (secret) {
+      for (const answer of encryptedAnswers.data) {
+        try {
+          answers[answer.promptId] = await decryptJournalAnswer(
+            {
+              algorithm: "AES-GCM",
+              ciphertext: answer.ciphertext,
+              iterations: answer.iterations,
+              iv: answer.iv,
+              keyDerivation: "PBKDF2-SHA-256",
+              salt: answer.salt,
+              version: 1
+            } satisfies EncryptedPayload,
+            secret
+          );
+        } catch {
+          warning = "Some saved reflections could not be decrypted with this session.";
+        }
+      }
+    }
+
+    return {
+      ok: true,
+      data: {
+        answers,
+        completedSectionIds: progress.data.map((row) => row.sectionId),
+        encryptedAnswerCount: encryptedAnswers.data.length,
+        warning
+      }
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
 async function getCompletedSectionsFromProgress(input: {
   client: DataClient;
   groupId: string;
@@ -511,12 +742,18 @@ export async function saveJournalDay(input: {
     }
 
     for (const [promptId, answer] of Object.entries(input.answers)) {
-      if (!answer.value.trim() || !secret) {
+      const answerId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${answer.sectionId}:${promptId}`;
+
+      if (!answer.value.trim()) {
+        await client.models.EncryptedAnswer.delete({ answerId });
+        continue;
+      }
+
+      if (!secret) {
         continue;
       }
 
       const encrypted = await encryptJournalAnswer(answer.value, secret);
-      const answerId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${answer.sectionId}:${promptId}`;
 
       await upsert(
         () =>
@@ -578,8 +815,6 @@ function hasData(value: unknown): boolean {
   return Boolean(value && typeof value === "object" && "data" in value && value.data);
 }
 
-
-
 function isLeaderRole(role: AdminGroupMember["role"]): boolean {
   return role === "leader" || role === "admin";
 }
@@ -613,4 +848,3 @@ function serviceError(error: unknown): ServiceResult<never> {
   }
   return { ok: false, error: "The request could not be completed." };
 }
-

@@ -74,7 +74,7 @@ export function AdminGroupsPanel() {
         <div>
           <p className="eyebrow">Leader tools</p>
           <h1>Group management</h1>
-          <p>Create groups, manage join codes, choose the active program, and view participation.</p>
+          <p>Create Lifepoint Church groups, manage join codes, choose the active program, and view participation.</p>
         </div>
         <div className="grid two">
           <label className="field">
@@ -100,7 +100,7 @@ export function AdminGroupsPanel() {
           <div>
             <p className="eyebrow">Groups</p>
             <h2>Existing groups</h2>
-            <p>Admins can review group access and membership. Journal answers are never shown here.</p>
+            <p>Admins can review Lifepoint Church group access and membership. Journal answers are never shown here.</p>
           </div>
           <button className="button secondary" onClick={() => void refreshGroups()} type="button">
             Refresh
@@ -148,6 +148,7 @@ export function AdminGroupsPanel() {
     </div>
   );
 }
+
 function mergeGroups(primary: AdminGroupSummary[], fallback: AdminGroupSummary[]): AdminGroupSummary[] {
   const groupsById = new Map<string, AdminGroupSummary>();
 
@@ -162,4 +163,3 @@ function mergeGroups(primary: AdminGroupSummary[], fallback: AdminGroupSummary[]
 
   return Array.from(groupsById.values()).sort((left, right) => left.name.localeCompare(right.name));
 }
-

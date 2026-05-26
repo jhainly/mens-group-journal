@@ -98,34 +98,44 @@ export function YamlImportPreview() {
 
   return (
     <div className="grid two import-preview-grid">
-      <section className="panel stack">
-        <div>
-          <p className="eyebrow">Import</p>
-          <h1>Program preview</h1>
-          <p>Review the program before making it available to the group.</p>
-        </div>
-        <label className="field">
-          <span>Program content</span>
-          <textarea value={source} onChange={(event) => setSource(event.target.value)} />
-        </label>
-        {groups.length > 0 ? (
+      <div className="stack">
+        <section className="panel stack">
+          <div>
+            <p className="eyebrow">Import</p>
+            <h1>Program preview</h1>
+            <p>Review the program before making it available to a Lifepoint Church group.</p>
+          </div>
+        </section>
+
+        <section className="panel stack import-program-panel">
+          <div>
+            <p className="eyebrow">Import program</p>
+            <h2>YAML source</h2>
+            <p>Paste a full program or a single-week draft to validate the structure and content.</p>
+          </div>
           <label className="field">
-            <span>Group</span>
-            <select value={groupId} onChange={(event) => setGroupId(event.target.value)}>
-              {groups.map((group) => (
-                <option key={group.groupId} value={group.groupId}>
-                  {group.name}
-                </option>
-              ))}
-            </select>
+            <span>Program content</span>
+            <textarea value={source} onChange={(event) => setSource(event.target.value)} />
           </label>
-        ) : (
-          <p className="muted">Create a group before publishing a program.</p>
-        )}
-        <button className="button" type="button" onClick={validate}>
-          Preview program
-        </button>
-      </section>
+          {groups.length > 0 ? (
+            <label className="field">
+              <span>Group</span>
+              <select value={groupId} onChange={(event) => setGroupId(event.target.value)}>
+                {groups.map((group) => (
+                  <option key={group.groupId} value={group.groupId}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <p className="muted">Create a Lifepoint Church group before publishing a program.</p>
+          )}
+          <button className="button" type="button" onClick={validate}>
+            Preview program
+          </button>
+        </section>
+      </div>
 
       <section className="panel stack">
         <p className="eyebrow">Preview</p>

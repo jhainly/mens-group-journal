@@ -8,6 +8,7 @@ import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramDayLabel } from "@/lib/programDays";
 import {
   listCurrentUserGroups,
+  loadJournalDay,
   saveJournalDay,
   type UserGroupSummary
 } from "@/lib/services/dataClient";
@@ -27,6 +28,7 @@ export function DayJournal({
   const [completedSectionIds, setCompletedSectionIds] = useState<string[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [groupStatus, setGroupStatus] = useState("Loading group...");
+  const [journalStatus, setJournalStatus] = useState("");
   const [savedCount, setSavedCount] = useState(0);
   const [message, setMessage] = useState("");
 
@@ -58,6 +60,49 @@ export function DayJournal({
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!activeGroup) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setJournalStatus("Loading saved progress...");
+
+    void loadJournalDay({
+      groupId: activeGroup.groupId,
+      program,
+      weekNumber,
+      dayNumber: day.dayNumber
+    }).then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (!result.ok) {
+        setJournalStatus(result.error);
+        return;
+      }
+
+      setAnswers(result.data.answers);
+      setCompletedSectionIds(result.data.completedSectionIds);
+      setSavedCount(Object.values(result.data.answers).filter((answer) => answer.trim()).length);
+      setJournalStatus(result.data.warning ?? "");
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeGroup, day.dayNumber, program, weekNumber]);
+
+  useEffect(() => {
+    for (const textarea of document.querySelectorAll<HTMLTextAreaElement>(".journal-textarea")) {
+      resizeTextarea(textarea);
+    }
+  }, [answers]);
 
   async function save() {
     setMessage("");
@@ -139,6 +184,7 @@ export function DayJournal({
           </p>
         </div>
         {groupStatus ? <p className="muted">{groupStatus}</p> : null}
+        {journalStatus ? <p className="muted">{journalStatus}</p> : null}
       </section>
 
       {day.sections.map((section) => (

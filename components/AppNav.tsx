@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/auth/LogoutButton";
-import { getAuthenticatedUser, getServerSessionGroups } from "@/lib/amplifyServer";
+import { getServerAuthState } from "@/lib/amplifyServer";
 
 export async function AppNav() {
-  const [user, groups] = await Promise.all([getAuthenticatedUser(), getServerSessionGroups()]);
+  const { authenticated, groups } = await getServerAuthState();
   const isAdmin = groups.some((group) => group === "ADMINS" || group === "LEADERS");
 
-  if (!user) {
+  if (!authenticated) {
     return (
       <nav className="nav" aria-label="Primary">
         <Link href="/auth">Login</Link>

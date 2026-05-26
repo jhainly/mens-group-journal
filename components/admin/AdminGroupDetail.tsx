@@ -63,7 +63,10 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
         <div>
           <p className="eyebrow">Group detail</p>
           <h1>{group.name}</h1>
-          <p>Leaders and members in this group. Journal answers and section-level activity are not visible.</p>
+          <p>
+            Leaders and members in this Lifepoint Church group. Journal answers and section-level activity are not
+            visible.
+          </p>
         </div>
         <div className="grid three">
           <div className="metric">
@@ -132,4 +135,3 @@ function formatDate(value: string): string {
     dateStyle: "medium"
   }).format(new Date(value));
 }
-

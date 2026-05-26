@@ -56,7 +56,7 @@ export function LoginForm() {
         <p>
           {accountConfirmed
             ? "Your account is verified. Sign in to continue."
-            : "Continue your program and keep your personal journal private."}
+            : "Continue your Lifepoint Church men's group program and keep your personal journal private."}
         </p>
       </div>
       <label className="field">

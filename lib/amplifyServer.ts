@@ -1,8 +1,6 @@
 import { cookies } from "next/headers";
 import { createServerRunner } from "@aws-amplify/adapter-nextjs";
-import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/api";
-import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth/server";
-import type { Schema } from "@/amplify/data/resource";
+import { fetchAuthSession } from "aws-amplify/auth/server";
 
 type AmplifyConfig = Parameters<typeof createServerRunner>[0]["config"];
 
@@ -23,39 +21,20 @@ export async function getServerAmplify() {
   }
 
   const runner = createServerRunner({ config: outputs });
-  const cookiesClient = generateServerClientUsingCookies<Schema>({
-    config: outputs,
-    cookies
-  });
 
   return {
-    cookiesClient,
     runWithAmplifyServerContext: runner.runWithAmplifyServerContext
   };
 }
 
-export async function getAuthenticatedUser() {
+export async function getServerAuthState(): Promise<{ authenticated: boolean; groups: string[] }> {
   const amplify = await getServerAmplify();
 
   if (!amplify) {
-    return null;
-  }
-
-  try {
-    return await amplify.runWithAmplifyServerContext({
-      nextServerContext: { cookies },
-      operation: (contextSpec) => getCurrentUser(contextSpec)
-    });
-  } catch {
-    return null;
-  }
-}
-
-export async function getServerSessionGroups(): Promise<string[]> {
-  const amplify = await getServerAmplify();
-
-  if (!amplify) {
-    return [];
+    return {
+      authenticated: false,
+      groups: []
+    };
   }
 
   try {
@@ -64,8 +43,15 @@ export async function getServerSessionGroups(): Promise<string[]> {
       operation: (contextSpec) => fetchAuthSession(contextSpec)
     });
     const groups = session.tokens?.accessToken.payload["cognito:groups"];
-    return Array.isArray(groups) ? groups.map(String) : [];
+
+    return {
+      authenticated: Boolean(session.tokens),
+      groups: Array.isArray(groups) ? groups.map(String) : []
+    };
   } catch {
-    return [];
+    return {
+      authenticated: false,
+      groups: []
+    };
   }
 }

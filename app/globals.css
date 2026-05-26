@@ -104,6 +104,10 @@ button {
   align-items: start;
 }
 
+.import-program-panel {
+  min-height: 100%;
+}
+
 .panel,
 .card {
   background: var(--surface);
