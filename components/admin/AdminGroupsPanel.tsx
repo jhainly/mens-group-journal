@@ -25,6 +25,8 @@ export function AdminGroupsPanel() {
     event.preventDefault();
     setMessage("");
     setIsSubmitting(true);
+    const groupName = name.trim();
+    const groupJoinCode = joinCode.trim();
     const result = await createGroup(name, joinCode);
     setIsSubmitting(false);
 
@@ -34,13 +36,26 @@ export function AdminGroupsPanel() {
     }
 
     setSelectedGroupId(result.data);
+    setGroups((current) =>
+      [
+        ...current.filter((group) => group.groupId !== result.data),
+        {
+          groupId: result.data,
+          joinCode: groupJoinCode,
+          leaderCount: 1,
+          memberCount: 1,
+          name: groupName
+        }
+      ].sort((left, right) => left.name.localeCompare(right.name))
+    );
+    setDirectoryStatus("");
     setMessage("Group created and selected.");
     setName("");
     setJoinCode("");
-    await refreshGroups();
+    void refreshGroups({ preserveCurrentOnEmpty: true });
   }
 
-  async function refreshGroups() {
+  async function refreshGroups(options?: { preserveCurrentOnEmpty?: boolean }) {
     setDirectoryStatus("Loading groups...");
     const result = await listAdminGroups();
 
@@ -49,7 +64,9 @@ export function AdminGroupsPanel() {
       return;
     }
 
-    setGroups(result.data);
+    if (result.data.length > 0 || !options?.preserveCurrentOnEmpty) {
+      setGroups(result.data);
+    }
     setDirectoryStatus(result.data.length > 0 ? "" : "No groups have been created yet.");
   }
 
@@ -87,7 +104,7 @@ export function AdminGroupsPanel() {
             <h2>Existing groups</h2>
             <p>Admins can review group access and membership. Journal answers are never shown here.</p>
           </div>
-          <button className="button secondary" onClick={refreshGroups} type="button">
+          <button className="button secondary" onClick={() => void refreshGroups()} type="button">
             Refresh
           </button>
         </div>
