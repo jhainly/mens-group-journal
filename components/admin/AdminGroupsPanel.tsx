@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { setSelectedGroupId } from "@/lib/groupSelection";
 import {
   createGroup,
@@ -10,6 +10,7 @@ import {
 } from "@/lib/services/dataClient";
 
 export function AdminGroupsPanel() {
+  const optimisticGroupsRef = useRef<AdminGroupSummary[]>([]);
   const [name, setName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [groups, setGroups] = useState<AdminGroupSummary[]>([]);
@@ -35,27 +36,25 @@ export function AdminGroupsPanel() {
       return;
     }
 
+    const createdGroup = {
+      groupId: result.data,
+      joinCode: groupJoinCode,
+      leaderCount: 1,
+      memberCount: 1,
+      name: groupName
+    } satisfies AdminGroupSummary;
+
+    optimisticGroupsRef.current = mergeGroups(optimisticGroupsRef.current, [createdGroup]);
     setSelectedGroupId(result.data);
-    setGroups((current) =>
-      [
-        ...current.filter((group) => group.groupId !== result.data),
-        {
-          groupId: result.data,
-          joinCode: groupJoinCode,
-          leaderCount: 1,
-          memberCount: 1,
-          name: groupName
-        }
-      ].sort((left, right) => left.name.localeCompare(right.name))
-    );
+    setGroups((current) => mergeGroups(current, [createdGroup]));
     setDirectoryStatus("");
     setMessage("Group created and selected.");
     setName("");
     setJoinCode("");
-    void refreshGroups({ preserveCurrentOnEmpty: true });
+    void refreshGroups();
   }
 
-  async function refreshGroups(options?: { preserveCurrentOnEmpty?: boolean }) {
+  async function refreshGroups() {
     setDirectoryStatus("Loading groups...");
     const result = await listAdminGroups();
 
@@ -64,10 +63,9 @@ export function AdminGroupsPanel() {
       return;
     }
 
-    if (result.data.length > 0 || !options?.preserveCurrentOnEmpty) {
-      setGroups(result.data);
-    }
-    setDirectoryStatus(result.data.length > 0 ? "" : "No groups have been created yet.");
+    const mergedGroups = mergeGroups(result.data, optimisticGroupsRef.current);
+    setGroups(mergedGroups);
+    setDirectoryStatus(mergedGroups.length > 0 ? "" : "No groups have been created yet.");
   }
 
   return (
@@ -149,5 +147,19 @@ export function AdminGroupsPanel() {
       </section>
     </div>
   );
+}
+function mergeGroups(primary: AdminGroupSummary[], fallback: AdminGroupSummary[]): AdminGroupSummary[] {
+  const groupsById = new Map<string, AdminGroupSummary>();
+
+  for (const group of primary) {
+    groupsById.set(group.groupId, group);
+  }
+
+  for (const group of fallback) {
+    const current = groupsById.get(group.groupId);
+    groupsById.set(group.groupId, current ? { ...group, ...current, joinCode: current.joinCode ?? group.joinCode } : group);
+  }
+
+  return Array.from(groupsById.values()).sort((left, right) => left.name.localeCompare(right.name));
 }
 
