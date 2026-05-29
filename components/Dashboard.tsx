@@ -8,6 +8,7 @@ import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import {
   getCurrentUserScoreSummary,
   listCurrentUserGroups,
+  loadActiveProgramForGroup,
   type UserGroupSummary
 } from "@/lib/services/dataClient";
 import type { ScoreSummary } from "@/lib/scoring";
@@ -15,15 +16,16 @@ import type { Program } from "@/types/program";
 
 type DashboardProps = {
   initialWeekNumber: number;
-  program: Program;
 };
 
-export function Dashboard({ initialWeekNumber, program }: DashboardProps) {
+export function Dashboard({ initialWeekNumber }: DashboardProps) {
   const [selectedWeekNumber, setSelectedWeekNumber] = useState(initialWeekNumber);
-  const [scores, setScores] = useState<ScoreSummary>(() => getEmptyScores(program, initialWeekNumber));
+  const [program, setProgram] = useState<Program | null>(null);
+  const [scores, setScores] = useState<ScoreSummary>(() => getEmptyScores(null, initialWeekNumber));
   const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [groupStatus, setGroupStatus] = useState("Loading group...");
+  const [programStatus, setProgramStatus] = useState("Loading program...");
   const [status, setStatus] = useState("Loading scores...");
 
   useEffect(() => {
@@ -64,6 +66,48 @@ export function Dashboard({ initialWeekNumber, program }: DashboardProps) {
     let cancelled = false;
 
     if (!activeGroup) {
+      setProgram(null);
+      setProgramStatus("");
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setProgram(null);
+    setProgramStatus("Loading program...");
+    setStatus("");
+
+    void loadActiveProgramForGroup(activeGroup.groupId).then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (!result.ok) {
+        setScores(getEmptyScores(null, initialWeekNumber));
+        setProgramStatus(result.error);
+        return;
+      }
+
+      const activeProgram = result.data.program;
+
+      setProgram(activeProgram);
+      setProgramStatus("");
+      setSelectedWeekNumber((currentWeekNumber) =>
+        activeProgram.weeks.some((week) => week.weekNumber === currentWeekNumber)
+          ? currentWeekNumber
+          : activeProgram.weeks[0]?.weekNumber ?? 1
+      );
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeGroup, initialWeekNumber]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!activeGroup || !program) {
       return () => {
         cancelled = true;
       };
@@ -116,7 +160,7 @@ export function Dashboard({ initialWeekNumber, program }: DashboardProps) {
         <div>
           <p className="eyebrow">Current group</p>
           <h1>{activeGroup?.name ?? "No group selected"}</h1>
-          <p>{program.program.title}: {program.program.description}</p>
+          {program ? <p>{program.program.title}: {program.program.description}</p> : null}
         </div>
         {groups.length > 1 ? (
           <label className="field compact-field">
@@ -148,32 +192,35 @@ export function Dashboard({ initialWeekNumber, program }: DashboardProps) {
           </div>
         ) : null}
         {groupStatus ? <p className="muted">{groupStatus}</p> : null}
+        {programStatus ? <p className="muted">{programStatus}</p> : null}
         {status ? <p className="muted">{status}</p> : null}
       </section>
-      <ProgramNavigator
-        action={
-          activeGroup ? (
-            <JournalExportButton
-              groupId={activeGroup.groupId}
-              groupName={activeGroup.name}
-              program={program}
-              weekNumber={selectedWeekNumber}
-            />
-          ) : null
-        }
-        onSelectedWeekNumberChange={setSelectedWeekNumber}
-        program={program}
-        selectedWeekNumber={selectedWeekNumber}
-      />
+      {program ? (
+        <ProgramNavigator
+          action={
+            activeGroup ? (
+              <JournalExportButton
+                groupId={activeGroup.groupId}
+                groupName={activeGroup.name}
+                program={program}
+                weekNumber={selectedWeekNumber}
+              />
+            ) : null
+          }
+          onSelectedWeekNumberChange={setSelectedWeekNumber}
+          program={program}
+          selectedWeekNumber={selectedWeekNumber}
+        />
+      ) : null}
     </div>
   );
 }
 
-function getEmptyScores(program: Program, activeWeekNumber: number): ScoreSummary {
+function getEmptyScores(program: Program | null, activeWeekNumber: number): ScoreSummary {
   let maxWeeklyScore = 0;
   let maxCumulativeScore = 0;
 
-  for (const week of program.weeks) {
+  for (const week of program?.weeks ?? []) {
     for (const day of week.days) {
       for (const section of day.sections) {
         maxCumulativeScore += section.points;

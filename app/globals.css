@@ -325,6 +325,20 @@ li {
   text-transform: uppercase;
 }
 
+.checkbox-row {
+  align-items: center;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.checkbox-row input {
+  height: 18px;
+  margin: 0;
+  width: 18px;
+}
+
 @media (max-width: 680px) {
   .shell {
     padding: 16px;

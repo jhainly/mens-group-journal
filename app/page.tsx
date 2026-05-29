@@ -1,6 +1,14 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getServerAuthState } from "@/lib/amplifyServer";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { authenticated } = await getServerAuthState();
+
+  if (authenticated) {
+    redirect("/dashboard");
+  }
+
   return (
     <section className="panel stack">
       <p className="eyebrow">Private discipleship journal</p>

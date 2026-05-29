@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerRunner } from "@aws-amplify/adapter-nextjs";
 import { fetchAuthSession } from "aws-amplify/auth/server";
 
-const protectedPrefixes = ["/dashboard", "/program", "/leaderboard"];
+const protectedPrefixes = ["/account", "/dashboard", "/program", "/leaderboard"];
 const adminPrefixes = ["/admin"];
 
 type AmplifyConfig = Parameters<typeof createServerRunner>[0]["config"];
@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/program/:path*", "/leaderboard/:path*", "/admin/:path*"]
+  matcher: ["/account/:path*", "/dashboard/:path*", "/program/:path*", "/leaderboard/:path*", "/admin/:path*"]
 };
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {

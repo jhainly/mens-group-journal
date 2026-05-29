@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { DayJournal } from "@/components/DayJournal";
-import { sampleProgram } from "@/data/sampleProgram";
 
 type DayPageProps = {
   params: Promise<{
@@ -13,12 +12,10 @@ export default async function DayPage({ params }: DayPageProps) {
   const { weekNumber: weekParam, dayNumber: dayParam } = await params;
   const weekNumber = Number(weekParam);
   const dayNumber = Number(dayParam);
-  const week = sampleProgram.weeks.find((candidate) => candidate.weekNumber === weekNumber);
-  const day = week?.days.find((candidate) => candidate.dayNumber === dayNumber);
 
-  if (!week || !day) {
+  if (!Number.isInteger(weekNumber) || !Number.isInteger(dayNumber) || weekNumber < 1 || dayNumber < 1) {
     notFound();
   }
 
-  return <DayJournal weekNumber={week.weekNumber} day={day} program={sampleProgram} />;
+  return <DayJournal weekNumber={weekNumber} dayNumber={dayNumber} />;
 }

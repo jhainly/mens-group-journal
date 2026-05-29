@@ -1,10 +1,16 @@
 "use client";
 
 import { generateClient } from "aws-amplify/data";
-import { getCurrentUser, fetchUserAttributes } from "aws-amplify/auth";
+import { getCurrentUser, fetchUserAttributes, updatePassword, updateUserAttribute } from "aws-amplify/auth";
 import { configureAmplify } from "@/lib/amplifyClient";
 import { decryptJournalAnswer, encryptJournalAnswer, type EncryptedPayload } from "@/lib/encryption";
-import { getJournalEncryptionSecret } from "@/lib/journalKey";
+import {
+  getJournalEncryptionSecret,
+  initializeJournalEncryptionSecret,
+  wrapCurrentJournalEncryptionSecret,
+  type JournalKeyEnvelope
+} from "@/lib/journalKey";
+import { programSchema } from "@/lib/programValidation";
 import { calculateScores, sectionKey, type CompletedSectionKey, type ScoreSummary } from "@/lib/scoring";
 import type { Schema } from "@/amplify/data/resource";
 import type { JournalExportInput } from "@/lib/pdfExport";
@@ -40,11 +46,32 @@ export type AdminGroupMember = {
 export type AdminGroupDetail = AdminGroupSummary & {
   members: AdminGroupMember[];
 };
+export type AdminRoleUser = {
+  displayName: string;
+  email: string;
+  enabled: boolean;
+  isAdmin: boolean;
+  status: string;
+  username: string;
+};
+export type ActiveProgramSnapshot = {
+  contentHash: string;
+  groupId: string;
+  program: Program;
+  programId: string;
+  publishedAt: string;
+  title: string;
+  version: string;
+};
 export type JournalDayState = {
   answers: Record<string, string>;
   completedSectionIds: string[];
   encryptedAnswerCount: number;
   warning?: string;
+};
+export type CurrentUserProfile = {
+  displayName: string;
+  email?: string;
 };
 
 export async function ensureUserProfile(displayName?: string): Promise<ServiceResult<void>> {
@@ -74,6 +101,172 @@ export async function ensureUserProfile(displayName?: string): Promise<ServiceRe
       createdAt: now,
       updatedAt: now
     });
+
+    return { ok: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function ensureJournalKeyEnvelope(input: {
+  email: string;
+  password: string;
+}): Promise<ServiceResult<void>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const profile = await client.models.UserProfile.get({ userId: user.userId });
+
+    if (!profile.data) {
+      const created = await ensureUserProfile();
+
+      if (!created.ok) {
+        return created;
+      }
+    }
+
+    const refreshedProfile = profile.data ?? (await client.models.UserProfile.get({ userId: user.userId })).data;
+    const existingEnvelope = getJournalKeyEnvelope(refreshedProfile);
+    const initialized = await initializeJournalEncryptionSecret({
+      email: input.email,
+      legacySecret: existingEnvelope ? undefined : getLegacyJournalSecret(input.email, input.password),
+      password: input.password,
+      envelope: existingEnvelope
+    });
+
+    if (!initialized.envelope) {
+      return { ok: true, data: undefined };
+    }
+
+    const saved = await saveJournalKeyEnvelope(client, user.userId, initialized.envelope);
+
+    if (!saved.ok) {
+      return saved;
+    }
+
+    return { ok: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function getCurrentUserProfile(): Promise<ServiceResult<CurrentUserProfile>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const attributes = await fetchUserAttributes();
+    const profile = await client.models.UserProfile.get({ userId: user.userId });
+
+    if (!profile.data) {
+      const created = await ensureUserProfile();
+
+      if (!created.ok) {
+        return created;
+      }
+
+      const refreshed = await client.models.UserProfile.get({ userId: user.userId });
+      return {
+        ok: true,
+        data: {
+          displayName: refreshed.data?.displayName ?? attributes.preferred_username ?? attributes.email ?? "Member",
+          email: refreshed.data?.email ?? attributes.email
+        }
+      };
+    }
+
+    return {
+      ok: true,
+      data: {
+        displayName: profile.data.displayName,
+        email: profile.data.email ?? attributes.email
+      }
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function updateCurrentUserDisplayName(displayName: string): Promise<ServiceResult<void>> {
+  const normalizedDisplayName = displayName.trim();
+
+  if (!normalizedDisplayName) {
+    return { ok: false, error: "Display name is required." };
+  }
+
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const now = new Date().toISOString();
+
+    await requireSaved(
+      client.models.UserProfile.update({
+        userId: user.userId,
+        displayName: normalizedDisplayName,
+        updatedAt: now
+      }),
+      "The display name could not be updated."
+    );
+
+    await Promise.all([
+      updateOwnMembershipDisplayNames(client, user.userId, normalizedDisplayName),
+      updateOwnScoreDisplayNames(client, user.userId, normalizedDisplayName),
+      updateCognitoDisplayName(normalizedDisplayName)
+    ]);
+
+    return { ok: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function changeCurrentUserPassword(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<ServiceResult<void>> {
+  if (!input.currentPassword || !input.newPassword) {
+    return { ok: false, error: "Current password and new password are required." };
+  }
+
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const attributes = await fetchUserAttributes();
+    const email = attributes.email;
+
+    if (!email) {
+      return { ok: false, error: "Email is required to protect the journal key." };
+    }
+
+    const profile = await client.models.UserProfile.get({ userId: user.userId });
+    const envelope = getJournalKeyEnvelope(profile.data);
+
+    if (envelope) {
+      await initializeJournalEncryptionSecret({
+        email,
+        password: input.currentPassword,
+        envelope
+      });
+    }
+
+    const rewrappedEnvelope = await wrapCurrentJournalEncryptionSecret({
+      email,
+      password: input.newPassword
+    });
+
+    await updatePassword({
+      oldPassword: input.currentPassword,
+      newPassword: input.newPassword
+    });
+
+    const saved = await saveJournalKeyEnvelope(client, user.userId, rewrappedEnvelope);
+
+    if (!saved.ok) {
+      return saved;
+    }
 
     return { ok: true, data: undefined };
   } catch (error) {
@@ -119,33 +312,19 @@ export async function joinGroupByCode(groupCode: string): Promise<ServiceResult<
   try {
     await configureAmplify();
     const client = getDataClient();
-    const user = await getCurrentUser();
-    const now = new Date().toISOString();
-    const joinCodeHash = await hashJoinCode(groupCode);
-    const groups = await client.models.Group.list({
-      filter: {
-        joinCodeHash: {
-          eq: joinCodeHash
-        }
-      }
-    });
-    const group = groups.data[0];
+    await ensureUserProfile();
+    const result = await requireSaved(
+      client.mutations.joinGroupByCode({
+        groupCode: groupCode.trim()
+      }),
+      "The group code could not be verified."
+    );
 
-    if (!group) {
+    if (!result.data?.groupId) {
       return { ok: false, error: "No group matched that code." };
     }
 
-    await ensureUserProfile();
-    await client.models.GroupMembership.create({
-      membershipId: `${group.groupId}:${user.userId}`,
-      groupId: group.groupId,
-      userId: user.userId,
-      role: "member",
-      displayName: await getDisplayName(user.userId),
-      joinedAt: now
-    });
-
-    return { ok: true, data: group.groupId };
+    return { ok: true, data: result.data.groupId };
   } catch (error) {
     return serviceError(error);
   }
@@ -270,30 +449,104 @@ export async function getAdminGroupDetail(groupId: string): Promise<ServiceResul
   }
 }
 
+export async function listAdminRoleUsers(): Promise<ServiceResult<AdminRoleUser[]>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const result = await requireSaved(client.queries.listAdminUsers(), "Admin users could not be loaded.");
+
+    return {
+      ok: true,
+      data: (result.data ?? [])
+        .filter((user): user is NonNullable<typeof user> => Boolean(user))
+        .map((user) => ({
+          displayName: user.displayName,
+          email: user.email,
+          enabled: user.enabled,
+          isAdmin: user.isAdmin,
+          status: user.status,
+          username: user.username
+        }))
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function setUserAdminRole(input: {
+  email: string;
+  enabled: boolean;
+}): Promise<ServiceResult<string>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const result = await requireSaved(
+      client.mutations.setUserAdminRole({
+        email: input.email.trim().toLowerCase(),
+        enabled: input.enabled
+      }),
+      "Admin role could not be updated."
+    );
+
+    return { ok: true, data: result.data?.message ?? "Admin role updated." };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
 export async function publishProgram(groupId: string, preview: ProgramImportPreview): Promise<ServiceResult<string>> {
   try {
     await configureAmplify();
     const client = getDataClient();
     const user = await getCurrentUser();
     const now = new Date().toISOString();
-    const programId = `${preview.program.program.id}:${preview.contentHash}`;
+    const programId = `${groupId}:${preview.program.program.id}:${preview.contentHash}`;
+    const serializedProgram = JSON.stringify(preview.program);
 
-    await client.models.ProgramSnapshot.create({
-      programId,
-      groupId,
-      title: preview.program.program.title,
-      version: preview.program.program.version,
-      contentHash: preview.contentHash,
-      content: preview.program,
-      publishedByUserId: user.userId,
-      publishedAt: now
-    });
+    await upsert(
+      () =>
+        client.models.ProgramSnapshot.create({
+          programId,
+          groupId,
+          title: preview.program.program.title,
+          version: preview.program.program.version,
+          contentHash: preview.contentHash,
+          content: serializedProgram,
+          publishedByUserId: user.userId,
+          publishedAt: now
+        }),
+      () =>
+        client.models.ProgramSnapshot.update({
+          programId,
+          groupId,
+          title: preview.program.program.title,
+          version: preview.program.program.version,
+          contentHash: preview.contentHash,
+          content: serializedProgram,
+          publishedByUserId: user.userId,
+          publishedAt: now
+        })
+    );
 
-    await client.models.Group.update({
-      groupId,
-      activeProgramId: programId,
-      updatedAt: now
-    });
+    await requireSaved(
+      client.models.Group.update({
+        groupId,
+        activeProgramId: programId,
+        updatedAt: now
+      }),
+      "The program snapshot was saved, but the group active program could not be updated."
+    );
+
+    const loaded = await loadActiveProgramForGroup(groupId);
+
+    if (!loaded.ok || loaded.data.programId !== programId) {
+      return {
+        ok: false,
+        error: loaded.ok
+          ? "The program was published, but the group is still pointing at a different active program."
+          : loaded.error
+      };
+    }
 
     return { ok: true, data: programId };
   } catch (error) {
@@ -359,6 +612,62 @@ export async function getCurrentUserScoreSummary(input: {
     return { ok: true, data: score };
   } catch (error) {
     return serviceError(error);
+  }
+}
+
+export async function loadActiveProgramForGroup(groupId: string): Promise<ServiceResult<ActiveProgramSnapshot>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const group = await client.models.Group.get({ groupId });
+    const activeProgramId = group.data?.activeProgramId;
+
+    if (!group.data) {
+      return { ok: false, error: "Group not found." };
+    }
+
+    if (!activeProgramId) {
+      return { ok: false, error: "No active program has been published for this group yet." };
+    }
+
+    const snapshot = await client.models.ProgramSnapshot.get({ programId: activeProgramId });
+
+    if (!snapshot.data) {
+      return { ok: false, error: "The active program snapshot could not be found." };
+    }
+
+    const parsed = programSchema.safeParse(parseStoredProgramContent(snapshot.data.content));
+
+    if (!parsed.success) {
+      return { ok: false, error: "The active program content is invalid." };
+    }
+
+    return {
+      ok: true,
+      data: {
+        contentHash: snapshot.data.contentHash,
+        groupId: snapshot.data.groupId,
+        program: parsed.data,
+        programId: snapshot.data.programId,
+        publishedAt: snapshot.data.publishedAt,
+        title: snapshot.data.title,
+        version: snapshot.data.version
+      }
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+function parseStoredProgramContent(content: unknown): unknown {
+  if (typeof content !== "string") {
+    return content;
+  }
+
+  try {
+    return JSON.parse(content);
+  } catch {
+    return content;
   }
 }
 
@@ -808,11 +1117,178 @@ async function upsert(create: () => Promise<unknown>, update: () => Promise<unkn
     return;
   }
 
-  await create();
+  await requireSaved(create(), "The record could not be saved.");
 }
 
 function hasData(value: unknown): boolean {
   return Boolean(value && typeof value === "object" && "data" in value && value.data);
+}
+
+function getJournalKeyEnvelope(profile: unknown): JournalKeyEnvelope | null {
+  if (!profile || typeof profile !== "object") {
+    return null;
+  }
+
+  const fields = profile as {
+    journalKeyAlgorithm?: string | null;
+    journalKeyCiphertext?: string | null;
+    journalKeyDerivation?: string | null;
+    journalKeyIterations?: number | null;
+    journalKeyIv?: string | null;
+    journalKeySalt?: string | null;
+    journalKeyVersion?: number | null;
+  };
+
+  if (
+    fields.journalKeyAlgorithm !== "AES-GCM" ||
+    !fields.journalKeyCiphertext ||
+    fields.journalKeyDerivation !== "PBKDF2-SHA-256" ||
+    !fields.journalKeyIterations ||
+    !fields.journalKeyIv ||
+    !fields.journalKeySalt ||
+    fields.journalKeyVersion !== 1
+  ) {
+    return null;
+  }
+
+  return {
+    algorithm: fields.journalKeyAlgorithm,
+    ciphertext: fields.journalKeyCiphertext,
+    iterations: fields.journalKeyIterations,
+    iv: fields.journalKeyIv,
+    keyDerivation: fields.journalKeyDerivation,
+    salt: fields.journalKeySalt,
+    version: fields.journalKeyVersion
+  };
+}
+
+async function saveJournalKeyEnvelope(
+  client: DataClient,
+  userId: string,
+  envelope: JournalKeyEnvelope
+): Promise<ServiceResult<void>> {
+  try {
+    await requireSaved(
+      client.models.UserProfile.update({
+        userId,
+        journalKeyAlgorithm: envelope.algorithm,
+        journalKeyCiphertext: envelope.ciphertext,
+        journalKeyDerivation: envelope.keyDerivation,
+        journalKeyIterations: envelope.iterations,
+        journalKeyIv: envelope.iv,
+        journalKeySalt: envelope.salt,
+        journalKeyVersion: envelope.version,
+        updatedAt: new Date().toISOString()
+      }),
+      "The journal key envelope could not be saved."
+    );
+
+    return { ok: true, data: undefined };
+  } catch (error) {
+    if (isMissingJournalKeyEnvelopeSchemaError(error)) {
+      return { ok: true, data: undefined };
+    }
+
+    return serviceError(error);
+  }
+}
+
+function isMissingJournalKeyEnvelopeSchemaError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("UpdateUserProfileInput") &&
+    error.message.includes("field that is not defined")
+  );
+}
+
+function getLegacyJournalSecret(email: string, password: string): string {
+  return `${email.trim().toLowerCase()}:${password}`;
+}
+
+async function updateOwnMembershipDisplayNames(
+  client: DataClient,
+  userId: string,
+  displayName: string
+): Promise<void> {
+  const memberships = await client.models.GroupMembership.list({
+    filter: {
+      userId: {
+        eq: userId
+      }
+    }
+  });
+
+  await Promise.all(
+    memberships.data.map((membership) =>
+      requireSaved(
+        client.models.GroupMembership.update({
+          membershipId: membership.membershipId,
+          displayName
+        }),
+        "A group membership display name could not be updated."
+      )
+    )
+  );
+}
+
+async function updateOwnScoreDisplayNames(client: DataClient, userId: string, displayName: string): Promise<void> {
+  const scores = await client.models.UserScore.list({
+    filter: {
+      userId: {
+        eq: userId
+      }
+    }
+  });
+
+  await Promise.all(
+    scores.data.map((score) =>
+      requireSaved(
+        client.models.UserScore.update({
+          scoreId: score.scoreId,
+          displayName,
+          updatedAt: new Date().toISOString()
+        }),
+        "A score display name could not be updated."
+      )
+    )
+  );
+}
+
+async function updateCognitoDisplayName(displayName: string): Promise<void> {
+  try {
+    await updateUserAttribute({
+      userAttribute: {
+        attributeKey: "preferred_username",
+        value: displayName
+      }
+    });
+  } catch {
+    // UserProfile is authoritative for in-app display; Cognito is best effort.
+  }
+}
+
+async function requireSaved<T>(operation: Promise<T>, fallbackMessage: string): Promise<T> {
+  const result = await operation;
+
+  if (hasData(result)) {
+    return result;
+  }
+
+  const errors = getResultErrors(result);
+  throw new Error(errors.length > 0 ? errors.join(" ") : fallbackMessage);
+}
+
+function getResultErrors(value: unknown): string[] {
+  if (!value || typeof value !== "object" || !("errors" in value) || !Array.isArray(value.errors)) {
+    return [];
+  }
+
+  return value.errors.map((error) => {
+    if (error && typeof error === "object" && "message" in error && typeof error.message === "string") {
+      return error.message;
+    }
+    return "Unknown data error.";
+  });
 }
 
 function isLeaderRole(role: AdminGroupMember["role"]): boolean {

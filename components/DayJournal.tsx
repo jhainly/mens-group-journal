@@ -8,26 +8,27 @@ import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramDayLabel } from "@/lib/programDays";
 import {
   listCurrentUserGroups,
+  loadActiveProgramForGroup,
   loadJournalDay,
   saveJournalDay,
   type UserGroupSummary
 } from "@/lib/services/dataClient";
-import type { Program } from "@/types/program";
-import type { ProgramDay } from "@/types/program";
+import type { Program, ProgramDay } from "@/types/program";
 
 export function DayJournal({
   weekNumber,
-  day,
-  program
+  dayNumber
 }: {
   weekNumber: number;
-  day: ProgramDay;
-  program: Program;
+  dayNumber: number;
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [completedSectionIds, setCompletedSectionIds] = useState<string[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
+  const [program, setProgram] = useState<Program | null>(null);
+  const [day, setDay] = useState<ProgramDay | null>(null);
   const [groupStatus, setGroupStatus] = useState("Loading group...");
+  const [programStatus, setProgramStatus] = useState("Loading program...");
   const [journalStatus, setJournalStatus] = useState("");
   const [savedCount, setSavedCount] = useState(0);
   const [message, setMessage] = useState("");
@@ -65,6 +66,52 @@ export function DayJournal({
     let cancelled = false;
 
     if (!activeGroup) {
+      setProgram(null);
+      setDay(null);
+      setProgramStatus("");
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setProgram(null);
+    setDay(null);
+    setProgramStatus("Loading program...");
+    setJournalStatus("");
+    setAnswers({});
+    setCompletedSectionIds([]);
+    setSavedCount(0);
+
+    void loadActiveProgramForGroup(activeGroup.groupId).then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (!result.ok) {
+        setProgramStatus(result.error);
+        return;
+      }
+
+      const activeProgram = result.data.program;
+      const activeDay =
+        activeProgram.weeks
+          .find((week) => week.weekNumber === weekNumber)
+          ?.days.find((candidate) => candidate.dayNumber === dayNumber) ?? null;
+
+      setProgram(activeProgram);
+      setDay(activeDay);
+      setProgramStatus(activeDay ? "" : "That day is not available in the active program.");
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeGroup, dayNumber, weekNumber]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!activeGroup || !program || !day) {
       return () => {
         cancelled = true;
       };
@@ -96,7 +143,7 @@ export function DayJournal({
     return () => {
       cancelled = true;
     };
-  }, [activeGroup, day.dayNumber, program, weekNumber]);
+  }, [activeGroup, day, program, weekNumber]);
 
   useEffect(() => {
     for (const textarea of document.querySelectorAll<HTMLTextAreaElement>(".journal-textarea")) {
@@ -109,6 +156,11 @@ export function DayJournal({
 
     if (!activeGroup) {
       setMessage("Join a group before saving progress.");
+      return;
+    }
+
+    if (!program || !day) {
+      setMessage("Load an active program before saving progress.");
       return;
     }
 
@@ -177,17 +229,18 @@ export function DayJournal({
       <section className="panel stack">
         <div>
           <p className="eyebrow">Week {weekNumber}</p>
-          <h1>{getProgramDayLabel(day.dayNumber)}: {day.title}</h1>
+          <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
           <p>
             Your reflections are private and stay connected to your account
             {activeGroup ? ` in ${activeGroup.name}.` : "."}
           </p>
         </div>
         {groupStatus ? <p className="muted">{groupStatus}</p> : null}
+        {programStatus ? <p className="muted">{programStatus}</p> : null}
         {journalStatus ? <p className="muted">{journalStatus}</p> : null}
       </section>
 
-      {day.sections.map((section) => (
+      {day?.sections.map((section) => (
         <section className="panel" key={section.id}>
           <div className="section-layout">
             <label className="section-check" aria-label={`Mark ${section.title} complete`}>
@@ -230,7 +283,7 @@ export function DayJournal({
       ))}
 
       <div className="row">
-        <button className="button" disabled={!activeGroup} onClick={save} type="button">
+        <button className="button" disabled={!activeGroup || !program || !day} onClick={save} type="button">
           Save reflection
         </button>
         <span>{savedCount > 0 ? `${savedCount} reflection saved.` : "No saved reflection yet."}</span>

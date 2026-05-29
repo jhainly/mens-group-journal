@@ -20,6 +20,7 @@ export async function AppNav() {
       <Link href="/dashboard">Dashboard</Link>
       <Link href="/leaderboard">Leaderboard</Link>
       {isAdmin ? <Link href="/admin/groups">Admin</Link> : null}
+      <Link href="/account">Account</Link>
       <LogoutButton />
     </nav>
   );

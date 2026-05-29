@@ -1,11 +1,66 @@
 import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
+import { joinGroupByCode } from "../functions/join-group-by-code/resource.ts";
+import { manageAdminUsers } from "../functions/manage-admin-users/resource.ts";
 
 const schema = a.schema({
+  AdminRoleUser: a.customType({
+    displayName: a.string().required(),
+    email: a.string().required(),
+    enabled: a.boolean().required(),
+    isAdmin: a.boolean().required(),
+    status: a.string().required(),
+    username: a.string().required()
+  }),
+
+  AdminRoleMutationResult: a.customType({
+    email: a.string().required(),
+    isAdmin: a.boolean().required(),
+    message: a.string().required(),
+    username: a.string().required()
+  }),
+
+  JoinGroupResult: a.customType({
+    groupId: a.id().required(),
+    groupName: a.string().required()
+  }),
+
+  listAdminUsers: a
+    .query()
+    .returns(a.ref("AdminRoleUser").array())
+    .authorization((allow) => [allow.groups(["ADMINS"])])
+    .handler(a.handler.function(manageAdminUsers)),
+
+  setUserAdminRole: a
+    .mutation()
+    .arguments({
+      email: a.email().required(),
+      enabled: a.boolean().required()
+    })
+    .returns(a.ref("AdminRoleMutationResult"))
+    .authorization((allow) => [allow.groups(["ADMINS"])])
+    .handler(a.handler.function(manageAdminUsers)),
+
+  joinGroupByCode: a
+    .mutation()
+    .arguments({
+      groupCode: a.string().required()
+    })
+    .returns(a.ref("JoinGroupResult"))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(joinGroupByCode)),
+
   UserProfile: a
     .model({
       userId: a.id().required(),
       displayName: a.string().required(),
       email: a.email(),
+      journalKeyAlgorithm: a.string(),
+      journalKeyCiphertext: a.string(),
+      journalKeyDerivation: a.string(),
+      journalKeyIterations: a.integer(),
+      journalKeyIv: a.string(),
+      journalKeySalt: a.string(),
+      journalKeyVersion: a.integer(),
       createdAt: a.datetime().required(),
       updatedAt: a.datetime().required()
     })

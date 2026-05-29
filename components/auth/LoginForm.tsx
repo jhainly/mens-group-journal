@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchAuthSession, signIn } from "aws-amplify/auth";
 import { configureAmplify } from "@/lib/amplifyClient";
-import { setJournalEncryptionSecret } from "@/lib/journalKey";
-import { ensureUserProfile } from "@/lib/services/dataClient";
+import { ensureJournalKeyEnvelope, ensureUserProfile } from "@/lib/services/dataClient";
 
 export function LoginForm() {
   const router = useRouter();
@@ -31,11 +30,17 @@ export function LoginForm() {
       }
 
       await waitForAuthenticatedSession();
-      setJournalEncryptionSecret(email, password);
       const profile = await ensureUserProfile();
 
       if (!profile.ok) {
         setError(`Signed in, but profile setup failed: ${profile.error}`);
+        return;
+      }
+
+      const journalKey = await ensureJournalKeyEnvelope({ email, password });
+
+      if (!journalKey.ok) {
+        setError(`Signed in, but journal key setup failed: ${journalKey.error}`);
         return;
       }
 

@@ -20,7 +20,7 @@ Recommended GSIs:
 
 | Entity | PK | SK | Notes |
 | --- | --- | --- | --- |
-| User profile | `USER#<userId>` | `PROFILE` | Cognito `sub`, display name, timestamps. |
+| User profile | `USER#<userId>` | `PROFILE` | Cognito `sub`, display name, timestamps, wrapped journal key envelope metadata. |
 | Group | `GROUP#<groupId>` | `META` | Name, hashed join code, active program id, leader ids. |
 | Membership | `GROUP#<groupId>` | `MEMBER#<userId>` | Role, display name, joined date. |
 | User membership lookup | `USER#<userId>` | `GROUP#<groupId>` | Lets a user list their groups. |
@@ -34,9 +34,10 @@ Recommended GSIs:
 ## Access Patterns
 
 - Authenticated user reads/writes their own profile.
-- Authenticated user joins a group by submitting a code; backend compares against stored hash.
+- Authenticated user joins a group by submitting a code to a server-side mutation; the backend hashes the normalized code, compares it against stored group hashes, and creates the membership.
 - Member reads group metadata, active program pointer, active immutable program snapshot, their own progress, their own encrypted answers, and group score rows.
 - Member writes only their own encrypted answers, progress, and derived score rows.
+- Member reads/writes only their own wrapped journal key envelope on their user profile.
 - Leader creates groups and program snapshots for groups where they are a leader.
 - Leader reads aggregate metrics, membership, and score rows. Leader cannot read `ANSWER#` rows for other users.
 - Admin has operational access through explicit RBAC claims, not broad client access.
@@ -46,4 +47,5 @@ Recommended GSIs:
 - Cognito groups or custom claims should map users to `member`, `leader`, and `admin`.
 - Prefer owner checks on `userId` for answer/progress mutations.
 - Program snapshots are append-only. Publishing creates a new immutable snapshot and updates only `ACTIVE_PROGRAM`.
+- Store only wrapped journal key material, never raw journal keys or plaintext answers.
 - Do not project answer ciphertext into leader/admin indexes unless needed for owner reads.

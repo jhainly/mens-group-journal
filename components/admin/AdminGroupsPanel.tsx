@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { AdminRolePanel } from "@/components/admin/AdminRolePanel";
 import { setSelectedGroupId } from "@/lib/groupSelection";
 import {
   createGroup,
@@ -145,6 +146,8 @@ export function AdminGroupsPanel() {
           <p className="muted">{directoryStatus}</p>
         )}
       </section>
+
+      <AdminRolePanel />
     </div>
   );
 }
