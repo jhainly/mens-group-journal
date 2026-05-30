@@ -10,14 +10,16 @@ The app is built with Next.js, TypeScript, AWS Amplify, Amazon Cognito, and Dyna
 - Display name captured during account creation and reused across join, leaderboard, and admin views.
 - Group join flow by server-verified group code.
 - Member dashboard with group selection, weekly score, cumulative score, and week navigation.
-- Member dashboard and day views load the selected group's published active program snapshot.
+- Member dashboard and day views load the selected group's active program weeks.
 - Program day screen with Wednesday-to-Tuesday labels, section completion, optional reflections, and back-to-week navigation.
 - Daily sections for mind, spirit, body, end-of-day reflection, and bonus point items.
 - Optional plain-text reflections encrypted in the browser before storage.
 - Leaderboard showing member names and scores only.
-- Admin group management with group creation, visible join codes, member counts, and per-group member/leader detail pages.
-- Admin YAML import with validation, rendered preview, and publish flow.
-- Immutable published program snapshots by content hash.
+- Mobile-friendly responsive navigation for member and admin routes.
+- Admin group management with group creation, visible join codes, member counts, and per-group edit/detail pages.
+- Admin group drilldown for changing the group name, changing the join code, and removing active weeks from that group only.
+- Admin program management with multi-group week import, multi-group week removal, YAML validation, rendered preview, and publish flow.
+- Active program weeks are assigned one-to-many from groups to week snapshots; older whole-program snapshots remain as a compatibility fallback.
 - Week-scoped PDF export built from locally decrypted reflections.
 - Account page for viewing the signed-in user and journal key status.
 - Admin access management that enumerates Cognito users and toggles the `ADMINS` role with a checkbox.
@@ -33,8 +35,8 @@ app/                         Next.js App Router routes
   dashboard/                 Member dashboard and score summary
   program/week/[...]/        Program day journal screens
   leaderboard/               Group score visibility
-  admin/groups/              Admin and leader group management
-  admin/import/              YAML import, validation, rendered preview, publish
+  admin/groups/              Admin and leader group and program management
+  admin/import/              YAML week import, validation, rendered preview, publish
 components/                  Shared UI and feature components
 data/                        Sample six-week program content
 docs/                        Architecture notes
@@ -42,7 +44,7 @@ lib/                         Amplify, validation, encryption, scoring, PDF, expo
 schemas/                     Example YAML program schema
 types/                       Domain and program TypeScript types
 amplify/                     Amplify Gen 2 auth and data backend
-  functions/                 AppSync resolver Lambdas for joins and admin role management
+  functions/                 Node.js 24 AppSync resolver Lambdas for joins and admin role management
 ```
 
 ## Local Setup
@@ -152,7 +154,9 @@ See:
 schemas/program.schema.yaml
 ```
 
-Admins can paste YAML into `/admin/import`, validate it, preview the rendered member experience, and publish it to a selected group.
+Admins can paste YAML into `/admin/import`, validate it, preview the rendered member experience, and publish imported weeks to one or more groups. Each selected group receives active week records keyed by week number. Existing weeks can be removed from one or more groups from the program management panel on `/admin/groups`.
+
+Admins can also drill into an individual group from `/admin/groups` to change that group's name, change its join code, and remove active weeks from that group only.
 
 ## RBAC
 

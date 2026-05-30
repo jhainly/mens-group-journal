@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AdminRolePanel } from "@/components/admin/AdminRolePanel";
+import { ProgramManagementPanel } from "@/components/admin/ProgramManagementPanel";
 import { setSelectedGroupId } from "@/lib/groupSelection";
 import {
   createGroup,
@@ -75,7 +76,7 @@ export function AdminGroupsPanel() {
         <div>
           <p className="eyebrow">Leader tools</p>
           <h1>Group management</h1>
-          <p>Create Lifepoint Church groups, manage join codes, choose the active program, and view participation.</p>
+          <p>Create Lifepoint Church groups, manage join codes, and view participation.</p>
         </div>
         <div className="grid two">
           <label className="field">
@@ -92,16 +93,17 @@ export function AdminGroupsPanel() {
           <button className="button" disabled={isSubmitting} type="submit">
             {isSubmitting ? "Creating..." : "Create group"}
           </button>
-          <Link className="button secondary" href="/admin/import">Import program</Link>
         </div>
       </form>
+
+      <ProgramManagementPanel groups={groups} onProgramChanged={refreshGroups} />
 
       <section className="panel stack">
         <div className="row">
           <div>
             <p className="eyebrow">Groups</p>
             <h2>Existing groups</h2>
-            <p>Admins can review Lifepoint Church group access and membership. Journal answers are never shown here.</p>
+            <p>Admins can review Lifepoint Church group access and membership.</p>
           </div>
           <button className="button secondary" onClick={() => void refreshGroups()} type="button">
             Refresh

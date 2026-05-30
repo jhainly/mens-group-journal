@@ -109,7 +109,7 @@ function validateProgramSemantics(program: Program): string[] {
   return warnings;
 }
 
-async function hashProgram(program: Program): Promise<string> {
+export async function hashProgram(program: Program): Promise<string> {
   const encoded = new TextEncoder().encode(JSON.stringify(program));
   const digest = await crypto.subtle.digest("SHA-256", encoded);
   return toBase64Url(new Uint8Array(digest));

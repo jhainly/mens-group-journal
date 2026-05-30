@@ -5,5 +5,5 @@ export const manageAdminUsers = defineFunction({
   entry: "./handler.ts",
   resourceGroupName: "data",
   timeoutSeconds: 30,
-  runtime: 20
+  runtime: 24
 });

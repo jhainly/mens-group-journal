@@ -26,6 +26,7 @@ Recommended GSIs:
 | User membership lookup | `USER#<userId>` | `GROUP#<groupId>` | Lets a user list their groups. |
 | Program snapshot | `GROUP#<groupId>` | `PROGRAM#<programId>` | Immutable YAML-derived JSON, content hash, publish metadata. |
 | Active program pointer | `GROUP#<groupId>` | `ACTIVE_PROGRAM` | One active program per group. Points to immutable snapshot. |
+| Group program week | `GROUP#<groupId>` | `WEEK#<programId>#<week>#<contentHash>` | One group has many active week records. Content is immutable week JSON; `isActive` controls whether the week appears. |
 | Section progress | `USER#<userId>#GROUP#<groupId>` | `PROGRESS#<programId>#W#<week>#D#<day>#S#<sectionId>` | Completion and point metadata only. |
 | Encrypted answer | `USER#<userId>#GROUP#<groupId>` | `ANSWER#<programId>#W#<week>#D#<day>#S#<sectionId>#P#<promptId>` | Ciphertext, IV, salt, algorithm metadata only. |
 | Score | `GROUP#<groupId>` | `SCORE#<programId>#W#<week>#USER#<userId>` | Exact weekly, cumulative, streak. |
@@ -35,10 +36,10 @@ Recommended GSIs:
 
 - Authenticated user reads/writes their own profile.
 - Authenticated user joins a group by submitting a code to a server-side mutation; the backend hashes the normalized code, compares it against stored group hashes, and creates the membership.
-- Member reads group metadata, active program pointer, active immutable program snapshot, their own progress, their own encrypted answers, and group score rows.
+- Member reads group metadata, active program week records, their own progress, their own encrypted answers, and group score rows. Older active program snapshots are read only as a compatibility fallback.
 - Member writes only their own encrypted answers, progress, and derived score rows.
 - Member reads/writes only their own wrapped journal key envelope on their user profile.
-- Leader creates groups and program snapshots for groups where they are a leader.
+- Leader creates groups and active program week records for groups where they are a leader.
 - Leader reads aggregate metrics, membership, and score rows. Leader cannot read `ANSWER#` rows for other users.
 - Admin has operational access through explicit RBAC claims, not broad client access.
 
@@ -46,6 +47,6 @@ Recommended GSIs:
 
 - Cognito groups or custom claims should map users to `member`, `leader`, and `admin`.
 - Prefer owner checks on `userId` for answer/progress mutations.
-- Program snapshots are append-only. Publishing creates a new immutable snapshot and updates only `ACTIVE_PROGRAM`.
+- Week content snapshots are append-only by content hash. Publishing a changed week creates a new week record and deactivates the prior active record for that group/week.
 - Store only wrapped journal key material, never raw journal keys or plaintext answers.
 - Do not project answer ciphertext into leader/admin indexes unless needed for owner reads.

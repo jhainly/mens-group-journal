@@ -142,6 +142,30 @@ const schema = a.schema({
       allow.groups(["ADMINS", "LEADERS"]).to(["create", "read", "update", "delete"])
     ]),
 
+  GroupProgramWeek: a
+    .model({
+      weekSnapshotId: a.id().required(),
+      groupId: a.id().required(),
+      programId: a.string().required(),
+      programTitle: a.string().required(),
+      programVersion: a.string().required(),
+      programDescription: a.string(),
+      weekNumber: a.integer().required(),
+      title: a.string().required(),
+      contentHash: a.string().required(),
+      content: a.json().required(),
+      isActive: a.boolean().required(),
+      publishedByUserId: a.string().required(),
+      publishedAt: a.datetime().required(),
+      updatedAt: a.datetime().required()
+    })
+    .identifier(["weekSnapshotId"])
+    .secondaryIndexes((index) => [index("groupId"), index("programId"), index("weekNumber")])
+    .authorization((allow) => [
+      allow.authenticated().to(["read"]),
+      allow.groups(["ADMINS", "LEADERS"]).to(["create", "read", "update", "delete"])
+    ]),
+
   SectionProgress: a
     .model({
       progressId: a.id().required(),

@@ -10,12 +10,12 @@ import {
   wrapCurrentJournalEncryptionSecret,
   type JournalKeyEnvelope
 } from "@/lib/journalKey";
-import { programSchema } from "@/lib/programValidation";
+import { hashProgram, programSchema } from "@/lib/programValidation";
 import { calculateScores, sectionKey, type CompletedSectionKey, type ScoreSummary } from "@/lib/scoring";
 import type { Schema } from "@/amplify/data/resource";
 import type { JournalExportInput } from "@/lib/pdfExport";
 import type { SectionProgress } from "@/types/domain";
-import type { Program, ProgramImportPreview } from "@/types/program";
+import type { Program, ProgramImportPreview, ProgramWeek } from "@/types/program";
 
 type DataClient = ReturnType<typeof generateClient<Schema>>;
 
@@ -62,6 +62,13 @@ export type ActiveProgramSnapshot = {
   publishedAt: string;
   title: string;
   version: string;
+};
+export type ActiveProgramWeekSummary = {
+  groupCount: number;
+  groupId: string;
+  programId: string;
+  title: string;
+  weekNumber: number;
 };
 export type JournalDayState = {
   answers: Record<string, string>;
@@ -308,6 +315,47 @@ export async function createGroup(name: string, joinCode: string): Promise<Servi
   }
 }
 
+export async function updateGroupSettings(input: {
+  groupId: string;
+  joinCode?: string;
+  name: string;
+}): Promise<ServiceResult<void>> {
+  const normalizedName = input.name.trim();
+  const normalizedJoinCode = input.joinCode?.trim();
+
+  if (!normalizedName) {
+    return { ok: false, error: "Group name is required." };
+  }
+
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const now = new Date().toISOString();
+    const updateInput: {
+      groupId: string;
+      joinCode?: string;
+      joinCodeHash?: string;
+      name: string;
+      updatedAt: string;
+    } = {
+      groupId: input.groupId,
+      name: normalizedName,
+      updatedAt: now
+    };
+
+    if (normalizedJoinCode) {
+      updateInput.joinCode = normalizedJoinCode;
+      updateInput.joinCodeHash = await hashJoinCode(normalizedJoinCode);
+    }
+
+    await requireSaved(client.models.Group.update(updateInput), "The group could not be updated.");
+
+    return { ok: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
 export async function joinGroupByCode(groupCode: string): Promise<ServiceResult<string>> {
   try {
     await configureAmplify();
@@ -495,60 +543,220 @@ export async function setUserAdminRole(input: {
 }
 
 export async function publishProgram(groupId: string, preview: ProgramImportPreview): Promise<ServiceResult<string>> {
+  const result = await publishProgramWeeksToGroups([groupId], preview);
+  return result.ok ? { ok: true, data: result.data } : result;
+}
+
+export async function publishProgramWeeksToGroups(groupIds: string[], preview: ProgramImportPreview): Promise<ServiceResult<string>> {
   try {
     await configureAmplify();
     const client = getDataClient();
     const user = await getCurrentUser();
     const now = new Date().toISOString();
-    const programId = `${groupId}:${preview.program.program.id}:${preview.contentHash}`;
-    const serializedProgram = JSON.stringify(preview.program);
+    const uniqueGroupIds = Array.from(new Set(groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
+
+    if (uniqueGroupIds.length === 0) {
+      return { ok: false, error: "Choose at least one group before publishing." };
+    }
+
+    for (const groupId of uniqueGroupIds) {
+      await publishWeeksForGroup({
+        client,
+        groupId,
+        now,
+        program: preview.program,
+        publishedByUserId: user.userId
+      });
+    }
+
+    const weekLabel = preview.program.weeks.length === 1 ? "week" : "weeks";
+    const groupLabel = uniqueGroupIds.length === 1 ? "group" : "groups";
+    return { ok: true, data: `Published ${preview.program.weeks.length} ${weekLabel} to ${uniqueGroupIds.length} ${groupLabel}.` };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+async function publishWeeksForGroup(input: {
+  client: DataClient;
+  groupId: string;
+  now: string;
+  program: Program;
+  publishedByUserId: string;
+}): Promise<void> {
+  const activeWeeks = await listActiveWeekRecords(input.client, input.groupId);
+
+  for (const week of input.program.weeks) {
+    const contentHash = await hashProgram({
+      program: input.program.program,
+      weeks: [week]
+    });
+    const weekSnapshotId = `${input.groupId}:${input.program.program.id}:${week.weekNumber}:${contentHash}`;
+    const staleActiveWeeks = activeWeeks.filter(
+      (record) => record.weekNumber === week.weekNumber && record.weekSnapshotId !== weekSnapshotId
+    );
+
+    await Promise.all(
+      staleActiveWeeks.map((record) =>
+        requireSaved(
+          input.client.models.GroupProgramWeek.update({
+            weekSnapshotId: record.weekSnapshotId,
+            isActive: false,
+            updatedAt: input.now
+          }),
+          "The previous active week could not be deactivated."
+        )
+      )
+    );
 
     await upsert(
       () =>
-        client.models.ProgramSnapshot.create({
-          programId,
-          groupId,
-          title: preview.program.program.title,
-          version: preview.program.program.version,
-          contentHash: preview.contentHash,
-          content: serializedProgram,
-          publishedByUserId: user.userId,
-          publishedAt: now
+        input.client.models.GroupProgramWeek.create({
+          weekSnapshotId,
+          groupId: input.groupId,
+          programId: input.program.program.id,
+          programTitle: input.program.program.title,
+          programVersion: input.program.program.version,
+          programDescription: input.program.program.description,
+          weekNumber: week.weekNumber,
+          title: week.title,
+          contentHash,
+          content: JSON.stringify(week),
+          isActive: true,
+          publishedByUserId: input.publishedByUserId,
+          publishedAt: input.now,
+          updatedAt: input.now
         }),
       () =>
-        client.models.ProgramSnapshot.update({
-          programId,
-          groupId,
-          title: preview.program.program.title,
-          version: preview.program.program.version,
-          contentHash: preview.contentHash,
-          content: serializedProgram,
-          publishedByUserId: user.userId,
-          publishedAt: now
+        input.client.models.GroupProgramWeek.update({
+          weekSnapshotId,
+          groupId: input.groupId,
+          programId: input.program.program.id,
+          programTitle: input.program.program.title,
+          programVersion: input.program.program.version,
+          programDescription: input.program.program.description,
+          weekNumber: week.weekNumber,
+          title: week.title,
+          contentHash,
+          content: JSON.stringify(week),
+          isActive: true,
+          publishedByUserId: input.publishedByUserId,
+          publishedAt: input.now,
+          updatedAt: input.now
         })
     );
+  }
 
-    await requireSaved(
-      client.models.Group.update({
-        groupId,
-        activeProgramId: programId,
-        updatedAt: now
-      }),
-      "The program snapshot was saved, but the group active program could not be updated."
-    );
+  await requireSaved(
+    input.client.models.Group.update({
+      groupId: input.groupId,
+      activeProgramId: input.program.program.id,
+      updatedAt: input.now
+    }),
+    "The group active program could not be updated."
+  );
+}
 
-    const loaded = await loadActiveProgramForGroup(groupId);
+async function listActiveWeekRecords(client: DataClient, groupId: string) {
+  const result = await client.models.GroupProgramWeek.list({
+    filter: {
+      groupId: {
+        eq: groupId
+      },
+      isActive: {
+        eq: true
+      }
+    }
+  });
 
-    if (!loaded.ok || loaded.data.programId !== programId) {
-      return {
-        ok: false,
-        error: loaded.ok
-          ? "The program was published, but the group is still pointing at a different active program."
-          : loaded.error
-      };
+  return result.data;
+}
+
+export async function removeWeekFromActiveProgram(input: {
+  groupId: string;
+  weekNumber: number;
+}): Promise<ServiceResult<string>> {
+  const result = await removeWeekFromGroups({
+    groupIds: [input.groupId],
+    weekNumber: input.weekNumber
+  });
+  return result.ok ? { ok: true, data: result.data } : result;
+}
+
+export async function removeWeekFromGroups(input: {
+  groupIds: string[];
+  weekNumber: number;
+}): Promise<ServiceResult<string>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const now = new Date().toISOString();
+    const uniqueGroupIds = Array.from(new Set(input.groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
+    let removedCount = 0;
+
+    if (uniqueGroupIds.length === 0) {
+      return { ok: false, error: "Choose at least one group." };
     }
 
-    return { ok: true, data: programId };
+    for (const groupId of uniqueGroupIds) {
+      const activeWeeks = await listActiveWeekRecords(client, groupId);
+      const matchingWeeks = activeWeeks.filter((record) => record.weekNumber === input.weekNumber);
+
+      await Promise.all(
+        matchingWeeks.map((record) =>
+          requireSaved(
+            client.models.GroupProgramWeek.update({
+              weekSnapshotId: record.weekSnapshotId,
+              isActive: false,
+              updatedAt: now
+            }),
+            "The active week could not be removed."
+          )
+        )
+      );
+      removedCount += matchingWeeks.length;
+    }
+
+    if (removedCount === 0) {
+      return { ok: false, error: "That week was not active for the selected groups." };
+    }
+
+    const groupLabel = uniqueGroupIds.length === 1 ? "group" : "groups";
+    return { ok: true, data: `Removed Week ${input.weekNumber} from ${uniqueGroupIds.length} ${groupLabel}.` };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function listActiveProgramWeeksForGroups(groupIds: string[]): Promise<ServiceResult<ActiveProgramWeekSummary[]>> {
+  try {
+    const uniqueGroupIds = Array.from(new Set(groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
+    const weeksByNumber = new Map<number, ActiveProgramWeekSummary>();
+
+    for (const groupId of uniqueGroupIds) {
+      const active = await loadActiveProgramForGroup(groupId);
+
+      if (!active.ok) {
+        continue;
+      }
+
+      for (const week of active.data.program.weeks) {
+        const current = weeksByNumber.get(week.weekNumber);
+
+        weeksByNumber.set(week.weekNumber, {
+          groupCount: (current?.groupCount ?? 0) + 1,
+          groupId,
+          programId: active.data.programId,
+          title: current?.title ?? week.title,
+          weekNumber: week.weekNumber
+        });
+      }
+    }
+
+    return {
+      ok: true,
+      data: Array.from(weeksByNumber.values()).sort((left, right) => left.weekNumber - right.weekNumber)
+    };
   } catch (error) {
     return serviceError(error);
   }
@@ -620,11 +828,52 @@ export async function loadActiveProgramForGroup(groupId: string): Promise<Servic
     await configureAmplify();
     const client = getDataClient();
     const group = await client.models.Group.get({ groupId });
-    const activeProgramId = group.data?.activeProgramId;
 
     if (!group.data) {
       return { ok: false, error: "Group not found." };
     }
+
+    const activeWeekRecords = await listActiveWeekRecords(client, groupId);
+
+    if (activeWeekRecords.length > 0) {
+      const sortedWeekRecords = activeWeekRecords.sort((left, right) => left.weekNumber - right.weekNumber);
+      const firstWeekRecord = sortedWeekRecords[0];
+      const weeks = sortedWeekRecords
+        .map((record) => parseStoredProgramWeekContent(record.content))
+        .filter((week): week is ProgramWeek => Boolean(week));
+      const program: Program = {
+        program: {
+          id: firstWeekRecord.programId,
+          title: firstWeekRecord.programTitle,
+          version: firstWeekRecord.programVersion,
+          description: firstWeekRecord.programDescription ?? undefined
+        },
+        weeks
+      };
+      const parsed = programSchema.safeParse(program);
+
+      if (!parsed.success) {
+        return { ok: false, error: "The active program weeks are invalid." };
+      }
+
+      return {
+        ok: true,
+        data: {
+          contentHash: await hashProgram(parsed.data),
+          groupId,
+          program: parsed.data,
+          programId: firstWeekRecord.programId,
+          publishedAt: sortedWeekRecords.reduce(
+            (latest, record) => (record.publishedAt > latest ? record.publishedAt : latest),
+            firstWeekRecord.publishedAt
+          ),
+          title: firstWeekRecord.programTitle,
+          version: firstWeekRecord.programVersion
+        }
+      };
+    }
+
+    const activeProgramId = group.data.activeProgramId;
 
     if (!activeProgramId) {
       return { ok: false, error: "No active program has been published for this group yet." };
@@ -669,6 +918,25 @@ function parseStoredProgramContent(content: unknown): unknown {
   } catch {
     return content;
   }
+}
+
+function parseStoredProgramWeekContent(content: unknown): ProgramWeek | null {
+  const parsedContent = parseStoredProgramContent(content);
+
+  if (!parsedContent || typeof parsedContent !== "object") {
+    return null;
+  }
+
+  const program = programSchema.safeParse({
+    program: {
+      id: "week",
+      title: "Week",
+      version: "1"
+    },
+    weeks: [parsedContent]
+  });
+
+  return program.success ? program.data.weeks[0] : null;
 }
 
 export async function loadJournalExport(input: {

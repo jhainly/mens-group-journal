@@ -8,9 +8,9 @@ import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramDayLabel } from "@/lib/programDays";
 import { validateProgramYaml } from "@/lib/programValidation";
 import {
-  listCurrentUserGroups,
-  publishProgram,
-  type UserGroupSummary
+  listAdminGroups,
+  publishProgramWeeksToGroups,
+  type AdminGroupSummary
 } from "@/lib/services/dataClient";
 import type { ProgramDay, ProgramImportPreview, ProgramSection, ProgramWeek } from "@/types/program";
 
@@ -27,8 +27,8 @@ const exampleYaml = yaml.dump(
 
 export function YamlImportPreview() {
   const [source, setSource] = useState(exampleYaml);
-  const [groupId, setGroupId] = useState("");
-  const [groups, setGroups] = useState<UserGroupSummary[]>([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  const [groups, setGroups] = useState<AdminGroupSummary[]>([]);
   const [preview, setPreview] = useState<ProgramImportPreview | null>(null);
   const [selectedWeekNumber, setSelectedWeekNumber] = useState(1);
   const [selectedDayNumber, setSelectedDayNumber] = useState(1);
@@ -38,7 +38,7 @@ export function YamlImportPreview() {
   useEffect(() => {
     let cancelled = false;
 
-    void listCurrentUserGroups().then((result) => {
+    void listAdminGroups().then((result) => {
       if (cancelled) {
         return;
       }
@@ -52,8 +52,11 @@ export function YamlImportPreview() {
       setGroups(result.data);
 
       if (selectedGroup) {
-        setGroupId(selectedGroup.groupId);
+        setSelectedGroupIds([selectedGroup.groupId]);
         setSelectedGroupId(selectedGroup.groupId);
+      } else if (result.data[0]) {
+        setSelectedGroupIds([result.data[0].groupId]);
+        setSelectedGroupId(result.data[0].groupId);
       }
     });
 
@@ -79,14 +82,23 @@ export function YamlImportPreview() {
   }
 
   async function publish() {
-    if (!preview || !groupId.trim()) {
-      setMessage("Enter a group id before publishing.");
+    if (!preview || selectedGroupIds.length === 0) {
+      setMessage("Choose at least one group before publishing.");
       return;
     }
 
-    setSelectedGroupId(groupId);
-    const result = await publishProgram(groupId, preview);
-    setMessage(result.ok ? "Program published." : result.error);
+    setSelectedGroupId(selectedGroupIds[0]);
+    const result = await publishProgramWeeksToGroups(selectedGroupIds, preview);
+    setMessage(result.ok ? result.data : result.error);
+  }
+
+  function toggleGroup(groupId: string, checked: boolean) {
+    setSelectedGroupIds((current) => {
+      if (checked) {
+        return Array.from(new Set([...current, groupId]));
+      }
+      return current.filter((candidate) => candidate !== groupId);
+    });
   }
 
   function selectWeek(weekNumber: number) {
@@ -111,23 +123,28 @@ export function YamlImportPreview() {
           <div>
             <p className="eyebrow">Import program</p>
             <h2>YAML source</h2>
-            <p>Paste a full program or a single-week draft to validate the structure and content.</p>
+            <p>Paste one or more weeks to validate the structure and content before publishing.</p>
           </div>
           <label className="field">
             <span>Program content</span>
             <textarea value={source} onChange={(event) => setSource(event.target.value)} />
           </label>
           {groups.length > 0 ? (
-            <label className="field">
-              <span>Group</span>
-              <select value={groupId} onChange={(event) => setGroupId(event.target.value)}>
+            <fieldset className="field">
+              <span>Groups</span>
+              <div className="stack compact-stack">
                 {groups.map((group) => (
-                  <option key={group.groupId} value={group.groupId}>
-                    {group.name}
-                  </option>
+                  <label className="checkbox-row" key={group.groupId}>
+                    <input
+                      checked={selectedGroupIds.includes(group.groupId)}
+                      onChange={(event) => toggleGroup(group.groupId, event.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>{group.name}</span>
+                  </label>
                 ))}
-              </select>
-            </label>
+              </div>
+            </fieldset>
           ) : (
             <p className="muted">Create a Lifepoint Church group before publishing a program.</p>
           )}
@@ -172,7 +189,7 @@ export function YamlImportPreview() {
               weeks={preview.program.weeks}
             />
             <button className="button secondary" type="button" onClick={publish}>
-              Publish program
+              Publish weeks
             </button>
           </>
         ) : (
