@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { clearSelectedGroupId, getSelectedGroupId, setSelectedGroupId } from "@/lib/groupSelection";
 import {
   changeCurrentUserPassword,
   getCurrentUserProfile,
+  leaveCurrentUserGroup,
+  listCurrentUserGroups,
+  type UserGroupSummary,
   updateCurrentUserDisplayName
 } from "@/lib/services/dataClient";
 
@@ -12,26 +16,35 @@ export function AccountSettings() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [profileStatus, setProfileStatus] = useState("Loading account...");
   const [passwordStatus, setPasswordStatus] = useState("");
+  const [groupStatus, setGroupStatus] = useState("Loading groups...");
   const [isSavingName, setIsSavingName] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [leavingGroupId, setLeavingGroupId] = useState("");
 
   useEffect(() => {
     let cancelled = false;
 
-    void getCurrentUserProfile().then((result) => {
+    void Promise.all([getCurrentUserProfile(), listCurrentUserGroups()]).then(([profileResult, groupsResult]) => {
       if (cancelled) {
         return;
       }
 
-      if (!result.ok) {
-        setProfileStatus(result.error);
-        return;
+      if (!profileResult.ok) {
+        setProfileStatus(profileResult.error);
+      } else {
+        setDisplayName(profileResult.data.displayName);
+        setProfileStatus("");
       }
 
-      setDisplayName(result.data.displayName);
-      setProfileStatus("");
+      if (!groupsResult.ok) {
+        setGroupStatus(groupsResult.error);
+      } else {
+        setGroups(groupsResult.data);
+        setGroupStatus(groupsResult.data.length > 0 ? "" : "You are not currently in a group.");
+      }
     });
 
     return () => {
@@ -83,6 +96,50 @@ export function AccountSettings() {
     }
   }
 
+  async function refreshGroups() {
+    const result = await listCurrentUserGroups();
+
+    if (!result.ok) {
+      setGroupStatus(result.error);
+      return;
+    }
+
+    setGroups(result.data);
+    setGroupStatus(result.data.length > 0 ? "" : "You are not currently in a group.");
+  }
+
+  async function leaveGroup(group: UserGroupSummary) {
+    if (!window.confirm(`Leave ${group.name}? You will need a group code to join again.`)) {
+      return;
+    }
+
+    setGroupStatus("");
+    setLeavingGroupId(group.groupId);
+    const result = await leaveCurrentUserGroup(group.groupId);
+    setLeavingGroupId("");
+
+    if (!result.ok) {
+      setGroupStatus(result.error);
+      return;
+    }
+
+    const remainingGroups = groups.filter((candidate) => candidate.groupId !== group.groupId);
+    const selectedGroupId = getSelectedGroupId();
+
+    if (selectedGroupId === group.groupId) {
+      const nextGroup = remainingGroups[0];
+
+      if (nextGroup) {
+        setSelectedGroupId(nextGroup.groupId);
+      } else {
+        clearSelectedGroupId();
+      }
+    }
+
+    setGroupStatus(`Left ${group.name}.`);
+    await refreshGroups();
+  }
+
   return (
     <div className="stack">
       <section className="panel stack">
@@ -108,6 +165,35 @@ export function AccountSettings() {
           {isSavingName ? "Saving..." : "Save display name"}
         </button>
       </form>
+
+      <section className="panel stack">
+        <div>
+          <p className="eyebrow">Groups</p>
+          <h2>Group membership</h2>
+          <p>Leave a group if you no longer want it connected to this account.</p>
+        </div>
+        {groups.length > 0 ? (
+          <ul className="list">
+            {groups.map((group) => (
+              <li className="card row" key={group.groupId}>
+                <div>
+                  <h3>{group.name}</h3>
+                  <p className="muted">{group.role ?? "member"}</p>
+                </div>
+                <button
+                  className="button secondary"
+                  disabled={leavingGroupId === group.groupId}
+                  onClick={() => void leaveGroup(group)}
+                  type="button"
+                >
+                  {leavingGroupId === group.groupId ? "Leaving..." : "Leave group"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {groupStatus ? <p className={groupStatus.startsWith("Left ") ? "muted" : "warning"}>{groupStatus}</p> : null}
+      </section>
 
       <form className="panel stack" onSubmit={savePassword}>
         <div>

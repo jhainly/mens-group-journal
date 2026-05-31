@@ -21,9 +21,11 @@ export type JournalExportInput = {
 
 type PdfLine = {
   bold?: boolean;
+  bullet?: boolean;
   gapAfter?: number;
   fontSize?: number;
   indent?: number;
+  italic?: boolean;
   text: string;
 };
 
@@ -40,6 +42,8 @@ const WEEK_FONT_SIZE = 13;
 const DAY_FONT_SIZE = 11;
 const SECTION_FONT_SIZE = 12;
 const MAX_CHARS = 92;
+const SCRIPTURE_MAX_CHARS = 100;
+const DAY_PAGE_MAX_LINES = 54;
 const INDENT_STEP = 18;
 
 export async function exportJournalPdf(input: JournalExportInput): Promise<Blob> {
@@ -49,7 +53,7 @@ export async function exportJournalPdf(input: JournalExportInput): Promise<Blob>
 }
 
 function layoutJournalExport(input: JournalExportInput): PdfPage[] {
-  const pages: PdfPage[] = [[]];
+  const pages: PdfPage[] = [];
   const completedSections = new Set(
     input.progress
       .filter((item) => item.completed)
@@ -59,57 +63,41 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
     input.progress.map((item) => [`${item.weekNumber}:${item.dayNumber}:${item.sectionId}`, item])
   );
 
-  function addLine(value = "", options: Omit<PdfLine, "text"> = {}) {
-    let page = pages[pages.length - 1];
-    if (page.length >= 45) {
-      page = [];
-      pages.push(page);
-    }
-    page.push({ text: value, ...options });
-  }
-
-  function addWrapped(label: string, value: string, options: Omit<PdfLine, "text"> = {}) {
-    const prefix = label ? `${label}: ` : "";
-    const lines = wrapText(`${prefix}${value || ""}`, MAX_CHARS);
-    for (const line of lines) {
-      addLine(line, options);
-    }
-  }
-
   const weeks = input.weekNumber
     ? input.program.weeks.filter((week) => week.weekNumber === input.weekNumber)
     : input.program.weeks;
 
-  addLine("Lifepoint Men's Group", { bold: true, fontSize: TITLE_FONT_SIZE, gapAfter: 22 });
-  if (input.groupName) {
-    addLine(`Group: ${input.groupName}`);
-  }
-  if (input.weekNumber) {
-    addLine(`Week ${input.weekNumber}`);
-  } else {
-    addLine(`Cumulative score: ${input.cumulativeScore}/${input.maxCumulativeScore}`);
-  }
-  addLine("");
-
   for (const week of weeks) {
-    const weeklyTotal = input.weeklyTotals[week.weekNumber] ?? { score: 0, maxScore: 0 };
-    addLine(`Week ${week.weekNumber}: ${week.title}`, {
-      bold: true,
-      fontSize: WEEK_FONT_SIZE,
-      gapAfter: 18
-    });
-    if (week.summary) {
-      addWrapped("Summary", week.summary);
-    }
-    addLine(`Weekly score: ${weeklyTotal.score}/${weeklyTotal.maxScore}`);
-    addLine("");
-
     for (const day of week.days) {
-      addLine(`Day ${day.dayNumber}: ${day.title}`, {
-        bold: true,
-        fontSize: DAY_FONT_SIZE,
-        gapAfter: 17
-      });
+      const page: PdfPage = [];
+      const addLine = (value = "", options: Omit<PdfLine, "text"> = {}) => {
+        if (page.length < DAY_PAGE_MAX_LINES) {
+          page.push({ text: value, ...options });
+        }
+      };
+      const addWrapped = (
+        label: string,
+        value: string,
+        options: Omit<PdfLine, "text"> = {},
+        maxLines = 3,
+        maxChars = MAX_CHARS - Math.ceil((options.indent ?? 0) * 4)
+      ) => {
+        const prefix = label ? `${label}: ` : "";
+        const lines = wrapText(`${prefix}${value || ""}`, maxChars);
+        const visibleLines = lines.slice(0, maxLines);
+
+        for (const line of visibleLines) {
+          addLine(line, options);
+        }
+
+        if (lines.length > visibleLines.length) {
+          addLine("...", options);
+        }
+      };
+
+      addLine(`Week ${week.weekNumber}: ${week.title}`, { bold: true, fontSize: WEEK_FONT_SIZE, gapAfter: 14 });
+      addLine(`Day ${day.dayNumber}: ${day.title}`, { bold: true, fontSize: DAY_FONT_SIZE, gapAfter: 14 });
+      addLine("");
 
       for (const section of day.sections) {
         const key = `${week.weekNumber}:${day.dayNumber}:${section.id}`;
@@ -120,45 +108,37 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
         addLine(`${completed ? "[x]" : "[ ]"} ${section.title} (${earned}/${section.points} points)`, {
           bold: true,
           fontSize: SECTION_FONT_SIZE,
-          gapAfter: 18,
+          gapAfter: 14,
           indent: 0.5
         });
 
         if (section.body) {
-          for (const line of wrapText(section.body, MAX_CHARS - 10)) {
-            addLine(line, { indent: 1 });
-          }
+          addWrapped("", section.body, { indent: 1 }, 2);
         }
 
         for (const scripture of section.scripture ?? []) {
-          addLine(scripture.reference, {
-            bold: true,
-            gapAfter: 14,
-            indent: 1
-          });
-          addWrapped("", scripture.text, { indent: 1.35 });
+          addWrapped("", `${scripture.reference}: ${scripture.text}`, { indent: 1, italic: true }, 4, SCRIPTURE_MAX_CHARS);
         }
 
         for (const prompt of section.prompts ?? []) {
-          addWrapped("", prompt.label, { indent: 1 });
+          addWrapped("", prompt.label, { bullet: true, indent: 1 }, 2);
           const answer = input.decryptedAnswers[prompt.id];
 
           if (answer) {
-            for (const line of wrapText(answer, MAX_CHARS - 14)) {
-              addLine(line, { indent: 1.35 });
-            }
+            addWrapped("", answer, { indent: 1.35 }, 3);
           } else {
-            addLine("", { gapAfter: LINE_HEIGHT + 2 });
-            addLine("", { gapAfter: LINE_HEIGHT + 2 });
+            addLine("", { gapAfter: 13 });
           }
         }
 
-        addLine("");
+        addLine("", { gapAfter: 8 });
       }
+
+      pages.push(page);
     }
   }
 
-  return pages;
+  return pages.length > 0 ? pages : [[{ text: "No journal content available." }]];
 }
 
 function buildPdf(pages: PdfPage[]): string {
@@ -169,6 +149,7 @@ function buildPdf(pages: PdfPage[]): string {
   objects.push("<< /Type /Pages /Kids [] /Count 0 >>");
   objects.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
   objects.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>");
+  objects.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >>");
 
   for (const page of pages) {
     const stream = buildPageStream(page);
@@ -176,7 +157,7 @@ function buildPdf(pages: PdfPage[]): string {
     objects.push(`<< /Length ${byteLength(stream)} >>\nstream\n${stream}\nendstream`);
     const pageObjectNumber = objects.length + 1;
     objects.push(
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${streamObjectNumber} 0 R >>`
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents ${streamObjectNumber} 0 R >>`
     );
     pageObjectNumbers.push(pageObjectNumber);
   }
@@ -207,9 +188,13 @@ function buildPageStream(lines: PdfLine[]): string {
 
   for (const line of lines) {
     const fontSize = line.fontSize ?? BODY_FONT_SIZE;
-    const font = line.bold ? "/F2" : "/F1";
+    const font = line.bold ? "/F2" : line.italic ? "/F3" : "/F1";
     const x = MARGIN_X + (line.indent ?? 0) * INDENT_STEP;
-    commands.push(`BT ${font} ${fontSize} Tf ${x} ${y} Td (${escapePdfText(line.text)}) Tj ET`);
+    const textX = line.bullet ? x + 12 : x;
+    if (line.bullet) {
+      commands.push(`${x} ${y + 3} 3 3 re f`);
+    }
+    commands.push(`BT ${font} ${fontSize} Tf ${textX} ${y} Td (${escapePdfText(line.text)}) Tj ET`);
     y -= line.gapAfter ?? LINE_HEIGHT;
   }
 

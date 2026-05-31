@@ -52,7 +52,7 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
         setSelectedGroupId(selectedGroup.groupId);
         setGroupStatus("");
       } else {
-        setGroupStatus("Join a group to start tracking progress.");
+        setGroupStatus("You need a group code from your leader before your dashboard can show program content.");
         setStatus("");
       }
     });
@@ -84,7 +84,7 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
 
       if (!result.ok) {
         setScores(getEmptyScores(null, initialWeekNumber));
-        setProgramStatus(result.error);
+        setProgramStatus("Your leader has not published content for this group yet.");
         return;
       }
 
@@ -159,8 +159,10 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
       <section className="panel stack">
         <div>
           <p className="eyebrow">Current group</p>
-          <h1>{activeGroup?.name ?? "No group selected"}</h1>
+          <h1>{activeGroup?.name ?? "Join a group"}</h1>
           {program ? <p>{program.program.title}: {program.program.description}</p> : null}
+          {!activeGroup ? <p>Enter your group code to connect this account to your men&apos;s group.</p> : null}
+          {activeGroup && !program ? <p>Program content will appear here after your leader publishes active weeks.</p> : null}
         </div>
         {groups.length > 1 ? (
           <label className="field compact-field">

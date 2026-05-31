@@ -8,9 +8,11 @@ The app is built with Next.js, TypeScript, AWS Amplify, Amazon Cognito, and Dyna
 
 - Cognito account creation, verification, login, logout, and protected member routes.
 - Display name captured during account creation and reused across join, leaderboard, and admin views.
+- New accounts are guided directly into the group join flow after verification.
 - Group join flow by server-verified group code.
-- Member dashboard with group selection, weekly score, cumulative score, and week navigation.
+- Member dashboard with group selection, clear empty states, weekly score, cumulative score, and week navigation.
 - Member dashboard and day views load the selected group's active program weeks.
+- Dashboard explains when a user has not joined a group or when a leader has not published content yet.
 - Program day screen with Wednesday-to-Tuesday labels, section completion, optional reflections, and back-to-week navigation.
 - Daily sections for mind, spirit, body, end-of-day reflection, and bonus point items.
 - Optional plain-text reflections encrypted in the browser before storage.
@@ -18,10 +20,14 @@ The app is built with Next.js, TypeScript, AWS Amplify, Amazon Cognito, and Dyna
 - Mobile-friendly responsive navigation for member and admin routes.
 - Admin group management with group creation, visible join codes, member counts, and per-group edit/detail pages.
 - Admin group drilldown for changing the group name, changing the join code, and removing active weeks from that group only.
-- Admin program management with multi-group week import, multi-group week removal, YAML validation, rendered preview, and publish flow.
+- Admin program management with quick actions for importing a new week and viewing the audit log.
+- Admin program import with multi-group week assignment, YAML validation, rendered preview, replacement warnings, and publish flow.
+- Admin program management supports removing a week from one or more groups.
+- Program management shows which active weeks are assigned to each group.
+- Program imports, replacements, and removals are recorded in an admin audit trail.
 - Active program weeks are assigned one-to-many from groups to week snapshots; older whole-program snapshots remain as a compatibility fallback.
-- Week-scoped PDF export built from locally decrypted reflections.
-- Account page for viewing the signed-in user and journal key status.
+- Week-scoped PDF export built from locally decrypted reflections, with scripture italicized and journal questions formatted as bullet prompts.
+- Account page for viewing the signed-in user, journal key status, and leaving the current group.
 - Admin access management that enumerates Cognito users and toggles the `ADMINS` role with a checkbox.
 
 ## Project Structure
@@ -35,8 +41,12 @@ app/                         Next.js App Router routes
   dashboard/                 Member dashboard and score summary
   program/week/[...]/        Program day journal screens
   leaderboard/               Group score visibility
-  admin/groups/              Admin and leader group and program management
-  admin/import/              YAML week import, validation, rendered preview, publish
+  admin/                      Admin landing page
+  admin/groups/               Admin group list and per-group drilldown
+  admin/programs/             Program assignment and week removal management
+  admin/programs/import/      YAML week import, validation, rendered preview, publish
+  admin/programs/audit/       Program import/replacement/removal audit log
+  admin/users/                Admin role management
 components/                  Shared UI and feature components
 data/                        Sample six-week program content
 docs/                        Architecture notes
@@ -154,7 +164,9 @@ See:
 schemas/program.schema.yaml
 ```
 
-Admins can paste YAML into `/admin/import`, validate it, preview the rendered member experience, and publish imported weeks to one or more groups. Each selected group receives active week records keyed by week number. Existing weeks can be removed from one or more groups from the program management panel on `/admin/groups`.
+Admins can paste YAML into `/admin/programs/import`, validate it, preview the rendered member experience, and publish imported weeks to one or more groups. Each selected group receives active week records keyed by week number. If an imported week number is already active for a selected group, the import flow warns that the existing week will be replaced before publishing. Existing weeks can be removed from one or more groups from the program management panel on `/admin/programs`.
+
+The program management panel also shows a group-by-group view of assigned active weeks and a recent audit trail showing who imported, replaced, or removed weeks and when.
 
 Admins can also drill into an individual group from `/admin/groups` to change that group's name, change its join code, and remove active weeks from that group only.
 
@@ -164,7 +176,7 @@ Admins can also drill into an individual group from `/admin/groups` to change th
 - `LEADERS`: leader/admin group management routes.
 - Authenticated members: dashboard, program days, leaderboard, and join flow.
 
-Admins can manage admin access from `/admin/groups`. The admin access panel lists Cognito users and toggles membership in the Cognito `ADMINS` group. The backend prevents an admin from removing their own admin access.
+Admins can manage admin access from `/admin/users`. The admin access panel lists Cognito users and toggles membership in the Cognito `ADMINS` group. The backend prevents an admin from removing their own admin access.
 
 ## Git Notes
 

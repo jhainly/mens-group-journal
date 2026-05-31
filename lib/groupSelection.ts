@@ -13,6 +13,11 @@ export function setSelectedGroupId(groupId: string): void {
   localStorage.setItem(STORAGE_KEY, groupId);
 }
 
+export function clearSelectedGroupId(): void {
+  sessionStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 export function resolveSelectedGroup(groups: UserGroupSummary[]): UserGroupSummary | null {
   const selectedGroupId = getSelectedGroupId();
   const selectedGroup = groups.find((group) => group.groupId === selectedGroupId);

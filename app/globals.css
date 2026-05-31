@@ -162,6 +162,32 @@ button {
   padding-top: 28px;
 }
 
+.admin-workflow-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-workflow-nav a {
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--accent-strong);
+  font-weight: 700;
+  min-height: 40px;
+  padding: 10px 12px;
+}
+
+.admin-tool-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+
+.admin-tool-grid .card {
+  align-content: space-between;
+}
+
 .mobile-nav a,
 .mobile-nav .nav-button {
   border-bottom: 1px solid var(--line);
@@ -350,6 +376,28 @@ li {
   padding: 0;
 }
 
+.assignment-week-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.assignment-week-row {
+  align-items: center;
+  background: var(--surface-strong);
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.assignment-week-row p {
+  margin-bottom: 0;
+}
+
 .compact-stack {
   gap: 8px;
 }
@@ -411,6 +459,18 @@ li {
 .warning {
   color: var(--warn);
   font-weight: 700;
+}
+
+.warning-box {
+  background: #fff8ef;
+  border: 1px solid #dfb47b;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.warning-box h3 {
+  color: var(--warn);
+  margin-bottom: 0;
 }
 
 .role-label {
@@ -479,6 +539,11 @@ li {
   .row > button,
   .row > a.button {
     width: 100%;
+  }
+
+  .assignment-week-row {
+    align-items: stretch;
+    display: grid;
   }
 
   h1 {

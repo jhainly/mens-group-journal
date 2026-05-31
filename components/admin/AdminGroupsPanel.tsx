@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { AdminRolePanel } from "@/components/admin/AdminRolePanel";
-import { ProgramManagementPanel } from "@/components/admin/ProgramManagementPanel";
 import { setSelectedGroupId } from "@/lib/groupSelection";
 import {
   createGroup,
@@ -72,11 +70,21 @@ export function AdminGroupsPanel() {
 
   return (
     <div className="stack">
-      <form className="panel stack" onSubmit={handleSubmit}>
+      <section className="panel stack">
         <div>
-          <p className="eyebrow">Leader tools</p>
+          <p className="eyebrow">Admin tools</p>
           <h1>Group management</h1>
-          <p>Create Lifepoint Church groups, manage join codes, and view participation.</p>
+          <p>Create groups, review existing groups, and open a group to see its members and assigned weeks.</p>
+        </div>
+        <Link className="button secondary" href="/admin">
+          Back to admin tools
+        </Link>
+      </section>
+
+      <form className="panel stack" id="create-group" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">New group</p>
+          <h2>Create group</h2>
         </div>
         <div className="grid two">
           <label className="field">
@@ -96,9 +104,7 @@ export function AdminGroupsPanel() {
         </div>
       </form>
 
-      <ProgramManagementPanel groups={groups} onProgramChanged={refreshGroups} />
-
-      <section className="panel stack">
+      <section className="panel stack" id="groups">
         <div className="row">
           <div>
             <p className="eyebrow">Groups</p>
@@ -119,7 +125,7 @@ export function AdminGroupsPanel() {
                     <p className="muted">Group ID: {group.groupId}</p>
                   </div>
                   <Link className="button secondary" href={`/admin/groups/${group.groupId}`}>
-                    View members
+                    View group
                   </Link>
                 </div>
                 <div className="grid three">
@@ -148,8 +154,6 @@ export function AdminGroupsPanel() {
           <p className="muted">{directoryStatus}</p>
         )}
       </section>
-
-      <AdminRolePanel />
     </div>
   );
 }

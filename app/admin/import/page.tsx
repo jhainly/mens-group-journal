@@ -1,5 +1,5 @@
-import { YamlImportPreview } from "@/components/YamlImportPreview";
+import { redirect } from "next/navigation";
 
 export default function AdminImportPage() {
-  return <YamlImportPreview />;
+  redirect("/admin/programs/import");
 }

@@ -43,7 +43,7 @@ export function CreateAccountForm() {
         await confirmSignUp({ username: email, confirmationCode });
       }
 
-      router.push("/auth?account=confirmed");
+      router.push("/join?account=confirmed");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Account creation failed.");

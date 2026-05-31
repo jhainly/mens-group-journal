@@ -28,6 +28,6 @@ const authenticatedMemberItems: NavItem[] = [
 const authenticatedAdminItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/admin/groups", label: "Admin" },
+  { href: "/admin", label: "Admin" },
   { href: "/account", label: "Account" }
 ];

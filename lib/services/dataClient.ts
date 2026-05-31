@@ -70,6 +70,35 @@ export type ActiveProgramWeekSummary = {
   title: string;
   weekNumber: number;
 };
+export type ProgramWeekAssignment = {
+  groupId: string;
+  groupName: string;
+  weeks: Array<{
+    programId: string;
+    publishedAt: string;
+    publishedByUserId: string;
+    title: string;
+    weekNumber: number;
+  }>;
+};
+export type ProgramAuditEntry = {
+  action: string;
+  actorDisplayName: string;
+  createdAt: string;
+  details?: string | null;
+  eventId: string;
+  groupId: string;
+  groupName: string;
+  weekNumber: number;
+  weekTitle: string;
+};
+export type WeekReplacementImpact = {
+  groupId: string;
+  groupName: string;
+  existingTitle: string;
+  importedTitle: string;
+  weekNumber: number;
+};
 export type JournalDayState = {
   answers: Record<string, string>;
   completedSectionIds: string[];
@@ -418,6 +447,62 @@ export async function listCurrentUserGroups(): Promise<ServiceResult<UserGroupSu
   }
 }
 
+export async function leaveCurrentUserGroup(groupId: string): Promise<ServiceResult<void>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const memberships = await client.models.GroupMembership.list({
+      filter: {
+        userId: {
+          eq: user.userId
+        },
+        groupId: {
+          eq: groupId
+        }
+      }
+    });
+
+    if (memberships.data.length === 0) {
+      return { ok: false, error: "You are not a member of that group." };
+    }
+
+    await Promise.all(
+      memberships.data.map((membership) =>
+        requireSaved(
+          client.models.GroupMembership.delete({
+            membershipId: membership.membershipId
+          }),
+          "The group membership could not be removed."
+        )
+      )
+    );
+
+    const scores = await client.models.UserScore.list({
+      filter: {
+        userId: {
+          eq: user.userId
+        },
+        groupId: {
+          eq: groupId
+        }
+      }
+    });
+
+    await Promise.all(
+      scores.data.map((score) =>
+        client.models.UserScore.delete({
+          scoreId: score.scoreId
+        })
+      )
+    );
+
+    return { ok: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
 export async function listAdminGroups(): Promise<ServiceResult<AdminGroupSummary[]>> {
   try {
     await configureAmplify();
@@ -552,6 +637,7 @@ export async function publishProgramWeeksToGroups(groupIds: string[], preview: P
     await configureAmplify();
     const client = getDataClient();
     const user = await getCurrentUser();
+    const actorDisplayName = await getDisplayName(user.userId);
     const now = new Date().toISOString();
     const uniqueGroupIds = Array.from(new Set(groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
 
@@ -565,6 +651,7 @@ export async function publishProgramWeeksToGroups(groupIds: string[], preview: P
         groupId,
         now,
         program: preview.program,
+        actorDisplayName,
         publishedByUserId: user.userId
       });
     }
@@ -578,12 +665,14 @@ export async function publishProgramWeeksToGroups(groupIds: string[], preview: P
 }
 
 async function publishWeeksForGroup(input: {
+  actorDisplayName: string;
   client: DataClient;
   groupId: string;
   now: string;
   program: Program;
   publishedByUserId: string;
 }): Promise<void> {
+  const group = await input.client.models.Group.get({ groupId: input.groupId });
   const activeWeeks = await listActiveWeekRecords(input.client, input.groupId);
 
   for (const week of input.program.weeks) {
@@ -595,6 +684,7 @@ async function publishWeeksForGroup(input: {
     const staleActiveWeeks = activeWeeks.filter(
       (record) => record.weekNumber === week.weekNumber && record.weekSnapshotId !== weekSnapshotId
     );
+    const replacedWeekTitles = staleActiveWeeks.map((record) => record.title);
 
     await Promise.all(
       staleActiveWeeks.map((record) =>
@@ -645,6 +735,22 @@ async function publishWeeksForGroup(input: {
           updatedAt: input.now
         })
     );
+
+    await createProgramAuditEvent(input.client, {
+      action: staleActiveWeeks.length > 0 ? "replace_week" : "import_week",
+      actorDisplayName: input.actorDisplayName,
+      actorUserId: input.publishedByUserId,
+      createdAt: input.now,
+      details:
+        staleActiveWeeks.length > 0
+          ? `Replaced ${replacedWeekTitles.map((title) => `"${title}"`).join(", ")}.`
+          : "Imported as a new active week.",
+      groupId: input.groupId,
+      groupName: group.data?.name ?? input.groupId,
+      programId: input.program.program.id,
+      weekNumber: week.weekNumber,
+      weekTitle: week.title
+    });
   }
 
   await requireSaved(
@@ -672,6 +778,39 @@ async function listActiveWeekRecords(client: DataClient, groupId: string) {
   return result.data;
 }
 
+async function createProgramAuditEvent(
+  client: DataClient,
+  input: {
+    action: string;
+    actorDisplayName: string;
+    actorUserId: string;
+    createdAt: string;
+    details?: string;
+    groupId: string;
+    groupName: string;
+    programId: string;
+    weekNumber: number;
+    weekTitle: string;
+  }
+): Promise<void> {
+  await requireSaved(
+    client.models.ProgramAuditEvent.create({
+      eventId: crypto.randomUUID(),
+      action: input.action,
+      groupId: input.groupId,
+      groupName: input.groupName,
+      programId: input.programId,
+      weekNumber: input.weekNumber,
+      weekTitle: input.weekTitle,
+      actorUserId: input.actorUserId,
+      actorDisplayName: input.actorDisplayName,
+      createdAt: input.createdAt,
+      details: input.details
+    }),
+    "The program audit event could not be saved."
+  );
+}
+
 export async function removeWeekFromActiveProgram(input: {
   groupId: string;
   weekNumber: number;
@@ -690,6 +829,8 @@ export async function removeWeekFromGroups(input: {
   try {
     await configureAmplify();
     const client = getDataClient();
+    const user = await getCurrentUser();
+    const actorDisplayName = await getDisplayName(user.userId);
     const now = new Date().toISOString();
     const uniqueGroupIds = Array.from(new Set(input.groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
     let removedCount = 0;
@@ -699,7 +840,10 @@ export async function removeWeekFromGroups(input: {
     }
 
     for (const groupId of uniqueGroupIds) {
-      const activeWeeks = await listActiveWeekRecords(client, groupId);
+      const [activeWeeks, group] = await Promise.all([
+        listActiveWeekRecords(client, groupId),
+        client.models.Group.get({ groupId })
+      ]);
       const matchingWeeks = activeWeeks.filter((record) => record.weekNumber === input.weekNumber);
 
       await Promise.all(
@@ -712,6 +856,22 @@ export async function removeWeekFromGroups(input: {
             }),
             "The active week could not be removed."
           )
+        )
+      );
+      await Promise.all(
+        matchingWeeks.map((record) =>
+          createProgramAuditEvent(client, {
+            action: "remove_week",
+            actorDisplayName,
+            actorUserId: user.userId,
+            createdAt: now,
+            details: "Removed from active group content.",
+            groupId,
+            groupName: group.data?.name ?? groupId,
+            programId: record.programId,
+            weekNumber: record.weekNumber,
+            weekTitle: record.title
+          })
         )
       );
       removedCount += matchingWeeks.length;
@@ -757,6 +917,113 @@ export async function listActiveProgramWeeksForGroups(groupIds: string[]): Promi
       ok: true,
       data: Array.from(weeksByNumber.values()).sort((left, right) => left.weekNumber - right.weekNumber)
     };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function listProgramWeekAssignments(groups: AdminGroupSummary[]): Promise<ServiceResult<ProgramWeekAssignment[]>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const assignments = await Promise.all(
+      groups.map(async (group) => {
+        const activeWeeks = await listActiveWeekRecords(client, group.groupId);
+
+        return {
+          groupId: group.groupId,
+          groupName: group.name,
+          weeks: activeWeeks
+            .map((week) => ({
+              programId: week.programId,
+              publishedAt: week.publishedAt,
+              publishedByUserId: week.publishedByUserId,
+              title: week.title,
+              weekNumber: week.weekNumber
+            }))
+            .sort((left, right) => left.weekNumber - right.weekNumber)
+        } satisfies ProgramWeekAssignment;
+      })
+    );
+
+    return { ok: true, data: assignments };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function listProgramAuditEntries(groupIds?: string[]): Promise<ServiceResult<ProgramAuditEntry[]>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const uniqueGroupIds = groupIds ? Array.from(new Set(groupIds.map((groupId) => groupId.trim()).filter(Boolean))) : [];
+    const results =
+      uniqueGroupIds.length > 0
+        ? await Promise.all(
+            uniqueGroupIds.map((groupId) =>
+              client.models.ProgramAuditEvent.list({
+                filter: {
+                  groupId: {
+                    eq: groupId
+                  }
+                }
+              })
+            )
+          )
+        : [await client.models.ProgramAuditEvent.list()];
+    const entries = results.flatMap((result) =>
+      result.data.map((entry) => ({
+        action: entry.action,
+        actorDisplayName: entry.actorDisplayName,
+        createdAt: entry.createdAt,
+        details: entry.details,
+        eventId: entry.eventId,
+        groupId: entry.groupId,
+        groupName: entry.groupName,
+        weekNumber: entry.weekNumber,
+        weekTitle: entry.weekTitle
+      }))
+    );
+
+    return {
+      ok: true,
+      data: entries.sort((left, right) => right.createdAt.localeCompare(left.createdAt)).slice(0, 25)
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function previewWeekReplacementImpacts(input: {
+  groupIds: string[];
+  weeks: ProgramWeek[];
+}): Promise<ServiceResult<WeekReplacementImpact[]>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const uniqueGroupIds = Array.from(new Set(input.groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
+    const importedWeeksByNumber = new Map(input.weeks.map((week) => [week.weekNumber, week]));
+    const impacts: WeekReplacementImpact[] = [];
+
+    for (const groupId of uniqueGroupIds) {
+      const [group, activeWeeks] = await Promise.all([client.models.Group.get({ groupId }), listActiveWeekRecords(client, groupId)]);
+
+      for (const activeWeek of activeWeeks) {
+        const importedWeek = importedWeeksByNumber.get(activeWeek.weekNumber);
+
+        if (importedWeek) {
+          impacts.push({
+            groupId,
+            groupName: group.data?.name ?? groupId,
+            existingTitle: activeWeek.title,
+            importedTitle: importedWeek.title,
+            weekNumber: activeWeek.weekNumber
+          });
+        }
+      }
+    }
+
+    return { ok: true, data: impacts };
   } catch (error) {
     return serviceError(error);
   }

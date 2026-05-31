@@ -166,6 +166,24 @@ const schema = a.schema({
       allow.groups(["ADMINS", "LEADERS"]).to(["create", "read", "update", "delete"])
     ]),
 
+  ProgramAuditEvent: a
+    .model({
+      eventId: a.id().required(),
+      action: a.string().required(),
+      groupId: a.id().required(),
+      groupName: a.string().required(),
+      programId: a.string().required(),
+      weekNumber: a.integer().required(),
+      weekTitle: a.string().required(),
+      actorUserId: a.string().required(),
+      actorDisplayName: a.string().required(),
+      createdAt: a.datetime().required(),
+      details: a.string()
+    })
+    .identifier(["eventId"])
+    .secondaryIndexes((index) => [index("groupId"), index("weekNumber")])
+    .authorization((allow) => [allow.groups(["ADMINS", "LEADERS"]).to(["create", "read"])]),
+
   SectionProgress: a
     .model({
       progressId: a.id().required(),

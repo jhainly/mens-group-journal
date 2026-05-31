@@ -9,8 +9,10 @@ import { getProgramDayLabel } from "@/lib/programDays";
 import { validateProgramYaml } from "@/lib/programValidation";
 import {
   listAdminGroups,
+  previewWeekReplacementImpacts,
   publishProgramWeeksToGroups,
-  type AdminGroupSummary
+  type AdminGroupSummary,
+  type WeekReplacementImpact
 } from "@/lib/services/dataClient";
 import type { ProgramDay, ProgramImportPreview, ProgramSection, ProgramWeek } from "@/types/program";
 
@@ -25,17 +27,40 @@ const exampleYaml = yaml.dump(
   }
 );
 
-export function YamlImportPreview() {
+type YamlImportPreviewProps = {
+  embedded?: boolean;
+  groups?: AdminGroupSummary[];
+  onPublished?: () => void;
+};
+
+export function YamlImportPreview({ embedded = false, groups: providedGroups, onPublished }: YamlImportPreviewProps = {}) {
   const [source, setSource] = useState(exampleYaml);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
-  const [groups, setGroups] = useState<AdminGroupSummary[]>([]);
+  const [groups, setGroups] = useState<AdminGroupSummary[]>(providedGroups ?? []);
   const [preview, setPreview] = useState<ProgramImportPreview | null>(null);
   const [selectedWeekNumber, setSelectedWeekNumber] = useState(1);
   const [selectedDayNumber, setSelectedDayNumber] = useState(1);
   const [errors, setErrors] = useState<string[]>([]);
   const [message, setMessage] = useState("");
+  const [replacementImpacts, setReplacementImpacts] = useState<WeekReplacementImpact[]>([]);
 
   useEffect(() => {
+    if (providedGroups) {
+      const selectedGroup = resolveSelectedGroup(providedGroups);
+      setGroups(providedGroups);
+
+      if (selectedGroup) {
+        setSelectedGroupIds((current) => keepValidGroupSelection(current, providedGroups, selectedGroup.groupId));
+        setSelectedGroupId(selectedGroup.groupId);
+      } else if (providedGroups[0]) {
+        setSelectedGroupIds((current) => keepValidGroupSelection(current, providedGroups, providedGroups[0].groupId));
+        setSelectedGroupId(providedGroups[0].groupId);
+      } else {
+        setSelectedGroupIds([]);
+      }
+      return;
+    }
+
     let cancelled = false;
 
     void listAdminGroups().then((result) => {
@@ -63,7 +88,7 @@ export function YamlImportPreview() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [providedGroups]);
 
   async function validate() {
     const result = await validateProgramYaml(source);
@@ -75,10 +100,12 @@ export function YamlImportPreview() {
       setSelectedWeekNumber(firstWeek?.weekNumber ?? 1);
       setSelectedDayNumber(firstDay?.dayNumber ?? 1);
       setErrors([]);
+      setReplacementImpacts([]);
       return;
     }
     setPreview(null);
     setErrors(result.errors);
+    setReplacementImpacts([]);
   }
 
   async function publish() {
@@ -87,9 +114,30 @@ export function YamlImportPreview() {
       return;
     }
 
+    const impacts = await previewWeekReplacementImpacts({
+      groupIds: selectedGroupIds,
+      weeks: preview.program.weeks
+    });
+
+    if (!impacts.ok) {
+      setMessage(impacts.error);
+      return;
+    }
+
+    setReplacementImpacts(impacts.data);
+
+    if (impacts.data.length > 0 && !window.confirm(getReplacementConfirmationText(impacts.data))) {
+      setMessage("Publish cancelled.");
+      return;
+    }
+
     setSelectedGroupId(selectedGroupIds[0]);
     const result = await publishProgramWeeksToGroups(selectedGroupIds, preview);
     setMessage(result.ok ? result.data : result.error);
+
+    if (result.ok) {
+      onPublished?.();
+    }
   }
 
   function toggleGroup(groupId: string, checked: boolean) {
@@ -114,7 +162,7 @@ export function YamlImportPreview() {
         <section className="panel stack">
           <div>
             <p className="eyebrow">Import</p>
-            <h1>Program preview</h1>
+            {embedded ? <h2>Program preview</h2> : <h1>Program preview</h1>}
             <p>Review the program before making it available to a Lifepoint Church group.</p>
           </div>
         </section>
@@ -181,6 +229,19 @@ export function YamlImportPreview() {
             ) : (
               <p>No semantic warnings.</p>
             )}
+            {replacementImpacts.length > 0 ? (
+              <section className="warning-box stack">
+                <h3>Existing weeks will be replaced</h3>
+                <ul>
+                  {replacementImpacts.map((impact) => (
+                    <li key={`${impact.groupId}:${impact.weekNumber}`}>
+                      {impact.groupName}: Week {impact.weekNumber} <strong>{impact.existingTitle}</strong> will be
+                      replaced by <strong>{impact.importedTitle}</strong>.
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
             <RenderedProgramPreview
               dayNumber={selectedDayNumber}
               onDayChange={setSelectedDayNumber}
@@ -199,6 +260,27 @@ export function YamlImportPreview() {
       </section>
     </div>
   );
+}
+
+function keepValidGroupSelection(current: string[], groups: AdminGroupSummary[], fallbackGroupId: string): string[] {
+  const availableGroupIds = new Set(groups.map((group) => group.groupId));
+  const next = current.filter((groupId) => availableGroupIds.has(groupId));
+  return next.length > 0 ? next : [fallbackGroupId];
+}
+
+function getReplacementConfirmationText(impacts: WeekReplacementImpact[]): string {
+  const lines = impacts.map(
+    (impact) =>
+      `- ${impact.groupName}: Week ${impact.weekNumber} "${impact.existingTitle}" will be replaced by "${impact.importedTitle}".`
+  );
+
+  return [
+    "Publishing will replace existing active week content for the selected groups.",
+    "",
+    ...lines,
+    "",
+    "Continue?"
+  ].join("\n");
 }
 
 function RenderedProgramPreview({
