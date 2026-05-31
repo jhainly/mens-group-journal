@@ -159,14 +159,6 @@ export function YamlImportPreview({ embedded = false, groups: providedGroups, on
   return (
     <div className="grid two import-preview-grid">
       <div className="stack">
-        <section className="panel stack">
-          <div>
-            <p className="eyebrow">Import</p>
-            {embedded ? <h2>Program preview</h2> : <h1>Program preview</h1>}
-            <p>Review the program before making it available to a Lifepoint Church group.</p>
-          </div>
-        </section>
-
         <section className="panel stack import-program-panel">
           <div>
             <p className="eyebrow">Import program</p>
