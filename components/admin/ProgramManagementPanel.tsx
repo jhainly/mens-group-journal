@@ -1,12 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { setSelectedGroupId } from "@/lib/groupSelection";
 import {
-  listActiveProgramWeeksForGroups,
   listProgramWeekAssignments,
   removeWeekFromGroups,
-  type ActiveProgramWeekSummary,
   type AdminGroupSummary,
   type ProgramWeekAssignment
 } from "@/lib/services/dataClient";
@@ -18,29 +15,10 @@ export function ProgramManagementPanel({
   groups: AdminGroupSummary[];
   onProgramChanged: () => void;
 }) {
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(groups[0] ? [groups[0].groupId] : []);
-  const [activeWeeks, setActiveWeeks] = useState<ActiveProgramWeekSummary[]>([]);
   const [assignments, setAssignments] = useState<ProgramWeekAssignment[]>([]);
-  const [status, setStatus] = useState(groups.length > 0 ? "Loading assigned weeks..." : "Create a group before managing programs.");
   const [assignmentStatus, setAssignmentStatus] = useState("Loading group assignments...");
   const [message, setMessage] = useState("");
   const [removingKey, setRemovingKey] = useState("");
-  const primaryGroupId = selectedGroupIds[0] ?? "";
-
-  const refreshActiveWeeks = useCallback(async (groupIds = selectedGroupIds) => {
-    setStatus("Loading assigned weeks...");
-    setMessage("");
-    const result = await listActiveProgramWeeksForGroups(groupIds);
-
-    if (!result.ok) {
-      setActiveWeeks([]);
-      setStatus(result.error);
-      return;
-    }
-
-    setActiveWeeks(result.data);
-    setStatus(result.data.length > 0 ? "" : "No weeks are assigned to the selected groups.");
-  }, [selectedGroupIds]);
 
   const refreshAssignments = useCallback(async () => {
     if (groups.length === 0) {
@@ -63,49 +41,8 @@ export function ProgramManagementPanel({
   }, [groups]);
 
   useEffect(() => {
-    setSelectedGroupIds((current) => {
-      const availableGroupIds = new Set(groups.map((group) => group.groupId));
-      const next = current.filter((groupId) => availableGroupIds.has(groupId));
-      return next.length > 0 ? next : groups[0] ? [groups[0].groupId] : [];
-    });
-  }, [groups]);
-
-  useEffect(() => {
-    if (!primaryGroupId) {
-      setActiveWeeks([]);
-      setStatus(groups.length > 0 ? "Choose at least one group." : "Create a group before managing programs.");
-      void refreshAssignments();
-      return;
-    }
-
-    void refreshActiveWeeks(selectedGroupIds);
     void refreshAssignments();
-  }, [primaryGroupId, groups.length, refreshActiveWeeks, refreshAssignments, selectedGroupIds]);
-
-  async function refreshAll() {
-    await refreshActiveWeeks(selectedGroupIds);
-    await refreshAssignments();
-  }
-
-  async function removeWeekFromSelectedGroups(weekNumber: number) {
-    if (selectedGroupIds.length === 0) {
-      return;
-    }
-
-    const week = activeWeeks.find((candidate) => candidate.weekNumber === weekNumber);
-    const label = week ? `Week ${week.weekNumber}: ${week.title}` : `Week ${weekNumber}`;
-    const groupLabel = selectedGroupIds.length === 1 ? getGroupName(selectedGroupIds[0]) : `${selectedGroupIds.length} selected groups`;
-
-    if (!window.confirm(`Remove ${label} from ${groupLabel}?`)) {
-      return;
-    }
-
-    await removeWeek({
-      groupIds: selectedGroupIds,
-      key: `selected:${weekNumber}`,
-      weekNumber
-    });
-  }
+  }, [refreshAssignments]);
 
   async function removeWeekFromGroup(input: {
     groupId: string;
@@ -117,21 +54,9 @@ export function ProgramManagementPanel({
       return;
     }
 
-    await removeWeek({
-      groupIds: [input.groupId],
-      key: `${input.groupId}:${input.weekNumber}`,
-      weekNumber: input.weekNumber
-    });
-  }
-
-  async function removeWeek(input: {
-    groupIds: string[];
-    key: string;
-    weekNumber: number;
-  }) {
     setMessage("");
-    setRemovingKey(input.key);
-    const result = await removeWeekFromGroups({ groupIds: input.groupIds, weekNumber: input.weekNumber });
+    setRemovingKey(`${input.groupId}:${input.weekNumber}`);
+    const result = await removeWeekFromGroups({ groupIds: [input.groupId], weekNumber: input.weekNumber });
     setRemovingKey("");
 
     if (!result.ok) {
@@ -140,33 +65,15 @@ export function ProgramManagementPanel({
     }
 
     setMessage(result.data);
-    await refreshAll();
+    await refreshAssignments();
     onProgramChanged();
-  }
-
-  function toggleGroup(groupId: string, checked: boolean) {
-    setSelectedGroupIds((current) => {
-      const next = checked
-        ? Array.from(new Set([...current, groupId]))
-        : current.filter((candidate) => candidate !== groupId);
-
-      if (next[0]) {
-        setSelectedGroupId(next[0]);
-      }
-
-      return next;
-    });
-  }
-
-  function getGroupName(groupId: string): string {
-    return groups.find((group) => group.groupId === groupId)?.name ?? "this group";
   }
 
   return (
     <section className="panel stack">
       <div className="row">
         <h2>Week assignments</h2>
-        <button className="button secondary" onClick={() => void refreshAll()} type="button">
+        <button className="button secondary" onClick={() => void refreshAssignments()} type="button">
           Refresh
         </button>
       </div>

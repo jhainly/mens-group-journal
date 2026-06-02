@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { ProgramManagementPanel } from "@/components/admin/ProgramManagementPanel";
 import {
@@ -10,7 +10,6 @@ import {
 } from "@/lib/services/dataClient";
 
 export function AdminProgramsPanel() {
-  const optimisticGroupsRef = useRef<AdminGroupSummary[]>([]);
   const [groups, setGroups] = useState<AdminGroupSummary[]>([]);
   const [status, setStatus] = useState("Loading groups...");
 
@@ -27,9 +26,8 @@ export function AdminProgramsPanel() {
       return;
     }
 
-    const mergedGroups = mergeGroups(result.data, optimisticGroupsRef.current);
-    setGroups(mergedGroups);
-    setStatus(mergedGroups.length > 0 ? "" : "Create a group before managing programs.");
+    setGroups(result.data);
+    setStatus(result.data.length > 0 ? "" : "Create a group before managing programs.");
   }
 
   return (
@@ -53,17 +51,3 @@ export function AdminProgramsPanel() {
   );
 }
 
-function mergeGroups(primary: AdminGroupSummary[], fallback: AdminGroupSummary[]): AdminGroupSummary[] {
-  const groupsById = new Map<string, AdminGroupSummary>();
-
-  for (const group of primary) {
-    groupsById.set(group.groupId, group);
-  }
-
-  for (const group of fallback) {
-    const current = groupsById.get(group.groupId);
-    groupsById.set(group.groupId, current ? { ...group, ...current, joinCode: current.joinCode ?? group.joinCode } : group);
-  }
-
-  return Array.from(groupsById.values()).sort((left, right) => left.name.localeCompare(right.name));
-}
