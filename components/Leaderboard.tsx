@@ -89,15 +89,7 @@ export function Leaderboard() {
 
   return (
     <section className="panel stack">
-      <div>
-        <p className="eyebrow">Group scores</p>
-        <h1>Leaderboard</h1>
-        <p>
-          {activeGroup
-            ? `Members can see where ${activeGroup.name} stands this week.`
-            : "Members can see where the group stands this week."}
-        </p>
-      </div>
+      <h1>Leaderboard</h1>
       {groups.length > 1 ? (
         <label className="field compact-field">
           <span>Group</span>

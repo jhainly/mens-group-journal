@@ -31,13 +31,8 @@ export function JoinGroupForm({ accountConfirmed = false }: { accountConfirmed?:
   return (
     <form className="panel stack" onSubmit={handleSubmit}>
       <div>
-        <p className="eyebrow">Group access</p>
         <h1>Join a group</h1>
-        <p>
-          {accountConfirmed
-            ? "Your account is ready. Enter the group code from your leader to continue."
-            : "Enter the private code from your Lifepoint Church group leader to join the current program."}
-        </p>
+        {accountConfirmed ? <p className="muted">Your account is verified. Enter your group code to continue.</p> : null}
       </div>
       <label className="field">
         <span>Group code</span>

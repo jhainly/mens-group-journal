@@ -55,13 +55,8 @@ export function CreateAccountForm() {
   return (
     <form className="panel stack" onSubmit={handleSubmit} suppressHydrationWarning>
       <div>
-        <p className="eyebrow">New account</p>
         <h1>{needsConfirmation ? "Verify account" : "Create account"}</h1>
-        <p>
-          {needsConfirmation
-            ? "Enter the code sent to your email."
-            : "Choose the name your Lifepoint Church group will see."}
-        </p>
+        {needsConfirmation ? <p className="muted">Enter the code sent to your email.</p> : null}
       </div>
       <label className="field">
         <span>Email</span>

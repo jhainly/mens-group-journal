@@ -56,13 +56,8 @@ export function LoginForm() {
   return (
     <form className="panel stack" onSubmit={handleSubmit} suppressHydrationWarning>
       <div>
-        <p className="eyebrow">Account</p>
         <h1>Sign in</h1>
-        <p>
-          {accountConfirmed
-            ? "Your account is verified. Sign in to continue."
-            : "Continue your Lifepoint Church men's group program and keep your personal journal private."}
-        </p>
+        {accountConfirmed ? <p className="muted">Your account is verified. Sign in to continue.</p> : null}
       </div>
       <label className="field">
         <span>Email</span>
