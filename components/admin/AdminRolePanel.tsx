@@ -47,17 +47,24 @@ export function AdminRolePanel() {
 
   return (
     <section className="panel stack">
-      <h2>Users</h2>
-      {message ? <p>{message}</p> : null}
+      <div className="row">
+        <h2>Users</h2>
+        <button className="button secondary" onClick={() => void refreshAdmins()} type="button">
+          Refresh
+        </button>
+      </div>
+      {message ? <p className="muted">{message}</p> : null}
 
       {users.length > 0 ? (
         <ul className="list">
           {users.map((user) => (
             <li className="card row" key={user.username}>
               <div>
-                <h3>{user.displayName}</h3>
-                <p className="muted">{user.email || user.username}</p>
-                <p className="role-label">{user.enabled ? user.status : "DISABLED"}</p>
+                <strong>{user.displayName}</strong>
+                <p className="muted">
+                  {user.email || user.username}
+                  {!user.enabled ? " · disabled" : user.status !== "CONFIRMED" ? ` · ${user.status.toLowerCase()}` : ""}
+                </p>
               </div>
               <label className="checkbox-row">
                 <input
