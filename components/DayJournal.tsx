@@ -241,6 +241,12 @@ export function DayJournal({
   }
 
 
+  const dayMaxPoints = day?.sections.reduce((sum, s) => sum + Math.max(0, s.points), 0) ?? 0;
+  const dayEarnedPoints = day?.sections
+    .filter((s) => completedSectionIds.includes(s.id))
+    .reduce((sum, s) => sum + Math.max(0, s.points), 0) ?? 0;
+  const dayProgressPct = dayMaxPoints > 0 ? Math.round((dayEarnedPoints / dayMaxPoints) * 100) : 0;
+
   return (
     <div className="stack">
       <div>
@@ -254,9 +260,12 @@ export function DayJournal({
           <div>
             <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
             {day ? (
-              <p className="muted">
-                {completedSectionIds.length} of {day.sections.length} sections complete
-              </p>
+              <div className="day-progress">
+                <div className="day-progress-track">
+                  <div className="day-progress-fill" style={{ width: `${dayProgressPct}%` }} />
+                </div>
+                <span className="day-progress-label">{dayEarnedPoints}/{dayMaxPoints} pts</span>
+              </div>
             ) : null}
           </div>
           <p className="muted" aria-live="polite" style={{ whiteSpace: "nowrap" }}>
