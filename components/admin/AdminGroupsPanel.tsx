@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { setSelectedGroupId } from "@/lib/groupSelection";
 import {
   createGroup,
@@ -70,22 +71,10 @@ export function AdminGroupsPanel() {
 
   return (
     <div className="stack">
-      <section className="panel stack">
-        <div>
-          <p className="eyebrow">Admin tools</p>
-          <h1>Group management</h1>
-          <p>Create groups, review existing groups, and open a group to see its members and assigned weeks.</p>
-        </div>
-        <Link className="button secondary" href="/admin">
-          Back to admin tools
-        </Link>
-      </section>
+      <AdminNav />
 
       <form className="panel stack" id="create-group" onSubmit={handleSubmit}>
-        <div>
-          <p className="eyebrow">New group</p>
-          <h2>Create group</h2>
-        </div>
+        <h2>Create group</h2>
         <div className="grid two">
           <label className="field">
             <span>Group name</span>
@@ -106,11 +95,7 @@ export function AdminGroupsPanel() {
 
       <section className="panel stack" id="groups">
         <div className="row">
-          <div>
-            <p className="eyebrow">Groups</p>
-            <h2>Existing groups</h2>
-            <p>Admins can review Lifepoint Church group access and membership.</p>
-          </div>
+          <h2>Groups</h2>
           <button className="button secondary" onClick={() => void refreshGroups()} type="button">
             Refresh
           </button>
@@ -122,7 +107,6 @@ export function AdminGroupsPanel() {
                 <div className="row">
                   <div>
                     <h3>{group.name}</h3>
-                    <p className="muted">Group ID: {group.groupId}</p>
                   </div>
                   <Link className="button secondary" href={`/admin/groups/${group.groupId}`}>
                     View group

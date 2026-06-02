@@ -160,11 +160,7 @@ export function YamlImportPreview({ embedded = false, groups: providedGroups, on
     <div className="grid two import-preview-grid">
       <div className="stack">
         <section className="panel stack import-program-panel">
-          <div>
-            <p className="eyebrow">Import program</p>
-            <h2>YAML source</h2>
-            <p>Paste one or more weeks to validate the structure and content before publishing.</p>
-          </div>
+          <h2>YAML source</h2>
           <label className="field">
             <span>Program content</span>
             <textarea value={source} onChange={(event) => setSource(event.target.value)} />
@@ -195,7 +191,7 @@ export function YamlImportPreview({ embedded = false, groups: providedGroups, on
       </div>
 
       <section className="panel stack">
-        <p className="eyebrow">Preview</p>
+        <h2>Preview</h2>
         {errors.length > 0 ? (
           <ul>
             {errors.map((error) => (

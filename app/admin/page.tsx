@@ -1,5 +1,5 @@
-import { AdminHome } from "@/components/admin/AdminHome";
+import { redirect } from "next/navigation";
 
 export default function AdminPage() {
-  return <AdminHome />;
+  redirect("/admin/groups");
 }

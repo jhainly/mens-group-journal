@@ -125,7 +125,7 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
           const answer = input.decryptedAnswers[prompt.id];
 
           if (answer) {
-            addWrapped("", answer, { indent: 1.35 }, 3);
+            addWrapped("", answer, { indent: 1.35 }, 20);
           } else {
             addLine("", { gapAfter: 13 });
           }

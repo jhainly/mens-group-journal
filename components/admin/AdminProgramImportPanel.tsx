@@ -5,14 +5,12 @@ export function AdminProgramImportPanel() {
   return (
     <div className="stack">
       <section className="panel stack">
-        <div>
-          <p className="eyebrow">Program management</p>
+        <div className="row">
           <h1>Import program week</h1>
-          <p>Validate YAML, preview the content, and publish weeks to one or more groups.</p>
+          <Link className="button secondary" href="/admin/programs">
+            Back
+          </Link>
         </div>
-        <Link className="button secondary" href="/admin/programs">
-          Back to program management
-        </Link>
       </section>
 
       <YamlImportPreview />

@@ -150,17 +150,12 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
 
   return (
     <div className="stack">
-      <div>
-        <Link className="button secondary" href="/admin/groups">
-          Back to groups
-        </Link>
-      </div>
-
       <section className="panel stack">
-        <div>
-          <p className="eyebrow">Group detail</p>
+        <div className="row">
           <h1>{group.name}</h1>
-          <p>Leaders and members in this Lifepoint Church group.</p>
+          <Link className="button secondary" href="/admin/groups">
+            Back
+          </Link>
         </div>
         <div className="grid three">
           <div className="metric">
@@ -184,10 +179,7 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
       </section>
 
       <section className="panel stack">
-        <div>
-          <p className="eyebrow">Settings</p>
-          <h2>Edit group</h2>
-        </div>
+        <h2>Settings</h2>
         <form className="stack" onSubmit={saveSettings}>
           <div className="grid two">
             <label className="field">
@@ -210,10 +202,7 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
 
       <section className="panel stack">
         <div className="row">
-          <div>
-            <p className="eyebrow">Program content</p>
-            <h2>Active weeks</h2>
-          </div>
+          <h2>Active weeks</h2>
           <button className="button secondary" onClick={() => void refreshWeeks()} type="button">
             Refresh
           </button>
@@ -224,7 +213,6 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
               <li className="card row" key={week.weekNumber}>
                 <div>
                   <h3>Week {week.weekNumber}: {week.title}</h3>
-                  <p className="muted">Active for this group.</p>
                 </div>
                 <button
                   className="button secondary"

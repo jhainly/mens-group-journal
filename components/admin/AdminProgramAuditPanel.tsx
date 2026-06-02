@@ -68,22 +68,17 @@ export function AdminProgramAuditPanel() {
   return (
     <div className="stack">
       <section className="panel stack">
-        <div>
-          <p className="eyebrow">Program management</p>
+        <div className="row">
           <h1>Audit log</h1>
-          <p>Review program week imports, replacements, and removals.</p>
+          <Link className="button secondary" href="/admin/programs">
+            Back
+          </Link>
         </div>
-        <Link className="button secondary" href="/admin/programs">
-          Back to program management
-        </Link>
       </section>
 
       <section className="panel stack">
         <div className="row">
-          <div>
-            <p className="eyebrow">Filters</p>
-            <h2>Groups</h2>
-          </div>
+          <h2>Filter by group</h2>
           <button className="button secondary" onClick={clearFilters} type="button">
             Show all
           </button>
@@ -108,10 +103,7 @@ export function AdminProgramAuditPanel() {
 
       <section className="panel stack">
         <div className="row">
-          <div>
-            <p className="eyebrow">Changes</p>
-            <h2>Recent program changes</h2>
-          </div>
+          <h2>Recent changes</h2>
           <button className="button secondary" onClick={() => void refreshAudit()} type="button">
             Refresh
           </button>

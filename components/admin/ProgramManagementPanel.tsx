@@ -165,72 +165,13 @@ export function ProgramManagementPanel({
   return (
     <section className="panel stack">
       <div className="row">
-        <div>
-          <p className="eyebrow">Assignments</p>
-          <h2>Weeks assigned to groups</h2>
-          <p>Review which weeks are active for each group and remove weeks that should no longer be available.</p>
-        </div>
+        <h2>Week assignments</h2>
         <button className="button secondary" onClick={() => void refreshAll()} type="button">
           Refresh
         </button>
       </div>
 
-      {groups.length > 0 ? (
-        <fieldset className="field">
-          <span>Bulk remove from selected groups</span>
-          <div className="stack compact-stack">
-            {groups.map((group) => (
-              <label className="checkbox-row" key={group.groupId}>
-                <input
-                  checked={selectedGroupIds.includes(group.groupId)}
-                  onChange={(event) => toggleGroup(group.groupId, event.target.checked)}
-                  type="checkbox"
-                />
-                <span>{group.name}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      ) : null}
-
-      {activeWeeks.length > 0 ? (
-        <section className="section-block stack">
-          <div>
-            <h3>Selected group actions</h3>
-            <p className="muted">
-              Remove a week from {selectedGroupIds.length} selected {selectedGroupIds.length === 1 ? "group" : "groups"}.
-            </p>
-          </div>
-          <ul className="list">
-            {activeWeeks.map((week) => (
-              <li className="card row" key={week.weekNumber}>
-                <div>
-                  <h3>Week {week.weekNumber}: {week.title}</h3>
-                  <p className="muted">
-                    Active in {week.groupCount} selected {week.groupCount === 1 ? "group" : "groups"}.
-                  </p>
-                </div>
-                <button
-                  className="button secondary"
-                  disabled={selectedGroupIds.length === 0 || removingKey === `selected:${week.weekNumber}`}
-                  onClick={() => void removeWeekFromSelectedGroups(week.weekNumber)}
-                  type="button"
-                >
-                  {removingKey === `selected:${week.weekNumber}` ? "Removing..." : "Remove from selected"}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : (
-        <p className="muted">{status}</p>
-      )}
-
       <section className="section-block stack">
-        <div>
-          <h3>Group-by-group assignments</h3>
-          <p className="muted">Each group lists the active weeks currently available to its members.</p>
-        </div>
         {assignments.length > 0 ? (
           <ul className="list">
             {assignments.map((assignment) => (

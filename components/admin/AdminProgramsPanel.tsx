@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { ProgramManagementPanel } from "@/components/admin/ProgramManagementPanel";
 import {
   listAdminGroups,
@@ -33,24 +34,15 @@ export function AdminProgramsPanel() {
 
   return (
     <div className="stack">
-      <section className="panel stack">
-        <div>
-          <p className="eyebrow">Admin tools</p>
-          <h1>Program management</h1>
-          <p>Manage which weeks are assigned to which groups.</p>
-        </div>
-        <div className="row">
-          <Link className="button secondary" href="/admin">
-            Back to admin tools
-          </Link>
-          <Link className="button" href="/admin/programs/import">
-            Import new week
-          </Link>
-          <Link className="button secondary" href="/admin/programs/audit">
-            View audit log
-          </Link>
-        </div>
-      </section>
+      <AdminNav />
+      <div className="row">
+        <Link className="button" href="/admin/programs/import">
+          Import new week
+        </Link>
+        <Link className="button secondary" href="/admin/programs/audit">
+          Audit log
+        </Link>
+      </div>
 
       {status && groups.length === 0 ? <p className="muted">{status}</p> : null}
 

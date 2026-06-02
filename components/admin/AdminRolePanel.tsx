@@ -47,12 +47,7 @@ export function AdminRolePanel() {
 
   return (
     <section className="panel stack">
-      <div>
-        <p className="eyebrow">Admin access</p>
-        <h2>User access</h2>
-        <p>Choose which users can manage groups, program imports, and admin access.</p>
-      </div>
-
+      <h2>Users</h2>
       {message ? <p>{message}</p> : null}
 
       {users.length > 0 ? (
