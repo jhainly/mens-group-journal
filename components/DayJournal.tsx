@@ -289,7 +289,6 @@ export function DayJournal({
                     const reflectionId = sectionReflectionId(section.id);
                     return (
                       <label className="field" key={reflectionId}>
-                        <span>Optional reflection</span>
                         <textarea
                           className="journal-textarea"
                           value={answers[reflectionId] ?? ""}
