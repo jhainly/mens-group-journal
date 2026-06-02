@@ -117,7 +117,7 @@ export function AdminGroupsPanel() {
                 <div>
                   <strong>{group.name}</strong>
                   <p className="muted">
-                    {group.memberCount} {group.memberCount === 1 ? "member" : "members"} · {group.leaderCount} {group.leaderCount === 1 ? "leader" : "leaders"}{group.joinCode ? ` · ${group.joinCode}` : ""}
+                    {group.memberCount} {group.memberCount === 1 ? "member" : "members"} · {group.leaderCount} {group.leaderCount === 1 ? "leader" : "leaders"}{group.joinCode ? ` · code: ${group.joinCode}` : ""}
                   </p>
                 </div>
                 <Link className="button secondary" href={`/admin/groups/${group.groupId}`}>
