@@ -76,12 +76,15 @@ export const handler = async (event: JoinGroupEvent): Promise<JoinGroupResult> =
         new PutItemCommand({
           TableName: membershipTableName,
           Item: {
+            __typename: { S: "GroupMembership" },
             membershipId: { S: membershipId },
             groupId: { S: groupId },
             userId: { S: userId },
             role: { S: "member" },
             displayName: { S: displayName },
-            joinedAt: { S: now }
+            joinedAt: { S: now },
+            createdAt: { S: now },
+            updatedAt: { S: now }
           },
           ConditionExpression: "attribute_not_exists(membershipId)"
         })
