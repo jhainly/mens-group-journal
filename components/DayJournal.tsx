@@ -244,10 +244,11 @@ export function DayJournal({
         <div>
           <p className="eyebrow">Week {weekNumber}</p>
           <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
-          <p>
-            Your reflections are private and stay connected to your account
-            {activeGroup ? ` in ${activeGroup.name}.` : "."}
-          </p>
+          {day ? (
+            <p className="muted">
+              {completedSectionIds.length} of {day.sections.length} sections complete
+            </p>
+          ) : null}
         </div>
         {groupStatus ? <p className="muted">{groupStatus}</p> : null}
         {programStatus ? <p className="muted">{programStatus}</p> : null}
