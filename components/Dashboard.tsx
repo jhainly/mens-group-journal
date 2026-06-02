@@ -175,16 +175,20 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
             </select>
           </label>
         ) : null}
-        <div className="grid two">
-          <div className="metric">
-            <span>Weekly score</span>
-            <strong>{scores.weeklyScore}/{scores.maxWeeklyScore}</strong>
+        {program ? (
+          <div className="stack">
+            <ScoreBar
+              label="Weekly score"
+              earned={scores.weeklyScore}
+              max={scores.maxWeeklyScore}
+            />
+            <ScoreBar
+              label="Lifetime score"
+              earned={scores.cumulativeScore}
+              max={scores.maxCumulativeScore}
+            />
           </div>
-          <div className="metric">
-            <span>Cumulative score</span>
-            <strong>{scores.cumulativeScore}/{scores.maxCumulativeScore}</strong>
-          </div>
-        </div>
+        ) : null}
         {!activeGroup ? (
           <div className="row">
             <Link className="button" href="/join">
@@ -241,6 +245,21 @@ function getEmptyScores(program: Program | null, activeWeekNumber: number): Scor
     maxCumulativeScore,
     dayProgress: []
   };
+}
+
+function ScoreBar({ label, earned, max }: { label: string; earned: number; max: number }) {
+  const pct = max > 0 ? Math.round((earned / max) * 100) : 0;
+  return (
+    <div className="score-bar">
+      <div className="row">
+        <span className="score-bar-label">{label}</span>
+        <span className="score-bar-value">{earned}/{max} pts</span>
+      </div>
+      <div className="score-bar-track">
+        <div className="score-bar-fill" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
 }
 
 function getMaxWeeklyScore(program: Program, activeWeekNumber: number): number {
