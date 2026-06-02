@@ -18,6 +18,7 @@ export function AdminGroupsPanel() {
   const [directoryStatus, setDirectoryStatus] = useState("Loading groups...");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   useEffect(() => {
     void refreshGroups();
@@ -49,9 +50,10 @@ export function AdminGroupsPanel() {
     setSelectedGroupId(result.data);
     setGroups((current) => mergeGroups(current, [createdGroup]));
     setDirectoryStatus("");
-    setMessage("Group created and selected.");
+    setMessage("Group created.");
     setName("");
     setJoinCode("");
+    setShowCreateForm(false);
     void refreshGroups();
   }
 
@@ -73,64 +75,54 @@ export function AdminGroupsPanel() {
     <div className="stack">
       <AdminNav />
 
-      <form className="panel stack" id="create-group" onSubmit={handleSubmit}>
-        <h2>Create group</h2>
-        <div className="grid two">
-          <label className="field">
-            <span>Group name</span>
-            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Tuesday Morning Men" required />
-          </label>
-          <label className="field">
-            <span>Join code</span>
-            <input value={joinCode} onChange={(event) => setJoinCode(event.target.value)} placeholder="Set a private code" required />
-          </label>
-        </div>
-        {message ? <p>{message}</p> : null}
-        <div className="row">
-          <button className="button" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Creating..." : "Create group"}
-          </button>
-        </div>
-      </form>
-
       <section className="panel stack" id="groups">
         <div className="row">
           <h2>Groups</h2>
-          <button className="button secondary" onClick={() => void refreshGroups()} type="button">
-            Refresh
-          </button>
+          <div className="row">
+            <button className="button secondary" onClick={() => void refreshGroups()} type="button">
+              Refresh
+            </button>
+            <button className="button" onClick={() => setShowCreateForm((v) => !v)} type="button">
+              {showCreateForm ? "Cancel" : "New group"}
+            </button>
+          </div>
         </div>
+
+        {showCreateForm ? (
+          <form className="stack" id="create-group" onSubmit={handleSubmit}>
+            <div className="grid two">
+              <label className="field">
+                <span>Group name</span>
+                <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Tuesday Morning Men" required />
+              </label>
+              <label className="field">
+                <span>Join code</span>
+                <input value={joinCode} onChange={(event) => setJoinCode(event.target.value)} placeholder="GRACE-2026" required />
+              </label>
+            </div>
+            <div>
+              <button className="button" disabled={isSubmitting} type="submit">
+                {isSubmitting ? "Creating..." : "Create group"}
+              </button>
+            </div>
+          </form>
+        ) : null}
+
+        {message ? <p className="muted">{message}</p> : null}
+
         {groups.length > 0 ? (
           <ul className="list">
             {groups.map((group) => (
-              <li className="card stack" key={group.groupId}>
-                <div className="row">
-                  <div>
-                    <h3>{group.name}</h3>
-                  </div>
-                  <Link className="button secondary" href={`/admin/groups/${group.groupId}`}>
-                    View group
-                  </Link>
+              <li className="card row" key={group.groupId}>
+                <div>
+                  <strong>{group.name}</strong>
+                  <p className="muted">
+                    {group.memberCount} {group.memberCount === 1 ? "member" : "members"} · {group.leaderCount} {group.leaderCount === 1 ? "leader" : "leaders"}{group.joinCode ? ` · ${group.joinCode}` : ""}
+                  </p>
                 </div>
-                <div className="grid three">
-                  <div className="metric">
-                    <span>Members</span>
-                    <strong>{group.memberCount}</strong>
-                  </div>
-                  <div className="metric">
-                    <span>Leaders</span>
-                    <strong>{group.leaderCount}</strong>
-                  </div>
-                  <div className="metric">
-                    <span>Join code</span>
-                    <strong>{group.joinCode ?? "Unavailable"}</strong>
-                    {group.joinCode ? (
-                      <small>Visible to admins.</small>
-                    ) : (
-                      <small>Reset this group&apos;s code to make it visible here.</small>
-                    )}
-                  </div>
-                </div>
+                <Link className="button secondary" href={`/admin/groups/${group.groupId}`}>
+                  View
+                </Link>
               </li>
             ))}
           </ul>

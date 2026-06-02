@@ -152,34 +152,14 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
     <div className="stack">
       <section className="panel stack">
         <div className="row">
-          <h1>{group.name}</h1>
+          <div>
+            <h1>{group.name}</h1>
+            <p className="muted">{group.memberCount} {group.memberCount === 1 ? "member" : "members"} · {group.leaderCount} {group.leaderCount === 1 ? "leader" : "leaders"}</p>
+          </div>
           <Link className="button secondary" href="/admin/groups">
             Back
           </Link>
         </div>
-        <div className="grid three">
-          <div className="metric">
-            <span>Members</span>
-            <strong>{group.memberCount}</strong>
-          </div>
-          <div className="metric">
-            <span>Leaders</span>
-            <strong>{group.leaderCount}</strong>
-          </div>
-          <div className="metric">
-            <span>Join code</span>
-            <strong>{group.joinCode ?? "Unavailable"}</strong>
-            {group.joinCode ? (
-              <small>Visible to admins.</small>
-            ) : (
-              <small>Reset this group&apos;s code to make it visible here.</small>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="panel stack">
-        <h2>Settings</h2>
         <form className="stack" onSubmit={saveSettings}>
           <div className="grid two">
             <label className="field">
