@@ -463,6 +463,38 @@ li {
   width: 18px;
 }
 
+.day-card-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.day-progress {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.day-progress-track {
+  background: var(--surface-strong);
+  border-radius: 4px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.day-progress-fill {
+  background: var(--accent);
+  border-radius: 4px;
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.day-progress-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .leaderboard-rank {
   color: var(--muted);
   font-size: 0.85rem;

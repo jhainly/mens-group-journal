@@ -4,16 +4,18 @@ import { useMemo } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { getProgramDayLabel } from "@/lib/programDays";
+import type { DayProgress } from "@/lib/scoring";
 import type { Program } from "@/types/program";
 
 type ProgramNavigatorProps = {
   action?: ReactNode;
+  dayProgress?: DayProgress[];
   onSelectedWeekNumberChange: (weekNumber: number) => void;
   program: Program;
   selectedWeekNumber: number;
 };
 
-export function ProgramNavigator({ action, onSelectedWeekNumberChange, program, selectedWeekNumber }: ProgramNavigatorProps) {
+export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumberChange, program, selectedWeekNumber }: ProgramNavigatorProps) {
   const selectedWeek = useMemo(
     () => program.weeks.find((week) => week.weekNumber === selectedWeekNumber) ?? program.weeks[0],
     [program.weeks, selectedWeekNumber]
@@ -68,16 +70,30 @@ export function ProgramNavigator({ action, onSelectedWeekNumberChange, program, 
         </div>
 
         <ul className="list">
-          {selectedWeek.days.map((day) => (
-            <li className="card row" key={day.dayNumber}>
-              <span>
-                {getProgramDayLabel(day.dayNumber)}: <strong>{day.title}</strong>
-              </span>
-              <Link className="button secondary" href={`/program/week/${selectedWeek.weekNumber}/day/${day.dayNumber}`}>
-                Open
-              </Link>
-            </li>
-          ))}
+          {selectedWeek.days.map((day) => {
+            const progress = dayProgress.find((d) => d.dayNumber === day.dayNumber);
+            const pct = progress && progress.maxPoints > 0
+              ? Math.round((progress.pointsEarned / progress.maxPoints) * 100)
+              : 0;
+            return (
+              <li className="card" key={day.dayNumber}>
+                <div className="day-card-row">
+                  <span>{getProgramDayLabel(day.dayNumber)}: <strong>{day.title}</strong></span>
+                  <Link className="button secondary" href={`/program/week/${selectedWeek.weekNumber}/day/${day.dayNumber}`}>
+                    Open
+                  </Link>
+                </div>
+                {progress ? (
+                  <div className="day-progress">
+                    <div className="day-progress-track">
+                      <div className="day-progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="day-progress-label">{progress.pointsEarned}/{progress.maxPoints} pts</span>
+                  </div>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

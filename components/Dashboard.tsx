@@ -117,7 +117,8 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
     setScores((current) => ({
       ...current,
       weeklyScore: 0,
-      maxWeeklyScore: getMaxWeeklyScore(program, selectedWeekNumber)
+      maxWeeklyScore: getMaxWeeklyScore(program, selectedWeekNumber),
+      dayProgress: []
     }));
 
     void getCurrentUserScoreSummary({
@@ -207,6 +208,7 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
               />
             ) : null
           }
+          dayProgress={scores.dayProgress}
           onSelectedWeekNumberChange={setSelectedWeekNumber}
           program={program}
           selectedWeekNumber={selectedWeekNumber}
@@ -236,7 +238,8 @@ function getEmptyScores(program: Program | null, activeWeekNumber: number): Scor
     weeklyScore: 0,
     cumulativeScore: 0,
     maxWeeklyScore,
-    maxCumulativeScore
+    maxCumulativeScore,
+    dayProgress: []
   };
 }
 
