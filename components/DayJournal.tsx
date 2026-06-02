@@ -251,7 +251,6 @@ export function DayJournal({
 
       <section className="panel stack">
         <div>
-          <p className="eyebrow">Week {weekNumber}</p>
           <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
           {day ? (
             <p className="muted">

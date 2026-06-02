@@ -32,35 +32,30 @@ export function ProgramNavigator({ action, onSelectedWeekNumberChange, program, 
     <section className="panel stack">
       <div className="row">
         <div>
-          <p className="eyebrow">Program</p>
-          <h2>Choose a week</h2>
-          <p>Select one week to review its days and continue at your own pace.</p>
+          <h2>{selectedWeek.title}</h2>
+          {selectedWeek.summary ? <p className="muted">{selectedWeek.summary}</p> : null}
         </div>
-        <label className="field compact-field">
-          <span>Week</span>
-          <select
-            value={selectedWeekNumber}
-            onChange={(event) => onSelectedWeekNumberChange(Number(event.target.value))}
-          >
-            {program.weeks.map((week) => (
-              <option key={week.weekNumber} value={week.weekNumber}>
-                Week {week.weekNumber}: {week.title}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="row">
+          {action ?? null}
+          {program.weeks.length > 1 ? (
+            <label className="field compact-field">
+              <span>Week</span>
+              <select
+                value={selectedWeekNumber}
+                onChange={(event) => onSelectedWeekNumberChange(Number(event.target.value))}
+              >
+                {program.weeks.map((week) => (
+                  <option key={week.weekNumber} value={week.weekNumber}>
+                    Week {week.weekNumber}: {week.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+        </div>
       </div>
 
       <div className="section-block stack">
-        <div>
-          <p className="eyebrow">
-            Week {selectedWeek.weekNumber} of {program.weeks.length}
-          </p>
-          <h2>{selectedWeek.title}</h2>
-          {selectedWeek.summary ? <p>{selectedWeek.summary}</p> : null}
-        </div>
-        {action ? <div>{action}</div> : null}
-
         <div className="grid two">
           <div className="metric">
             <span>Days</span>

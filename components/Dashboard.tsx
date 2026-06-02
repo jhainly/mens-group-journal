@@ -158,11 +158,9 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
     <div className="stack">
       <section className="panel stack">
         <div>
-          <p className="eyebrow">Current group</p>
           <h1>{activeGroup?.name ?? "Join a group"}</h1>
-          {program ? <p>{program.program.title}: {program.program.description}</p> : null}
-          {!activeGroup ? <p>Enter your group code to connect this account to your men&apos;s group.</p> : null}
-          {activeGroup && !program ? <p>Program content will appear here after your leader publishes active weeks.</p> : null}
+          {program ? <p className="muted">{program.program.title}{program.program.description ? `: ${program.program.description}` : ""}</p> : null}
+          {activeGroup && !program ? <p className="muted">Your leader hasn&apos;t published content for this group yet.</p> : null}
         </div>
         {groups.length > 1 ? (
           <label className="field compact-field">
