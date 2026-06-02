@@ -463,6 +463,13 @@ li {
   width: 18px;
 }
 
+.leaderboard-rank {
+  color: var(--muted);
+  font-size: 0.85rem;
+  min-width: 1.5rem;
+  text-align: right;
+}
+
 .section-complete {
   background: var(--surface-strong);
 }

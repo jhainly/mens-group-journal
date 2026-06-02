@@ -119,9 +119,12 @@ export function Leaderboard() {
       ) : null}
       {rows.length > 0 ? (
         <ul className="list">
-          {rows.map((row) => (
+          {rows.map((row, index) => (
             <li className="card row" key={row.displayName}>
-              <strong>{row.displayName}</strong>
+              <div className="row">
+                <span className="leaderboard-rank">{index + 1}</span>
+                <strong>{row.displayName}</strong>
+              </div>
               <span>{formatPoints(row.score)}</span>
             </li>
           ))}
