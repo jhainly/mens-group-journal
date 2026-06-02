@@ -250,13 +250,18 @@ export function DayJournal({
       </div>
 
       <section className="panel stack">
-        <div>
-          <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
-          {day ? (
-            <p className="muted">
-              {completedSectionIds.length} of {day.sections.length} sections complete
-            </p>
-          ) : null}
+        <div className="row">
+          <div>
+            <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
+            {day ? (
+              <p className="muted">
+                {completedSectionIds.length} of {day.sections.length} sections complete
+              </p>
+            ) : null}
+          </div>
+          <p className="muted" aria-live="polite" style={{ whiteSpace: "nowrap" }}>
+            {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : saveStatus === "error" ? saveError : ""}
+          </p>
         </div>
         {groupStatus ? <p className="muted">{groupStatus}</p> : null}
         {programStatus ? <p className="muted">{programStatus}</p> : null}
@@ -322,9 +327,6 @@ export function DayJournal({
         </section>
       ))}
 
-      <p className="muted" aria-live="polite">
-        {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : saveStatus === "error" ? saveError : ""}
-      </p>
     </div>
   );
 }
