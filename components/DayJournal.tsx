@@ -15,6 +15,10 @@ import {
 } from "@/lib/services/dataClient";
 import type { Program, ProgramDay } from "@/types/program";
 
+function sectionReflectionId(sectionId: string): string {
+  return `${sectionId}:reflection`;
+}
+
 export function DayJournal({
   weekNumber,
   dayNumber
@@ -178,15 +182,17 @@ export function DayJournal({
       dayNumber: day.dayNumber,
       completedSectionIds,
       answers: Object.fromEntries(
-        day.sections.flatMap((section) =>
-          (section.prompts ?? []).map((prompt) => [
-            prompt.id,
-            {
-              sectionId: section.id,
-              value: answers[prompt.id] ?? ""
-            }
-          ])
-        )
+        day.sections.flatMap((section) => {
+          const prompts = section.prompts ?? [];
+          if (prompts.length > 0) {
+            return prompts.map((prompt) => [
+              prompt.id,
+              { sectionId: section.id, value: answers[prompt.id] ?? "" }
+            ]);
+          }
+          const reflectionId = sectionReflectionId(section.id);
+          return [[reflectionId, { sectionId: section.id, value: answers[reflectionId] ?? "" }]];
+        })
       )
     });
 
@@ -217,6 +223,7 @@ export function DayJournal({
     element.style.height = "auto";
     element.style.height = `${element.scrollHeight}px`;
   }
+
 
   return (
     <div className="stack">
@@ -263,20 +270,38 @@ export function DayJournal({
                   <p>{scripture.text}</p>
                 </blockquote>
               ))}
-              {section.prompts?.map((prompt) => (
-                <label className="field" key={prompt.id}>
-                  <span>{prompt.label}</span>
-                  <textarea
-                    className="journal-textarea"
-                    value={answers[prompt.id] ?? ""}
-                    onChange={(event) => {
-                      updateAnswer(prompt.id, section.id, event.target.value);
-                      resizeTextarea(event.currentTarget);
-                    }}
-                    placeholder="Optional reflection"
-                  />
-                </label>
-              ))}
+              {section.prompts && section.prompts.length > 0
+                ? section.prompts.map((prompt) => (
+                    <label className="field" key={prompt.id}>
+                      <span>{prompt.label}</span>
+                      <textarea
+                        className="journal-textarea"
+                        value={answers[prompt.id] ?? ""}
+                        onChange={(event) => {
+                          updateAnswer(prompt.id, section.id, event.target.value);
+                          resizeTextarea(event.currentTarget);
+                        }}
+                        placeholder="Optional reflection"
+                      />
+                    </label>
+                  ))
+                : (() => {
+                    const reflectionId = sectionReflectionId(section.id);
+                    return (
+                      <label className="field" key={reflectionId}>
+                        <span>Optional reflection</span>
+                        <textarea
+                          className="journal-textarea"
+                          value={answers[reflectionId] ?? ""}
+                          onChange={(event) => {
+                            updateAnswer(reflectionId, section.id, event.target.value);
+                            resizeTextarea(event.currentTarget);
+                          }}
+                          placeholder="Optional reflection"
+                        />
+                      </label>
+                    );
+                  })()}
             </div>
           </div>
         </section>

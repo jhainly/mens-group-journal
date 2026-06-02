@@ -120,14 +120,22 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
           addWrapped("", `${scripture.reference}: ${scripture.text}`, { indent: 1, italic: true }, 4, SCRIPTURE_MAX_CHARS);
         }
 
-        for (const prompt of section.prompts ?? []) {
-          addWrapped("", prompt.label, { bullet: true, indent: 1 }, 2);
-          const answer = input.decryptedAnswers[prompt.id];
+        const prompts = section.prompts ?? [];
+        if (prompts.length > 0) {
+          for (const prompt of prompts) {
+            addWrapped("", prompt.label, { bullet: true, indent: 1 }, 2);
+            const answer = input.decryptedAnswers[prompt.id];
 
-          if (answer) {
-            addWrapped("", answer, { indent: 1.35 }, 20);
-          } else {
-            addLine("", { gapAfter: 13 });
+            if (answer) {
+              addWrapped("", answer, { indent: 1.35 }, 20);
+            } else {
+              addLine("", { gapAfter: 13 });
+            }
+          }
+        } else {
+          const reflectionAnswer = input.decryptedAnswers[`${section.id}:reflection`];
+          if (reflectionAnswer) {
+            addWrapped("", reflectionAnswer, { indent: 1 }, 20);
           }
         }
 
