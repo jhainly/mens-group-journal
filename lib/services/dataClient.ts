@@ -420,7 +420,7 @@ export async function listCurrentUserGroups(): Promise<ServiceResult<UserGroupSu
       }
     });
     const groups: Array<UserGroupSummary | null> = await Promise.all(
-      memberships.data.map(async (membership) => {
+      memberships.data.filter((membership): membership is NonNullable<typeof membership> => membership != null).map(async (membership) => {
         const group = await client.models.Group.get({ groupId: membership.groupId });
 
         if (!group.data) {
@@ -468,7 +468,7 @@ export async function leaveCurrentUserGroup(groupId: string): Promise<ServiceRes
     }
 
     await Promise.all(
-      memberships.data.map((membership) =>
+      memberships.data.filter((membership): membership is NonNullable<typeof membership> => membership != null).map((membership) =>
         requireSaved(
           client.models.GroupMembership.delete({
             membershipId: membership.membershipId
@@ -490,7 +490,7 @@ export async function leaveCurrentUserGroup(groupId: string): Promise<ServiceRes
     });
 
     await Promise.all(
-      scores.data.map((score) =>
+      scores.data.filter((score): score is NonNullable<typeof score> => score != null).map((score) =>
         client.models.UserScore.delete({
           scoreId: score.scoreId
         })
@@ -509,7 +509,7 @@ export async function listAdminGroups(): Promise<ServiceResult<AdminGroupSummary
     const client = getDataClient();
     const groups = await client.models.Group.list();
     const summaries = await Promise.all(
-      groups.data.map(async (group) => {
+      groups.data.filter((group): group is NonNullable<typeof group> => group != null).map(async (group) => {
         const memberships = await client.models.GroupMembership.list({
           filter: {
             groupId: {
@@ -517,13 +517,14 @@ export async function listAdminGroups(): Promise<ServiceResult<AdminGroupSummary
             }
           }
         });
+        const validMemberships = memberships.data.filter((membership): membership is NonNullable<typeof membership> => membership != null);
 
         return {
           activeProgramId: group.activeProgramId ?? undefined,
           groupId: group.groupId,
           joinCode: group.joinCode ?? null,
-          leaderCount: memberships.data.filter((membership) => isLeaderRole(membership.role)).length,
-          memberCount: memberships.data.length,
+          leaderCount: validMemberships.filter((membership) => isLeaderRole(membership.role)).length,
+          memberCount: validMemberships.length,
           name: group.name
         } satisfies AdminGroupSummary;
       })
@@ -556,6 +557,7 @@ export async function getAdminGroupDetail(groupId: string): Promise<ServiceResul
       }
     });
     const members = memberships.data
+      .filter((membership): membership is NonNullable<typeof membership> => membership != null)
       .map((membership) => ({
         displayName: membership.displayName,
         joinedAt: membership.joinedAt,
@@ -1754,7 +1756,7 @@ async function updateOwnMembershipDisplayNames(
   });
 
   await Promise.all(
-    memberships.data.map((membership) =>
+    memberships.data.filter((membership): membership is NonNullable<typeof membership> => membership != null).map((membership) =>
       requireSaved(
         client.models.GroupMembership.update({
           membershipId: membership.membershipId,
@@ -1776,7 +1778,7 @@ async function updateOwnScoreDisplayNames(client: DataClient, userId: string, di
   });
 
   await Promise.all(
-    scores.data.map((score) =>
+    scores.data.filter((score): score is NonNullable<typeof score> => score != null).map((score) =>
       requireSaved(
         client.models.UserScore.update({
           scoreId: score.scoreId,
