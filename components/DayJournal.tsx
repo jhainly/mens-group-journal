@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { canEncryptJournalAnswers, getJournalEncryptionRequirementMessage } from "@/lib/encryption";
 import { formatPoints } from "@/lib/format";
@@ -31,12 +31,15 @@ export function DayJournal({
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [program, setProgram] = useState<Program | null>(null);
   const [day, setDay] = useState<ProgramDay | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveError, setSaveError] = useState("");
   const [groupStatus, setGroupStatus] = useState("Loading group...");
   const [programStatus, setProgramStatus] = useState("Loading program...");
   const [journalStatus, setJournalStatus] = useState("");
-  const [savedCount, setSavedCount] = useState(0);
-  const [message, setMessage] = useState("");
+
+  const hasLoadedRef = useRef(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveRef = useRef<() => Promise<void>>(async () => undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,13 +82,14 @@ export function DayJournal({
       };
     }
 
+    hasLoadedRef.current = false;
     setProgram(null);
     setDay(null);
     setProgramStatus("Loading program...");
     setJournalStatus("");
+    setSaveStatus("idle");
     setAnswers({});
     setCompletedSectionIds([]);
-    setSavedCount(0);
 
     void loadActiveProgramForGroup(activeGroup.groupId).then((result) => {
       if (cancelled) {
@@ -141,8 +145,8 @@ export function DayJournal({
 
       setAnswers(result.data.answers);
       setCompletedSectionIds(result.data.completedSectionIds);
-      setSavedCount(Object.values(result.data.answers).filter((answer) => answer.trim()).length);
       setJournalStatus(result.data.warning ?? "");
+      hasLoadedRef.current = true;
     });
 
     return () => {
@@ -157,60 +161,65 @@ export function DayJournal({
   }, [answers]);
 
   async function save() {
-    if (isSaving) return;
-    setMessage("");
-    setIsSaving(true);
+    if (!activeGroup || !program || !day) return;
 
-    try {
-      if (!activeGroup) {
-        setMessage("Join a group before saving progress.");
-        return;
-      }
-
-      if (!program || !day) {
-        setMessage("Load an active program before saving progress.");
-        return;
-      }
-
-      const hasReflections = Object.values(answers).some((answer) => answer.trim());
-
-      if (hasReflections && !canEncryptJournalAnswers()) {
-        setMessage(getJournalEncryptionRequirementMessage());
-        return;
-      }
-
-      const result = await saveJournalDay({
-        groupId: activeGroup.groupId,
-        program,
-        weekNumber,
-        dayNumber: day.dayNumber,
-        completedSectionIds,
-        answers: Object.fromEntries(
-          day.sections.flatMap((section) => {
-            const prompts = section.prompts ?? [];
-            if (prompts.length > 0) {
-              return prompts.map((prompt) => [
-                prompt.id,
-                { sectionId: section.id, value: answers[prompt.id] ?? "" }
-              ]);
-            }
-            const reflectionId = sectionReflectionId(section.id);
-            return [[reflectionId, { sectionId: section.id, value: answers[reflectionId] ?? "" }]];
-          })
-        )
-      });
-
-      if (!result.ok) {
-        setMessage(result.error);
-        return;
-      }
-
-      setSavedCount(Object.values(answers).filter((answer) => answer.trim()).length);
-      setMessage("Saved.");
-    } finally {
-      setIsSaving(false);
+    const hasReflections = Object.values(answers).some((answer) => answer.trim());
+    if (hasReflections && !canEncryptJournalAnswers()) {
+      setSaveStatus("error");
+      setSaveError(getJournalEncryptionRequirementMessage());
+      return;
     }
+
+    setSaveStatus("saving");
+
+    const result = await saveJournalDay({
+      groupId: activeGroup.groupId,
+      program,
+      weekNumber,
+      dayNumber: day.dayNumber,
+      completedSectionIds,
+      answers: Object.fromEntries(
+        day.sections.flatMap((section) => {
+          const prompts = section.prompts ?? [];
+          if (prompts.length > 0) {
+            return prompts.map((prompt) => [
+              prompt.id,
+              { sectionId: section.id, value: answers[prompt.id] ?? "" }
+            ]);
+          }
+          const reflectionId = sectionReflectionId(section.id);
+          return [[reflectionId, { sectionId: section.id, value: answers[reflectionId] ?? "" }]];
+        })
+      )
+    });
+
+    if (!result.ok) {
+      setSaveStatus("error");
+      setSaveError(result.error);
+      return;
+    }
+
+    setSaveStatus("saved");
   }
+
+  // Keep saveRef pointing at the latest save closure
+  useEffect(() => {
+    saveRef.current = save;
+  });
+
+  // Auto-save: debounce 1.5s after any change, skip during initial load
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+
+    setSaveStatus("idle");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => void saveRef.current(), 1500);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers, completedSectionIds]);
 
   function toggleSection(sectionId: string) {
     setCompletedSectionIds((current) =>
@@ -314,13 +323,9 @@ export function DayJournal({
         </section>
       ))}
 
-      <div className="row">
-        <button className="button" disabled={!activeGroup || !program || !day || isSaving} onClick={save} type="button">
-          {isSaving ? "Saving..." : "Save"}
-        </button>
-        <span>{savedCount > 0 ? `${savedCount} reflection saved.` : "No saved reflection yet."}</span>
-      </div>
-      {message ? <p>{message}</p> : null}
+      <p className="muted" aria-live="polite">
+        {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : saveStatus === "error" ? saveError : ""}
+      </p>
     </div>
   );
 }
