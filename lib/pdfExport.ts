@@ -233,7 +233,41 @@ function wrapText(value: string, maxChars: number): string[] {
 }
 
 function escapePdfText(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  return transliterateToAscii(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)");
+}
+
+function transliterateToAscii(value: string): string {
+  return value
+    .replace(/[‘’‚‛′‵]/g, "'") // curly/smart single quotes, primes
+    .replace(/[“”„‟″‶]/g, '"') // curly/smart double quotes
+    .replace(/[–—―]/g, "-")                   // en dash, em dash, horizontal bar
+    .replace(/…/g, "...")                                // ellipsis
+    .replace(/•/g, "*")                                  // bullet
+    .replace(/[À-Å]/g, "A")                        // À Á Â Ã Ä Å
+    .replace(/Æ/g, "AE")
+    .replace(/Ç/g, "C")
+    .replace(/[È-Ë]/g, "E")                        // È É Ê Ë
+    .replace(/[Ì-Ï]/g, "I")                        // Ì Í Î Ï
+    .replace(/Ð/g, "D")
+    .replace(/Ñ/g, "N")
+    .replace(/[Ò-ÖØ]/g, "O")                  // Ò Ó Ô Õ Ö Ø
+    .replace(/[Ù-Ü]/g, "U")                        // Ù Ú Û Ü
+    .replace(/Ý/g, "Y")
+    .replace(/[à-å]/g, "a")                        // à á â ã ä å
+    .replace(/æ/g, "ae")
+    .replace(/ç/g, "c")
+    .replace(/[è-ë]/g, "e")                        // è é ê ë
+    .replace(/[ì-ï]/g, "i")                        // ì í î ï
+    .replace(/ð/g, "d")
+    .replace(/ñ/g, "n")
+    .replace(/[ò-öø]/g, "o")                  // ò ó ô õ ö ø
+    .replace(/[ù-ü]/g, "u")                        // ù ú û ü
+    .replace(/ý/g, "y")
+    .replace(/ß/g, "ss")                                 // ß
+    .replace(/[^\x00-\x7F]/g, "?");                          // anything else → ?
 }
 
 function byteLength(value: string): number {
