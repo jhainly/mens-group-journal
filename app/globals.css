@@ -463,6 +463,14 @@ li {
   width: 18px;
 }
 
+.section-complete {
+  background: var(--surface-strong);
+}
+
+.section-complete h2 {
+  color: var(--muted);
+}
+
 .render-preview {
   border-top: 1px solid var(--line);
   padding-top: 16px;
