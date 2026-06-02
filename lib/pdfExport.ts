@@ -113,11 +113,11 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
         });
 
         if (section.body) {
-          addWrapped("", section.body, { indent: 1 }, 2);
+          addWrapped("", section.body, { indent: 1 }, 20);
         }
 
         for (const scripture of section.scripture ?? []) {
-          addWrapped("", `${scripture.reference}: ${scripture.text}`, { indent: 1, italic: true }, 4, SCRIPTURE_MAX_CHARS);
+          addWrapped("", `${scripture.reference}: ${scripture.text}`, { indent: 1, italic: true }, 20, SCRIPTURE_MAX_CHARS);
         }
 
         const prompts = section.prompts ?? [];
