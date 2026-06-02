@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import {
-  ConditionalCheckFailedException,
   DynamoDBClient,
   GetItemCommand,
   PutItemCommand,
@@ -67,33 +66,31 @@ export const handler = async (event: JoinGroupEvent): Promise<JoinGroupResult> =
     })
   );
 
-  if (!existingMembership.Item) {
+  // A record without __typename is a phantom written before this field was required.
+  // Treat it as absent so we overwrite it with a valid record.
+  const hasValidMembership = existingMembership.Item?.["__typename"]?.S === "GroupMembership";
+
+  if (!hasValidMembership) {
     const displayName = (await getDisplayName(userId)) ?? "Member";
     const now = new Date().toISOString();
+    const existingJoinedAt = existingMembership.Item?.["joinedAt"]?.S;
 
-    try {
-      await client.send(
-        new PutItemCommand({
-          TableName: membershipTableName,
-          Item: {
-            __typename: { S: "GroupMembership" },
-            membershipId: { S: membershipId },
-            groupId: { S: groupId },
-            userId: { S: userId },
-            role: { S: "member" },
-            displayName: { S: displayName },
-            joinedAt: { S: now },
-            createdAt: { S: now },
-            updatedAt: { S: now }
-          },
-          ConditionExpression: "attribute_not_exists(membershipId)"
-        })
-      );
-    } catch (error) {
-      if (!(error instanceof ConditionalCheckFailedException)) {
-        throw error;
-      }
-    }
+    await client.send(
+      new PutItemCommand({
+        TableName: membershipTableName,
+        Item: {
+          __typename: { S: "GroupMembership" },
+          membershipId: { S: membershipId },
+          groupId: { S: groupId },
+          userId: { S: userId },
+          role: { S: "member" },
+          displayName: { S: displayName },
+          joinedAt: { S: existingJoinedAt ?? now },
+          createdAt: { S: existingJoinedAt ?? now },
+          updatedAt: { S: now }
+        }
+      })
+    );
   }
 
   return {
