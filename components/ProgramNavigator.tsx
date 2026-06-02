@@ -39,8 +39,7 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
         </div>
         <div className="row">
           {action ?? null}
-          {program.weeks.length > 1 ? (
-            <label className="field compact-field">
+          <label className="field compact-field">
               <span>Week</span>
               <select
                 value={selectedWeekNumber}
@@ -53,7 +52,6 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
                 ))}
               </select>
             </label>
-          ) : null}
         </div>
       </div>
 
