@@ -231,44 +231,25 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
         {weekMessage ? <p>{weekMessage}</p> : null}
       </section>
 
-      <MemberSection members={leaders} title="Leaders" />
-      <MemberSection members={members} title="Members" />
-    </div>
-  );
-}
-
-function MemberSection({
-  members,
-  title
-}: {
-  members: AdminGroupDetailData["members"];
-  title: string;
-}) {
-  return (
-    <section className="panel stack">
-      <div>
-        <p className="eyebrow">{members.length} total</p>
-        <h2>{title}</h2>
-      </div>
-      {members.length > 0 ? (
-        <ul className="list">
-          {members.map((member) => (
-            <li className="card row" key={member.membershipId}>
-              <div>
+      <section className="panel stack">
+        <h2>Members ({group.members.length})</h2>
+        {group.members.length > 0 ? (
+          <ul className="list">
+            {[...leaders, ...members].map((member) => (
+              <li className="card row" key={member.membershipId}>
                 <strong>{member.displayName}</strong>
-                <p className="muted">{member.userId}</p>
-              </div>
-              <div className="stack tight-stack">
-                <span className="role-label">{member.role ?? "member"}</span>
-                <small>Joined {formatDate(member.joinedAt)}</small>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="muted">No {title.toLowerCase()} in this group.</p>
-      )}
-    </section>
+                <div className="stack tight-stack">
+                  <span className="role-label">{member.role ?? "member"}</span>
+                  <small>Joined {formatDate(member.joinedAt)}</small>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">No members yet.</p>
+        )}
+      </section>
+    </div>
   );
 }
 
