@@ -1522,57 +1522,55 @@ export async function saveJournalDay(input: {
     const now = new Date().toISOString();
     const secret = getJournalEncryptionSecret();
 
-    for (const sectionId of input.completedSectionIds) {
-      const section = input.program.weeks
-        .find((week) => week.weekNumber === input.weekNumber)
-        ?.days.find((day) => day.dayNumber === input.dayNumber)
-        ?.sections.find((candidate) => candidate.id === sectionId);
-
-      const progressId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${sectionId}`;
-
-      await upsert(
-        () =>
-          client.models.SectionProgress.create({
-            progressId,
-            userId: user.userId,
-            groupId: input.groupId,
-            programId: input.program.program.id,
-            weekNumber: input.weekNumber,
-            dayNumber: input.dayNumber,
-            sectionId,
-            completed: true,
-            pointsEarned: section?.points ?? 0,
-            updatedAt: now
-          }),
-        () =>
-          client.models.SectionProgress.update({
-            progressId,
-            completed: true,
-            pointsEarned: section?.points ?? 0,
-            updatedAt: now
-          })
-      );
-    }
-
     const allSectionIds =
       input.program.weeks
         .find((week) => week.weekNumber === input.weekNumber)
         ?.days.find((day) => day.dayNumber === input.dayNumber)
-        ?.sections.map((section) => section.id) ?? [];
+        ?.sections ?? [];
 
-    for (const sectionId of allSectionIds.filter((sectionId) => !input.completedSectionIds.includes(sectionId))) {
-      const progressId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${sectionId}`;
+    // Write all section progress in parallel
+    await Promise.all([
+      ...input.completedSectionIds.map((sectionId) => {
+        const section = allSectionIds.find((candidate) => candidate.id === sectionId);
+        const progressId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${sectionId}`;
+        return upsert(
+          () =>
+            client.models.SectionProgress.create({
+              progressId,
+              userId: user.userId,
+              groupId: input.groupId,
+              programId: input.program.program.id,
+              weekNumber: input.weekNumber,
+              dayNumber: input.dayNumber,
+              sectionId,
+              completed: true,
+              pointsEarned: section?.points ?? 0,
+              updatedAt: now
+            }),
+          () =>
+            client.models.SectionProgress.update({
+              progressId,
+              completed: true,
+              pointsEarned: section?.points ?? 0,
+              updatedAt: now
+            })
+        );
+      }),
+      ...allSectionIds
+        .filter((section) => !input.completedSectionIds.includes(section.id))
+        .map((section) => {
+          const progressId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${section.id}`;
+          return client.models.SectionProgress.update({
+            progressId,
+            completed: false,
+            pointsEarned: 0,
+            updatedAt: now
+          });
+        })
+    ]);
 
-      await client.models.SectionProgress.update({
-        progressId,
-        completed: false,
-        pointsEarned: 0,
-        updatedAt: now
-      });
-    }
-
+    // Score sync must come after progress writes
     const displayName = await getDisplayName(user.userId);
-
     await syncUserScoreFromProgress({
       client,
       displayName,
@@ -1587,54 +1585,56 @@ export async function saveJournalDay(input: {
       return { ok: false, error: "Sign in again before saving reflections." };
     }
 
-    for (const [promptId, answer] of Object.entries(input.answers)) {
-      const answerId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${answer.sectionId}:${promptId}`;
+    // Encrypt all answers in parallel, then write in parallel
+    await Promise.all(
+      Object.entries(input.answers).map(async ([promptId, answer]) => {
+        const answerId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${answer.sectionId}:${promptId}`;
 
-      if (!answer.value.trim()) {
-        await client.models.EncryptedAnswer.delete({ answerId });
-        continue;
-      }
+        if (!answer.value.trim()) {
+          return client.models.EncryptedAnswer.delete({ answerId });
+        }
 
-      if (!secret) {
-        continue;
-      }
+        if (!secret) {
+          return;
+        }
 
-      const encrypted = await encryptJournalAnswer(answer.value, secret);
+        const encrypted = await encryptJournalAnswer(answer.value, secret);
 
-      await upsert(
-        () =>
-          client.models.EncryptedAnswer.create({
-            answerId,
-            userId: user.userId,
-            groupId: input.groupId,
-            programId: input.program.program.id,
-            weekNumber: input.weekNumber,
-            dayNumber: input.dayNumber,
-            sectionId: answer.sectionId,
-            promptId,
-            ciphertext: encrypted.ciphertext,
-            iv: encrypted.iv,
-            salt: encrypted.salt,
-            keyDerivation: encrypted.keyDerivation,
-            iterations: encrypted.iterations,
-            algorithm: encrypted.algorithm,
-            version: encrypted.version,
-            updatedAt: now
-          }),
-        () =>
-          client.models.EncryptedAnswer.update({
-            answerId,
-            ciphertext: encrypted.ciphertext,
-            iv: encrypted.iv,
-            salt: encrypted.salt,
-            keyDerivation: encrypted.keyDerivation,
-            iterations: encrypted.iterations,
-            algorithm: encrypted.algorithm,
-            version: encrypted.version,
-            updatedAt: now
-          })
-      );
-    }
+        return upsert(
+          () =>
+            client.models.EncryptedAnswer.create({
+              answerId,
+              userId: user.userId,
+              groupId: input.groupId,
+              programId: input.program.program.id,
+              weekNumber: input.weekNumber,
+              dayNumber: input.dayNumber,
+              sectionId: answer.sectionId,
+              promptId,
+              ciphertext: encrypted.ciphertext,
+              iv: encrypted.iv,
+              salt: encrypted.salt,
+              keyDerivation: encrypted.keyDerivation,
+              iterations: encrypted.iterations,
+              algorithm: encrypted.algorithm,
+              version: encrypted.version,
+              updatedAt: now
+            }),
+          () =>
+            client.models.EncryptedAnswer.update({
+              answerId,
+              ciphertext: encrypted.ciphertext,
+              iv: encrypted.iv,
+              salt: encrypted.salt,
+              keyDerivation: encrypted.keyDerivation,
+              iterations: encrypted.iterations,
+              algorithm: encrypted.algorithm,
+              version: encrypted.version,
+              updatedAt: now
+            })
+        );
+      })
+    );
 
     return { ok: true, data: undefined };
   } catch (error) {

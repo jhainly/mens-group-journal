@@ -31,6 +31,7 @@ export function DayJournal({
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [program, setProgram] = useState<Program | null>(null);
   const [day, setDay] = useState<ProgramDay | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [groupStatus, setGroupStatus] = useState("Loading group...");
   const [programStatus, setProgramStatus] = useState("Loading program...");
   const [journalStatus, setJournalStatus] = useState("");
@@ -156,53 +157,59 @@ export function DayJournal({
   }, [answers]);
 
   async function save() {
+    if (isSaving) return;
     setMessage("");
+    setIsSaving(true);
 
-    if (!activeGroup) {
-      setMessage("Join a group before saving progress.");
-      return;
+    try {
+      if (!activeGroup) {
+        setMessage("Join a group before saving progress.");
+        return;
+      }
+
+      if (!program || !day) {
+        setMessage("Load an active program before saving progress.");
+        return;
+      }
+
+      const hasReflections = Object.values(answers).some((answer) => answer.trim());
+
+      if (hasReflections && !canEncryptJournalAnswers()) {
+        setMessage(getJournalEncryptionRequirementMessage());
+        return;
+      }
+
+      const result = await saveJournalDay({
+        groupId: activeGroup.groupId,
+        program,
+        weekNumber,
+        dayNumber: day.dayNumber,
+        completedSectionIds,
+        answers: Object.fromEntries(
+          day.sections.flatMap((section) => {
+            const prompts = section.prompts ?? [];
+            if (prompts.length > 0) {
+              return prompts.map((prompt) => [
+                prompt.id,
+                { sectionId: section.id, value: answers[prompt.id] ?? "" }
+              ]);
+            }
+            const reflectionId = sectionReflectionId(section.id);
+            return [[reflectionId, { sectionId: section.id, value: answers[reflectionId] ?? "" }]];
+          })
+        )
+      });
+
+      if (!result.ok) {
+        setMessage(result.error);
+        return;
+      }
+
+      setSavedCount(Object.values(answers).filter((answer) => answer.trim()).length);
+      setMessage("Saved.");
+    } finally {
+      setIsSaving(false);
     }
-
-    if (!program || !day) {
-      setMessage("Load an active program before saving progress.");
-      return;
-    }
-
-    const hasReflections = Object.values(answers).some((answer) => answer.trim());
-
-    if (hasReflections && !canEncryptJournalAnswers()) {
-      setMessage(getJournalEncryptionRequirementMessage());
-      return;
-    }
-
-    const result = await saveJournalDay({
-      groupId: activeGroup.groupId,
-      program,
-      weekNumber,
-      dayNumber: day.dayNumber,
-      completedSectionIds,
-      answers: Object.fromEntries(
-        day.sections.flatMap((section) => {
-          const prompts = section.prompts ?? [];
-          if (prompts.length > 0) {
-            return prompts.map((prompt) => [
-              prompt.id,
-              { sectionId: section.id, value: answers[prompt.id] ?? "" }
-            ]);
-          }
-          const reflectionId = sectionReflectionId(section.id);
-          return [[reflectionId, { sectionId: section.id, value: answers[reflectionId] ?? "" }]];
-        })
-      )
-    });
-
-    if (!result.ok) {
-      setMessage(result.error);
-      return;
-    }
-
-    setSavedCount(Object.values(answers).filter((answer) => answer.trim()).length);
-    setMessage("Saved.");
   }
 
   function toggleSection(sectionId: string) {
@@ -307,8 +314,8 @@ export function DayJournal({
       ))}
 
       <div className="row">
-        <button className="button" disabled={!activeGroup || !program || !day} onClick={save} type="button">
-          Save reflection
+        <button className="button" disabled={!activeGroup || !program || !day || isSaving} onClick={save} type="button">
+          {isSaving ? "Saving..." : "Save"}
         </button>
         <span>{savedCount > 0 ? `${savedCount} reflection saved.` : "No saved reflection yet."}</span>
       </div>
