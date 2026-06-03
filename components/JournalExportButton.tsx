@@ -47,12 +47,12 @@ export function JournalExportButton({ groupId, groupName, program, weekNumber }:
   }
 
   return (
-    <div className="stack export-action">
+    <>
       <button className="button secondary" disabled={isExporting} onClick={exportJournal} type="button">
         {isExporting ? "Exporting..." : "Export week PDF"}
       </button>
       {status ? <p className="muted">{status}</p> : null}
-    </div>
+    </>
   );
 }
 

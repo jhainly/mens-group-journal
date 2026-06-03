@@ -28,22 +28,24 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
     <section className="panel stack">
       <div className="row">
         <h2>{selectedWeek.title}</h2>
-        <label className="field compact-field">
-          <span>Week</span>
-          <select
-            value={selectedWeekNumber}
-            onChange={(event) => onSelectedWeekNumberChange(Number(event.target.value))}
-          >
-            {program.weeks.map((week) => (
-              <option key={week.weekNumber} value={week.weekNumber}>
-                Week {week.weekNumber}: {week.title}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="row">
+          {action ?? null}
+          <label className="field compact-field">
+            <span>Week</span>
+            <select
+              value={selectedWeekNumber}
+              onChange={(event) => onSelectedWeekNumberChange(Number(event.target.value))}
+            >
+              {program.weeks.map((week) => (
+                <option key={week.weekNumber} value={week.weekNumber}>
+                  Week {week.weekNumber}: {week.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
       {selectedWeek.summary ? <p className="muted">{selectedWeek.summary}</p> : null}
-      {action ? <div>{action}</div> : null}
 
       <div className="section-block stack">
         <ul className="list">
