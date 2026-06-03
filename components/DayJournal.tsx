@@ -302,7 +302,7 @@ export function DayJournal({
         </section>
       ) : null}
 
-      {day?.sections.map((section) => (
+      {!needsReauth && day?.sections.map((section) => (
         <section className={`panel${completedSectionIds.includes(section.id) ? " section-complete" : ""}`} key={section.id}>
           <div className="section-layout">
             <label className="section-check" aria-label={`Mark ${section.title} complete`}>
