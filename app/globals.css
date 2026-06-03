@@ -476,6 +476,21 @@ li {
   font-weight: 600;
 }
 
+.week-select {
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  flex: 1;
+  padding: 0;
+}
+
+.week-select:focus {
+  outline: none;
+}
+
 .day-card {
   align-items: center;
   display: flex;
