@@ -1580,8 +1580,10 @@ export async function saveJournalDay(input: {
       weekNumber: input.weekNumber
     });
 
-    if (!secret && Object.values(input.answers).some((answer) => answer.value.trim())) {
-      return { ok: false, error: "Sign in again before saving reflections." };
+    // If no journal key is present, skip all answer processing entirely.
+    // This prevents empty answers from being mistaken for deletions and wiping encrypted content.
+    if (!secret) {
+      return { ok: true, data: undefined };
     }
 
     // Encrypt all answers in parallel, then write in parallel
