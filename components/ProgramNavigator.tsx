@@ -27,7 +27,7 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
 
   return (
     <section className="panel stack">
-      <div className="row">
+      <div className="navigator-header">
         <div className="week-select-pill">
           <select
             className="week-select"

@@ -476,6 +476,13 @@ li {
   font-weight: 600;
 }
 
+.navigator-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
 .week-select-pill {
   align-items: center;
   background: color-mix(in srgb, var(--accent) 10%, var(--surface));
@@ -688,6 +695,20 @@ li {
 
   .import-preview-grid {
     grid-template-columns: 1fr;
+  }
+
+  .day-card {
+    flex-wrap: wrap;
+  }
+
+  .day-card-name {
+    flex: 1;
+  }
+
+  .day-card-bar {
+    flex: unset;
+    order: 3;
+    width: 100%;
   }
 }
 
