@@ -476,19 +476,31 @@ li {
   font-weight: 600;
 }
 
+.week-select-pill {
+  align-items: center;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--surface));
+  border-radius: 20px;
+  color: var(--accent-strong);
+  display: flex;
+  gap: 6px;
+  padding: 5px 12px 5px 16px;
+}
+
 .week-select {
-  font-size: 1.1rem;
-  font-weight: 700;
+  appearance: none;
   background: transparent;
   border: none;
-  color: var(--text);
+  color: inherit;
   cursor: pointer;
-  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  outline: none;
   padding: 0;
 }
 
-.week-select:focus {
-  outline: none;
+.week-select-pill:hover {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
 }
 
 .day-card {
