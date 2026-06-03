@@ -251,12 +251,12 @@ function ScoreBar({ label, earned, max }: { label: string; earned: number; max: 
   const pct = max > 0 ? Math.round((earned / max) * 100) : 0;
   return (
     <div className="score-bar">
-      <div className="row">
-        <span className="score-bar-label">{label}</span>
-        <span className="score-bar-value">{earned}/{max} pts</span>
-      </div>
-      <div className="score-bar-track">
-        <div className="score-bar-fill" style={{ width: `${pct}%` }} />
+      <span className="score-bar-label">{label}</span>
+      <div className="day-progress">
+        <div className="day-progress-track">
+          <div className="day-progress-fill" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="day-progress-label">{earned}/{max} pts</span>
       </div>
     </div>
   );

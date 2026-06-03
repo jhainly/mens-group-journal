@@ -20,12 +20,6 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
     () => program.weeks.find((week) => week.weekNumber === selectedWeekNumber) ?? program.weeks[0],
     [program.weeks, selectedWeekNumber]
   );
-  const selectedWeekPoints =
-    selectedWeek?.days.reduce(
-      (weekTotal, day) => weekTotal + day.sections.reduce((dayTotal, section) => dayTotal + section.points, 0),
-      0
-    ) ?? 0;
-
   if (!selectedWeek) {
     return null;
   }
@@ -52,23 +46,12 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
       {action ? <div>{action}</div> : null}
 
       <div className="section-block stack">
-        <div className="grid two">
-          <div className="metric">
-            <span>Days</span>
-            <strong>{selectedWeek.days.length}</strong>
-          </div>
-          <div className="metric">
-            <span>Available points</span>
-            <strong>{selectedWeekPoints}</strong>
-          </div>
-        </div>
-
         <ul className="list">
           {selectedWeek.days.map((day) => {
+            const maxPoints = day.sections.reduce((sum, s) => sum + Math.max(0, s.points), 0);
             const progress = dayProgress.find((d) => d.dayNumber === day.dayNumber);
-            const pct = progress && progress.maxPoints > 0
-              ? Math.round((progress.pointsEarned / progress.maxPoints) * 100)
-              : 0;
+            const earnedPoints = progress?.pointsEarned ?? 0;
+            const pct = maxPoints > 0 ? Math.round((earnedPoints / maxPoints) * 100) : 0;
             return (
               <li className="card" key={day.dayNumber}>
                 <div className="day-card-row">
@@ -77,14 +60,12 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
                     Open
                   </Link>
                 </div>
-                {progress ? (
-                  <div className="day-progress">
-                    <div className="day-progress-track">
-                      <div className="day-progress-fill" style={{ width: `${pct}%` }} />
-                    </div>
-                    <span className="day-progress-label">{progress.pointsEarned}/{progress.maxPoints} pts</span>
+                <div className="day-progress">
+                  <div className="day-progress-track">
+                    <div className="day-progress-fill" style={{ width: `${pct}%` }} />
                   </div>
-                ) : null}
+                  <span className="day-progress-label">{earnedPoints}/{maxPoints} pts</span>
+                </div>
               </li>
             );
           })}

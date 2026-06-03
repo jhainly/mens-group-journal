@@ -257,21 +257,19 @@ export function DayJournal({
 
       <section className="panel stack">
         <div className="row">
-          <div>
-            <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
-            {day ? (
-              <div className="day-progress">
-                <div className="day-progress-track">
-                  <div className="day-progress-fill" style={{ width: `${dayProgressPct}%` }} />
-                </div>
-                <span className="day-progress-label">{dayEarnedPoints}/{dayMaxPoints} pts</span>
-              </div>
-            ) : null}
-          </div>
+          <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
           <p className="muted" aria-live="polite" style={{ whiteSpace: "nowrap" }}>
             {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : saveStatus === "error" ? saveError : ""}
           </p>
         </div>
+        {day ? (
+          <div className="day-progress">
+            <div className="day-progress-track">
+              <div className="day-progress-fill" style={{ width: `${dayProgressPct}%` }} />
+            </div>
+            <span className="day-progress-label">{dayEarnedPoints}/{dayMaxPoints} pts</span>
+          </div>
+        ) : null}
         {groupStatus ? <p className="muted">{groupStatus}</p> : null}
         {programStatus ? <p className="muted">{programStatus}</p> : null}
         {journalStatus ? <p className="muted">{journalStatus}</p> : null}
