@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signOut } from "aws-amplify/auth";
 import { canEncryptJournalAnswers, getJournalEncryptionRequirementMessage } from "@/lib/encryption";
+import { configureAmplify } from "@/lib/amplifyClient";
+import { clearJournalEncryptionSecret } from "@/lib/journalKey";
 import { formatPoints } from "@/lib/format";
 import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramDayLabel } from "@/lib/programDays";
@@ -33,10 +37,12 @@ export function DayJournal({
   const [day, setDay] = useState<ProgramDay | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState("");
+  const [needsReauth, setNeedsReauth] = useState(false);
   const [groupStatus, setGroupStatus] = useState("Loading group...");
   const [programStatus, setProgramStatus] = useState("Loading program...");
   const [journalStatus, setJournalStatus] = useState("");
 
+  const router = useRouter();
   const hasLoadedRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveRef = useRef<() => Promise<void>>(async () => undefined);
@@ -88,6 +94,7 @@ export function DayJournal({
     setProgramStatus("Loading program...");
     setJournalStatus("");
     setSaveStatus("idle");
+    setNeedsReauth(false);
     setAnswers({});
     setCompletedSectionIds([]);
 
@@ -145,7 +152,8 @@ export function DayJournal({
 
       setAnswers(result.data.answers);
       setCompletedSectionIds(result.data.completedSectionIds);
-      setJournalStatus(result.data.warning ?? "");
+      setNeedsReauth(result.data.needsReauth);
+      setJournalStatus(result.data.needsReauth ? "" : (result.data.warning ?? ""));
       hasLoadedRef.current = true;
     });
 
@@ -207,9 +215,10 @@ export function DayJournal({
     saveRef.current = save;
   });
 
-  // Auto-save: debounce 1.5s after any change, skip during initial load
+  // Auto-save: debounce 1.5s after any change, skip during initial load or when reauth needed
   useEffect(() => {
     if (!hasLoadedRef.current) return;
+    if (needsReauth) return;
 
     setSaveStatus("idle");
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -238,6 +247,14 @@ export function DayJournal({
   function resizeTextarea(element: HTMLTextAreaElement) {
     element.style.height = "auto";
     element.style.height = `${element.scrollHeight}px`;
+  }
+
+  async function handleReauth() {
+    await configureAmplify();
+    await signOut();
+    clearJournalEncryptionSecret();
+    router.push("/auth");
+    router.refresh();
   }
 
 
@@ -275,6 +292,17 @@ export function DayJournal({
         {journalStatus ? <p className="muted">{journalStatus}</p> : null}
       </section>
 
+      {needsReauth ? (
+        <section className="panel stack">
+          <p>Your saved reflections are encrypted and can&apos;t be shown without signing in again.</p>
+          <div>
+            <button className="button" onClick={() => void handleReauth()} type="button">
+              Sign out and sign back in
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       {day?.sections.map((section) => (
         <section className={`panel${completedSectionIds.includes(section.id) ? " section-complete" : ""}`} key={section.id}>
           <div className="section-layout">
@@ -298,7 +326,7 @@ export function DayJournal({
                   <p>{scripture.text}</p>
                 </blockquote>
               ))}
-              {section.prompts && section.prompts.length > 0
+              {!needsReauth && section.prompts && section.prompts.length > 0
                 ? section.prompts.map((prompt) => (
                     <label className="field" key={prompt.id}>
                       <span>{prompt.label}</span>
@@ -313,7 +341,7 @@ export function DayJournal({
                       />
                     </label>
                   ))
-                : (() => {
+                : !needsReauth ? (() => {
                     const reflectionId = sectionReflectionId(section.id);
                     return (
                       <label className="field" key={reflectionId}>
@@ -328,7 +356,7 @@ export function DayJournal({
                         />
                       </label>
                     );
-                  })()}
+                  })() : null}
             </div>
           </div>
         </section>

@@ -103,6 +103,7 @@ export type JournalDayState = {
   answers: Record<string, string>;
   completedSectionIds: string[];
   encryptedAnswerCount: number;
+  needsReauth: boolean;
   warning?: string;
 };
 export type CurrentUserProfile = {
@@ -1391,10 +1392,7 @@ export async function loadJournalDay(input: {
     const secret = getJournalEncryptionSecret();
     const answers: Record<string, string> = {};
     let warning: string | undefined;
-
-    if (encryptedAnswers.data.length > 0 && !secret) {
-      warning = "Sign in again to decrypt saved reflections.";
-    }
+    const needsReauth = encryptedAnswers.data.length > 0 && !secret;
 
     if (secret) {
       for (const answer of encryptedAnswers.data) {
@@ -1423,6 +1421,7 @@ export async function loadJournalDay(input: {
         answers,
         completedSectionIds: progress.data.map((row) => row.sectionId),
         encryptedAnswerCount: encryptedAnswers.data.length,
+        needsReauth,
         warning
       }
     };
