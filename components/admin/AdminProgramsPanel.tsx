@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { ProgramManagementPanel } from "@/components/admin/ProgramManagementPanel";
@@ -33,14 +32,6 @@ export function AdminProgramsPanel() {
   return (
     <div className="stack">
       <AdminNav />
-      <div className="row">
-        <Link className="button" href="/admin/programs/import">
-          Import new week
-        </Link>
-        <Link className="button secondary" href="/admin/programs/audit">
-          Audit log
-        </Link>
-      </div>
 
       {status && groups.length === 0 ? <p className="muted">{status}</p> : null}
 

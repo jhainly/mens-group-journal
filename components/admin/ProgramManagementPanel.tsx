@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   listProgramWeekAssignments,
@@ -73,9 +74,14 @@ export function ProgramManagementPanel({
     <section className="panel stack">
       <div className="row">
         <h2>Week assignments</h2>
-        <button className="button secondary" onClick={() => void refreshAssignments()} type="button">
-          Refresh
-        </button>
+        <div className="row">
+          <Link className="button" href="/admin/programs/import">
+            Import new week
+          </Link>
+          <Link className="button secondary" href="/admin/programs/audit">
+            Audit log
+          </Link>
+        </div>
       </div>
 
       <section className="section-block stack">
