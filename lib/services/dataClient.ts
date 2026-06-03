@@ -1392,7 +1392,7 @@ export async function loadJournalDay(input: {
     const secret = getJournalEncryptionSecret();
     const answers: Record<string, string> = {};
     let warning: string | undefined;
-    const needsReauth = encryptedAnswers.data.length > 0 && !secret;
+    const needsReauth = !secret;
 
     if (secret) {
       for (const answer of encryptedAnswers.data) {

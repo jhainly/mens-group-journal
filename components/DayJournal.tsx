@@ -215,10 +215,9 @@ export function DayJournal({
     saveRef.current = save;
   });
 
-  // Auto-save: debounce 1.5s after any change, skip during initial load or when reauth needed
+  // Auto-save: debounce 1.5s after any change, skip during initial load
   useEffect(() => {
     if (!hasLoadedRef.current) return;
-    if (needsReauth) return;
 
     setSaveStatus("idle");
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
