@@ -64,7 +64,7 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
                   </div>
                   <span className="day-progress-label">{earnedPoints}/{maxPoints} pts</span>
                 </div>
-                <Link className="button secondary" href={`/program/week/${selectedWeek.weekNumber}/day/${day.dayNumber}`}>
+                <Link className="button secondary day-card-open" href={`/program/week/${selectedWeek.weekNumber}/day/${day.dayNumber}`}>
                   Open
                 </Link>
               </li>

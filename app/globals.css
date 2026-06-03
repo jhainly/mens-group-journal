@@ -512,16 +512,26 @@ li {
 
 .day-card {
   align-items: center;
-  display: flex;
-  gap: 12px;
+  display: grid;
+  gap: 7px 12px;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
 }
 
 .day-card-name {
-  white-space: nowrap;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .day-card-bar {
-  flex: 1;
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.day-card-open {
+  align-self: stretch;
+  grid-column: 2;
+  grid-row: 1 / 3;
 }
 
 .day-progress {
@@ -697,19 +707,6 @@ li {
     grid-template-columns: 1fr;
   }
 
-  .day-card {
-    flex-wrap: wrap;
-  }
-
-  .day-card-name {
-    flex: 1;
-  }
-
-  .day-card-bar {
-    flex: unset;
-    order: 3;
-    width: 100%;
-  }
 }
 
 @media (min-width: 681px) {
