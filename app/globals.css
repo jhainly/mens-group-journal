@@ -473,21 +473,24 @@ li {
   font-weight: 600;
 }
 
-.day-card-row {
+.day-card {
   align-items: center;
   display: flex;
-  justify-content: space-between;
   gap: 12px;
+}
+
+.day-card-name {
+  white-space: nowrap;
+}
+
+.day-card-bar {
+  flex: 1;
 }
 
 .day-progress {
   align-items: center;
   display: flex;
   gap: 8px;
-}
-
-.card .day-progress {
-  margin-top: 8px;
 }
 
 .day-progress-track {

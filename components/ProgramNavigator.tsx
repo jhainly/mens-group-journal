@@ -53,19 +53,17 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
             const earnedPoints = progress?.pointsEarned ?? 0;
             const pct = maxPoints > 0 ? Math.round((earnedPoints / maxPoints) * 100) : 0;
             return (
-              <li className="card" key={day.dayNumber}>
-                <div className="day-card-row">
-                  <span>{getProgramDayLabel(day.dayNumber)}: <strong>{day.title}</strong></span>
-                  <Link className="button secondary" href={`/program/week/${selectedWeek.weekNumber}/day/${day.dayNumber}`}>
-                    Open
-                  </Link>
-                </div>
-                <div className="day-progress">
+              <li className="card day-card" key={day.dayNumber}>
+                <span className="day-card-name">{getProgramDayLabel(day.dayNumber)}: <strong>{day.title}</strong></span>
+                <div className="day-progress day-card-bar">
                   <div className="day-progress-track">
                     <div className="day-progress-fill" style={{ width: `${pct}%` }} />
                   </div>
                   <span className="day-progress-label">{earnedPoints}/{maxPoints} pts</span>
                 </div>
+                <Link className="button secondary" href={`/program/week/${selectedWeek.weekNumber}/day/${day.dayNumber}`}>
+                  Open
+                </Link>
               </li>
             );
           })}
