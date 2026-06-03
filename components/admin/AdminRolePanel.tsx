@@ -47,12 +47,7 @@ export function AdminRolePanel() {
 
   return (
     <section className="panel stack">
-      <div className="row">
-        <h2>Users</h2>
-        <button className="button secondary" onClick={() => void refreshAdmins()} type="button">
-          Refresh
-        </button>
-      </div>
+      <h2>Users</h2>
       {message ? <p className="muted">{message}</p> : null}
 
       {users.length > 0 ? (

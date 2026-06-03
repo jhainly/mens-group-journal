@@ -78,14 +78,9 @@ export function AdminGroupsPanel() {
       <section className="panel stack" id="groups">
         <div className="row">
           <h2>Groups</h2>
-          <div className="row">
-            <button className="button secondary" onClick={() => void refreshGroups()} type="button">
-              Refresh
-            </button>
-            <button className="button" onClick={() => setShowCreateForm((v) => !v)} type="button">
-              {showCreateForm ? "Cancel" : "New group"}
-            </button>
-          </div>
+          <button className="button" onClick={() => setShowCreateForm((v) => !v)} type="button">
+            {showCreateForm ? "Cancel" : "New group"}
+          </button>
         </div>
 
         {showCreateForm ? (
