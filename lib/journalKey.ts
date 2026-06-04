@@ -7,10 +7,10 @@ export type JournalKeyEnvelope = {
   iv: string;
   keyDerivation: "PBKDF2-SHA-256";
   salt: string;
-  version: 1;
+  version: 1 | 2;
 };
 
-const SESSION_STORAGE_KEY = "mgj_journal_key";
+const STORAGE_KEY = "mgj_journal_key";
 const ITERATIONS = 310000;
 const KEY_LENGTH = 256;
 const JOURNAL_KEY_BYTES = 32;
@@ -18,6 +18,7 @@ const IV_BYTES = 12;
 const SALT_BYTES = 16;
 type BrowserBytes = Uint8Array<ArrayBuffer>;
 
+// V1: password-based wrapping (legacy, used only during migration)
 export async function initializeJournalEncryptionSecret(input: {
   email: string;
   legacySecret?: string;
@@ -26,26 +27,71 @@ export async function initializeJournalEncryptionSecret(input: {
 }): Promise<{ envelope?: JournalKeyEnvelope; secret: string }> {
   assertBrowserCrypto();
 
-  if (input.envelope) {
+  if (input.envelope?.version === 1) {
     const secret = await unwrapJournalSecret(input.email, input.password, input.envelope);
     setCurrentJournalSecret(secret);
     return { secret };
   }
 
   const secret = input.legacySecret ?? bytesToBase64(randomBytes(JOURNAL_KEY_BYTES));
-  const envelope = await wrapJournalSecret(input.email, input.password, secret);
   setCurrentJournalSecret(secret);
-  return { envelope, secret };
+  return { secret };
+}
+
+// V2: sub-based wrapping — wrap journal key with Cognito user ID
+export async function wrapJournalSecretV2(sub: string, secret: string): Promise<JournalKeyEnvelope> {
+  assertBrowserCrypto();
+  const salt = randomBytes(SALT_BYTES);
+  const iv = randomBytes(IV_BYTES);
+  const key = await deriveWrappingKeyV2(sub, salt);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(secret));
+
+  return {
+    algorithm: "AES-GCM",
+    ciphertext: bytesToBase64(new Uint8Array(ciphertext)),
+    iterations: ITERATIONS,
+    iv: bytesToBase64(iv),
+    keyDerivation: "PBKDF2-SHA-256",
+    salt: bytesToBase64(salt),
+    version: 2
+  };
+}
+
+// V2: unwrap and store in localStorage — called automatically when key is missing
+export async function initializeJournalEncryptionSecretFromSub(input: {
+  sub: string;
+  envelope: JournalKeyEnvelope;
+}): Promise<void> {
+  assertBrowserCrypto();
+  const key = await deriveWrappingKeyV2(input.sub, base64ToBytes(input.envelope.salt), input.envelope.iterations);
+  const plaintext = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: base64ToBytes(input.envelope.iv) },
+    key,
+    base64ToBytes(input.envelope.ciphertext)
+  );
+  setCurrentJournalSecret(new TextDecoder().decode(plaintext));
 }
 
 export function getJournalEncryptionSecret(): string | null {
-  return sessionStorage.getItem(SESSION_STORAGE_KEY);
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const stored = JSON.parse(raw) as { secret: string; expiresAt?: number };
+    if (stored.expiresAt && Date.now() > stored.expiresAt) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return stored.secret ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function clearJournalEncryptionSecret(): void {
-  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+  localStorage.removeItem(STORAGE_KEY);
 }
 
+// Only used for V1 password-change flow — V2 users don't need this
 export async function wrapCurrentJournalEncryptionSecret(input: {
   email: string;
   password: string;
@@ -84,7 +130,6 @@ async function unwrapJournalSecret(email: string, password: string, envelope: Jo
     key,
     base64ToBytes(envelope.ciphertext)
   );
-
   return new TextDecoder().decode(plaintext);
 }
 
@@ -103,12 +148,25 @@ async function deriveWrappingKey(
   );
 
   return crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt,
-      iterations,
-      hash: "SHA-256"
-    },
+    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+    keyMaterial,
+    { name: "AES-GCM", length: KEY_LENGTH },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function deriveWrappingKeyV2(sub: string, salt: BrowserBytes, iterations = ITERATIONS): Promise<CryptoKey> {
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(sub),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
     keyMaterial,
     { name: "AES-GCM", length: KEY_LENGTH },
     false,
@@ -117,7 +175,7 @@ async function deriveWrappingKey(
 }
 
 function setCurrentJournalSecret(secret: string): void {
-  sessionStorage.setItem(SESSION_STORAGE_KEY, secret);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ secret }));
 }
 
 function assertBrowserCrypto(): void {

@@ -7,7 +7,9 @@ import { decryptJournalAnswer, encryptJournalAnswer, type EncryptedPayload } fro
 import {
   getJournalEncryptionSecret,
   initializeJournalEncryptionSecret,
+  initializeJournalEncryptionSecretFromSub,
   wrapCurrentJournalEncryptionSecret,
+  wrapJournalSecretV2,
   type JournalKeyEnvelope
 } from "@/lib/journalKey";
 import { hashProgram, programSchema } from "@/lib/programValidation";
@@ -157,14 +159,19 @@ export async function ensureJournalKeyEnvelope(input: {
 
     if (!profile.data) {
       const created = await ensureUserProfile();
-
-      if (!created.ok) {
-        return created;
-      }
+      if (!created.ok) return created;
     }
 
     const refreshedProfile = profile.data ?? (await client.models.UserProfile.get({ userId: user.userId })).data;
     const existingEnvelope = getJournalKeyEnvelope(refreshedProfile);
+
+    // V2 envelope: unwrap with sub — no password needed, migration complete
+    if (existingEnvelope?.version === 2) {
+      await initializeJournalEncryptionSecretFromSub({ sub: user.userId, envelope: existingEnvelope });
+      return { ok: true, data: undefined };
+    }
+
+    // V1 or no envelope: use password to get the journal key
     const initialized = await initializeJournalEncryptionSecret({
       email: input.email,
       legacySecret: existingEnvelope ? undefined : getLegacyJournalSecret(input.email, input.password),
@@ -172,15 +179,11 @@ export async function ensureJournalKeyEnvelope(input: {
       envelope: existingEnvelope
     });
 
-    if (!initialized.envelope) {
-      return { ok: true, data: undefined };
-    }
+    // Upgrade to V2 — from now on, password is not needed to access the key
+    const v2Envelope = await wrapJournalSecretV2(user.userId, initialized.secret);
+    const saved = await saveJournalKeyEnvelope(client, user.userId, v2Envelope);
 
-    const saved = await saveJournalKeyEnvelope(client, user.userId, initialized.envelope);
-
-    if (!saved.ok) {
-      return saved;
-    }
+    if (!saved.ok) return saved;
 
     return { ok: true, data: undefined };
   } catch (error) {
@@ -1389,7 +1392,13 @@ export async function loadJournalDay(input: {
         }
       })
     ]);
-    const secret = getJournalEncryptionSecret();
+    let secret = getJournalEncryptionSecret();
+
+    // If key is missing, try to recover it silently from the server (V2 envelopes only)
+    if (!secret) {
+      secret = await tryAutoRecoverJournalKey(client, user.userId);
+    }
+
     const answers: Record<string, string> = {};
     let warning: string | undefined;
     const needsReauth = !secret;
@@ -1662,6 +1671,20 @@ function hasData(value: unknown): boolean {
   return Boolean(value && typeof value === "object" && "data" in value && value.data);
 }
 
+async function tryAutoRecoverJournalKey(client: DataClient, userId: string): Promise<string | null> {
+  try {
+    const profile = await client.models.UserProfile.get({ userId });
+    const envelope = getJournalKeyEnvelope(profile.data);
+
+    if (!envelope || envelope.version !== 2) return null;
+
+    await initializeJournalEncryptionSecretFromSub({ sub: userId, envelope });
+    return getJournalEncryptionSecret();
+  } catch {
+    return null;
+  }
+}
+
 function getJournalKeyEnvelope(profile: unknown): JournalKeyEnvelope | null {
   if (!profile || typeof profile !== "object") {
     return null;
@@ -1684,7 +1707,7 @@ function getJournalKeyEnvelope(profile: unknown): JournalKeyEnvelope | null {
     !fields.journalKeyIterations ||
     !fields.journalKeyIv ||
     !fields.journalKeySalt ||
-    fields.journalKeyVersion !== 1
+    (fields.journalKeyVersion !== 1 && fields.journalKeyVersion !== 2)
   ) {
     return null;
   }
@@ -1696,7 +1719,7 @@ function getJournalKeyEnvelope(profile: unknown): JournalKeyEnvelope | null {
     iv: fields.journalKeyIv,
     keyDerivation: fields.journalKeyDerivation,
     salt: fields.journalKeySalt,
-    version: fields.journalKeyVersion
+    version: fields.journalKeyVersion as 1 | 2
   };
 }
 
