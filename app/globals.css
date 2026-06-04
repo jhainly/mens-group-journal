@@ -707,6 +707,19 @@ li {
     grid-template-columns: 1fr;
   }
 
+  .week-select-pill {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .week-select {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
 }
 
 @media (min-width: 681px) {
