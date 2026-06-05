@@ -500,6 +500,7 @@ li {
   border: none;
   color: inherit;
   cursor: pointer;
+  flex: 1;
   font-size: 1rem;
   font-weight: 700;
   outline: none;
