@@ -88,44 +88,46 @@ export function ProgramManagementPanel({
         {assignments.length > 0 ? (
           <ul className="list">
             {assignments.map((assignment) => (
-              <li className="card stack" key={assignment.groupId}>
-                <div className="row">
-                  <div>
-                    <h3>{assignment.groupName}</h3>
-                    <p className="muted">
+              <li key={assignment.groupId}>
+                <details className="group-accordion">
+                  <summary className="group-accordion-summary">
+                    <span className="group-accordion-name">{assignment.groupName}</span>
+                    <span className="muted group-accordion-count">
                       {assignment.weeks.length} active {assignment.weeks.length === 1 ? "week" : "weeks"}
-                    </p>
+                    </span>
+                  </summary>
+                  <div className="group-accordion-body">
+                    {assignment.weeks.length > 0 ? (
+                      <ul className="assignment-week-list">
+                        {assignment.weeks.map((week) => (
+                          <li className="assignment-week-row" key={`${assignment.groupId}:${week.weekNumber}`}>
+                            <div>
+                              <strong>Week {week.weekNumber}: {week.title}</strong>
+                              <p className="muted">Published {formatDate(week.publishedAt)}</p>
+                            </div>
+                            <button
+                              className="button secondary"
+                              disabled={removingKey === `${assignment.groupId}:${week.weekNumber}`}
+                              onClick={() =>
+                                void removeWeekFromGroup({
+                                  groupId: assignment.groupId,
+                                  groupName: assignment.groupName,
+                                  title: week.title,
+                                  weekNumber: week.weekNumber
+                                })
+                              }
+                              type="button"
+                            >
+                              {removingKey === `${assignment.groupId}:${week.weekNumber}` ? "Removing..." : "Remove"}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="muted">No active weeks assigned.</p>
+                    )}
                   </div>
-                </div>
-                {assignment.weeks.length > 0 ? (
-                  <ul className="assignment-week-list">
-                    {assignment.weeks.map((week) => (
-                      <li className="assignment-week-row" key={`${assignment.groupId}:${week.weekNumber}`}>
-                        <div>
-                          <strong>Week {week.weekNumber}: {week.title}</strong>
-                          <p className="muted">Published {formatDate(week.publishedAt)}</p>
-                        </div>
-                        <button
-                          className="button secondary"
-                          disabled={removingKey === `${assignment.groupId}:${week.weekNumber}`}
-                          onClick={() =>
-                            void removeWeekFromGroup({
-                              groupId: assignment.groupId,
-                              groupName: assignment.groupName,
-                              title: week.title,
-                              weekNumber: week.weekNumber
-                            })
-                          }
-                          type="button"
-                        >
-                          {removingKey === `${assignment.groupId}:${week.weekNumber}` ? "Removing..." : "Remove"}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="muted">No active weeks assigned.</p>
-                )}
+                </details>
               </li>
             ))}
           </ul>
