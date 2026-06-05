@@ -2,60 +2,9 @@
 
 Private guided journaling and discipleship app for Lifepoint men's groups.
 
-The app is built with Next.js, TypeScript, AWS Amplify, Amazon Cognito, and DynamoDB-backed Amplify Data. It is mobile-browser friendly, text-focused, and centered on guided weekly content, private reflections, visible group scoring, and leader-admin group management.
+Members work through weekly discipleship content with daily prompts across five sections (Mind, Spirit, Body, End-of-Day reflection, Bonus). Personal reflections are encrypted in the browser — the server never sees plaintext. Group scores are visible on a leaderboard; reflection content is not.
 
-## Current Features
-
-- Cognito account creation, verification, login, logout, and protected member routes.
-- Display name captured during account creation and reused across join, leaderboard, and admin views.
-- New accounts are guided directly into the group join flow after verification.
-- Group join flow by server-verified group code.
-- Member dashboard with group selection, clear empty states, weekly score, cumulative score, and week navigation.
-- Member dashboard and day views load the selected group's active program weeks.
-- Dashboard explains when a user has not joined a group or when a leader has not published content yet.
-- Program day screen with Wednesday-to-Tuesday labels, section completion, optional reflections, and back-to-week navigation.
-- Daily sections for mind, spirit, body, end-of-day reflection, and bonus point items.
-- Optional plain-text reflections encrypted in the browser before storage.
-- Leaderboard showing member names and scores only.
-- Mobile-friendly responsive navigation for member and admin routes.
-- Admin group management with group creation, visible join codes, member counts, and per-group edit/detail pages.
-- Admin group drilldown for changing the group name, changing the join code, and removing active weeks from that group only.
-- Admin program management with quick actions for importing a new week and viewing the audit log.
-- Admin program import with multi-group week assignment, YAML validation, rendered preview, replacement warnings, and publish flow.
-- Admin program management supports removing a week from one or more groups.
-- Program management shows which active weeks are assigned to each group.
-- Program imports, replacements, and removals are recorded in an admin audit trail.
-- Active program weeks are assigned one-to-many from groups to week snapshots; older whole-program snapshots remain as a compatibility fallback.
-- Week-scoped PDF export built from locally decrypted reflections, with scripture italicized and journal questions formatted as bullet prompts.
-- Account page for viewing the signed-in user, journal key status, and leaving the current group.
-- Admin access management that enumerates Cognito users and toggles the `ADMINS` role with a checkbox.
-
-## Project Structure
-
-```text
-app/                         Next.js App Router routes
-  auth/                      Login page
-  account/                   Signed-in account and journal key status
-  create-account/            Account creation and verification
-  join/                      Group code join flow
-  dashboard/                 Member dashboard and score summary
-  program/week/[...]/        Program day journal screens
-  leaderboard/               Group score visibility
-  admin/                      Admin landing page
-  admin/groups/               Admin group list and per-group drilldown
-  admin/programs/             Program assignment and week removal management
-  admin/programs/import/      YAML week import, validation, rendered preview, publish
-  admin/programs/audit/       Program import/replacement/removal audit log
-  admin/users/                Admin role management
-components/                  Shared UI and feature components
-data/                        Sample six-week program content
-docs/                        Architecture notes
-lib/                         Amplify, validation, encryption, scoring, PDF, export utilities
-schemas/                     Example YAML program schema
-types/                       Domain and program TypeScript types
-amplify/                     Amplify Gen 2 auth and data backend
-  functions/                 Node.js 24 AppSync resolver Lambdas for joins and admin role management
-```
+Built with Next.js, TypeScript, AWS Amplify, Amazon Cognito, and DynamoDB.
 
 ## Local Setup
 
@@ -71,11 +20,7 @@ Run the app:
 npm run dev
 ```
 
-Open:
-
-```text
-http://localhost:3000
-```
+Open `http://localhost:3000`.
 
 Run checks:
 
@@ -85,19 +30,7 @@ npm run lint
 npm run build
 ```
 
-## Local HTTPS and Journal Encryption
-
-Journal reflection encryption requires the browser Web Crypto API. `localhost` works for same-machine testing. A LAN URL like `http://192.168.x.x:3000` may not allow Web Crypto because it is not a secure origin.
-
-For LAN testing, use:
-
-```bash
-npm run dev:https
-```
-
-Then open the HTTPS URL shown by Next.js.
-
-## Amplify Setup
+## Amplify Backend
 
 The backend is defined in:
 
@@ -111,9 +44,9 @@ Run a sandbox backend:
 npx ampx sandbox
 ```
 
-That generates `amplify_outputs.json` for Cognito and Amplify Data. This file is ignored because it is local environment output.
+This generates `amplify_outputs.json` for Cognito and Amplify Data. The file is gitignored — it is local environment output.
 
-For a one-time backend validation/deploy, run:
+For a one-time backend validation/deploy:
 
 ```bash
 npx ampx sandbox --once
@@ -125,22 +58,96 @@ If AWS SSO credentials have expired, refresh them first:
 aws sso login
 ```
 
+## Local HTTPS and Journal Encryption
+
+Journal encryption requires the browser Web Crypto API. `localhost` works for same-machine testing. A LAN URL like `http://192.168.x.x:3000` will not work because it is not a secure origin.
+
+For LAN testing:
+
+```bash
+npm run dev:https
+```
+
+Then open the HTTPS URL shown by Next.js.
+
+## Features
+
+### Members
+
+- Create an account with email verification; new accounts are guided into the group join flow automatically.
+- Join a group using a server-verified group code.
+- Dashboard with group selection, weekly score, cumulative score, week navigation, and clear empty states when no content has been published yet.
+- Daily program screen with five sections (Mind, Spirit, Body, End-of-Day, Bonus), section completion tracking, optional private reflections, and back-to-week navigation. Days are labeled Wednesday through Tuesday.
+- Leaderboard showing member names and scores — no reflection content is visible.
+- Account page showing signed-in user, journal key status, and option to leave the current group.
+- PDF export of the current week's reflections, decrypted locally in the browser. Scripture is italicized; journal questions are formatted as bullet prompts.
+
+### Admins and Leaders
+
+- Create groups, assign join codes, view member counts, and edit group names and codes.
+- Import weekly program content via YAML with validation, a rendered preview of the member experience, multi-group assignment, and replacement warnings before publishing.
+- Remove active weeks from one or more groups.
+- Program management panel showing which weeks are assigned to each group, plus a recent audit trail of imports, replacements, and removals.
+- Drill into a group to change its name, change its join code, or remove active weeks from that group only.
+- Admin user management: enumerate Cognito users and toggle `ADMINS` group membership. The backend prevents an admin from removing their own access.
+
+## Project Structure
+
+```text
+app/                         Next.js App Router routes
+  auth/                      Login page
+  account/                   Signed-in account and journal key status
+  create-account/            Account creation and verification
+  join/                      Group code join flow
+  dashboard/                 Member dashboard and score summary
+  program/week/[...]/        Program day journal screens
+  leaderboard/               Group score visibility
+  admin/                     Admin landing page
+  admin/groups/              Admin group list and per-group drilldown
+  admin/programs/            Program assignment and week removal management
+  admin/programs/import/     YAML week import, validation, rendered preview, publish
+  admin/programs/audit/      Program import/replacement/removal audit log
+  admin/users/               Admin role management
+components/                  Shared UI and feature components
+data/                        Sample six-week program content
+docs/                        Architecture notes
+lib/                         Amplify, validation, encryption, scoring, PDF, export utilities
+schemas/                     Example YAML program schema
+types/                       Domain and program TypeScript types
+amplify/                     Amplify Gen 2 auth and data backend
+  functions/                 Node.js 24 AppSync resolver Lambdas for joins and admin role management
+```
+
+## Roles
+
+There are three access levels:
+
+| Role | Access |
+|------|--------|
+| **Authenticated member** | Dashboard, program days, leaderboard, join flow |
+| **LEADERS** | Everything above, plus group and program management |
+| **ADMINS** | Everything above, plus admin-role management and full user visibility |
+
+Admins manage role assignments from `/admin/users` by toggling Cognito group membership.
+
 ## Security Model
 
-Journal answers must be encrypted in the browser before storage. The backend should never receive plaintext journal answers.
+**The core rule:** journal reflections must be encrypted in the browser before storage. The backend never receives plaintext answers, and no admin or leader can read another member's reflection content.
 
-Current flow:
+How it works:
 
-1. User authenticates with Cognito.
-2. On first sign-in for a new profile, the browser generates a random per-user journal key. Existing profiles without an envelope wrap the prior sign-in-derived journal secret once so previously encrypted answers remain readable.
-3. The browser wraps that journal key with an AES-GCM key derived from the user's email and password with PBKDF2-SHA-256, random salt, and 310,000 iterations.
-4. The app stores only the wrapped journal key envelope on the user profile: ciphertext, IV, salt, algorithm metadata, and version.
-5. On later sign-ins, the browser unwraps the journal key locally and keeps the unwrapped key only for the current browser session.
-6. `lib/encryption.ts` uses the unwrapped journal key to encrypt each answer locally with AES-GCM and a random IV.
-7. The app stores only answer ciphertext, IV, salt, algorithm metadata, prompt identity, completion status, and scoring metadata.
-8. There is intentionally no recovery mechanism for encrypted journal content if the user loses access to the password needed to unwrap the journal key.
+1. The user authenticates with Cognito.
+2. On first sign-in, the browser generates a random 32-byte per-user journal key.
+3. That key is wrapped (encrypted) using a key derived from the user's **Cognito sub** (a stable, unique user ID) via PBKDF2-SHA-256 with a random salt and 310,000 iterations. The result is stored as a V2 envelope on the user profile.
+4. On later sign-ins, the browser re-derives the wrapping key from the Cognito sub and unwraps the journal key locally. The unwrapped key lives only in `localStorage` for the current session.
+5. Each journal answer is encrypted locally with AES-GCM, using a per-answer key derived from the journal key via PBKDF2 with a fresh random salt.
+6. The server stores only ciphertext, IV, salt, algorithm metadata, prompt identity, completion status, and scoring metadata — never plaintext.
 
-Rules:
+**Recovery:** if the session key is lost, it is recovered automatically on the next sign-in as long as the user can authenticate with Cognito. Cognito supports email-based account recovery. Journal content cannot be recovered if the Cognito account itself is permanently lost.
+
+**Legacy V1 envelopes** (wrapped with email+password from before the V2 migration) are still readable — the app detects `version: 1` and unwraps using the email+password path.
+
+Additional rules:
 
 - Do not send plaintext answers to APIs, logs, analytics, or DynamoDB.
 - Do not expose another member's encrypted answers to leaders or admins.
@@ -148,39 +155,20 @@ Rules:
 
 ## Program YAML
 
-Programs contain:
+Program content is structured as a hierarchy: **program → weeks → days → sections**. Each section has scripture, journal prompts, and a point value.
+
+Top-level fields:
 
 - `program`: id, title, version, description
-- `weeks`
-- `days`
-- `sections`
-- `scripture`
-- `prompts`
-- point values
+- `weeks` → `days` → `sections` → `scripture`, `prompts`, point values
 
-See:
+See `schemas/program.schema.yaml` for the full schema.
 
-```text
-schemas/program.schema.yaml
-```
-
-Admins can paste YAML into `/admin/programs/import`, validate it, preview the rendered member experience, and publish imported weeks to one or more groups. Each selected group receives active week records keyed by week number. If an imported week number is already active for a selected group, the import flow warns that the existing week will be replaced before publishing. Existing weeks can be removed from one or more groups from the program management panel on `/admin/programs`.
-
-The program management panel also shows a group-by-group view of assigned active weeks and a recent audit trail showing who imported, replaced, or removed weeks and when.
-
-Admins can also drill into an individual group from `/admin/groups` to change that group's name, change its join code, and remove active weeks from that group only.
-
-## RBAC
-
-- `ADMINS`: admin routes, group visibility, YAML publishing, and admin-role management.
-- `LEADERS`: leader/admin group management routes.
-- Authenticated members: dashboard, program days, leaderboard, and join flow.
-
-Admins can manage admin access from `/admin/users`. The admin access panel lists Cognito users and toggles membership in the Cognito `ADMINS` group. The backend prevents an admin from removing their own admin access.
+Admins paste YAML into `/admin/programs/import`, validate and preview it, then publish it to one or more groups. If an imported week number is already active for a selected group, the import flow warns before replacing it. Weeks can also be removed from groups from `/admin/programs` or from the per-group drilldown at `/admin/groups`.
 
 ## Git Notes
 
-Generated local artifacts are intentionally ignored:
+Generated local artifacts are gitignored:
 
 - `.amplify/`
 - `.next/`
@@ -192,6 +180,6 @@ Keep the repository outside OneDrive to avoid file-locking issues with `.git/obj
 
 ## Remaining Work
 
-- Add stronger group-scoped authorization beyond global `ADMINS` and `LEADERS` roles.
+- Add group-scoped authorization for leaders (currently LEADERS have global access to all groups).
 - Add tests for YAML validation, encryption round trips, scoring, PDF export, and authorization rules.
 - Add UAT coverage for admin-role toggling and group-scoped leader permissions.
