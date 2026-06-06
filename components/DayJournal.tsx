@@ -44,6 +44,7 @@ export function DayJournal({
 
   const router = useRouter();
   const hasLoadedRef = useRef(false);
+  const hasUserChangedRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveRef = useRef<() => Promise<void>>(async () => undefined);
 
@@ -89,6 +90,7 @@ export function DayJournal({
     }
 
     hasLoadedRef.current = false;
+    hasUserChangedRef.current = false;
     setProgram(null);
     setDay(null);
     setProgramStatus("Loading program...");
@@ -215,9 +217,10 @@ export function DayJournal({
     saveRef.current = save;
   });
 
-  // Auto-save: debounce 1.5s after any change, skip during initial load
+  // Auto-save: debounce 1.5s after any change, skip during initial load and after load before user changes
   useEffect(() => {
     if (!hasLoadedRef.current) return;
+    if (!hasUserChangedRef.current) return;
 
     setSaveStatus("idle");
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -230,12 +233,14 @@ export function DayJournal({
   }, [answers, completedSectionIds]);
 
   function toggleSection(sectionId: string) {
+    hasUserChangedRef.current = true;
     setCompletedSectionIds((current) =>
       current.includes(sectionId) ? current.filter((id) => id !== sectionId) : [...current, sectionId]
     );
   }
 
   function updateAnswer(promptId: string, sectionId: string, value: string) {
+    hasUserChangedRef.current = true;
     setAnswers((current) => ({ ...current, [promptId]: value }));
 
     if (value.trim()) {
