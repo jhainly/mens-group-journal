@@ -1,6 +1,7 @@
 import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
 import { joinGroupByCode } from "../functions/join-group-by-code/resource.ts";
 import { manageAdminUsers } from "../functions/manage-admin-users/resource.ts";
+import { syncUserScore } from "../functions/sync-user-score/resource.ts";
 
 const schema = a.schema({
   AdminRoleUser: a.customType({
@@ -48,6 +49,22 @@ const schema = a.schema({
     .returns(a.ref("JoinGroupResult"))
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(joinGroupByCode)),
+
+  SyncUserScoreResult: a.customType({
+    weeklyScore: a.integer().required(),
+    cumulativeScore: a.integer().required()
+  }),
+
+  syncUserScore: a
+    .mutation()
+    .arguments({
+      groupId: a.id().required(),
+      weekNumber: a.integer().required(),
+      programId: a.string().required()
+    })
+    .returns(a.ref("SyncUserScoreResult"))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(syncUserScore)),
 
   UserProfile: a
     .model({
@@ -243,7 +260,6 @@ const schema = a.schema({
     .secondaryIndexes((index) => [index("groupId"), index("userId")])
     .authorization((allow) => [
       allow.authenticated().to(["read"]),
-      allow.ownerDefinedIn("userId").identityClaim("sub").to(["create", "update", "delete", "read"]),
       allow.groups(["ADMINS", "LEADERS"]).to(["read"])
     ]),
 

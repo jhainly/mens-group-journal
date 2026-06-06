@@ -1080,17 +1080,38 @@ export async function getCurrentUserScoreSummary(input: {
     await configureAmplify();
     const client = getDataClient();
     const user = await getCurrentUser();
-    const score = await syncUserScoreFromProgress({
-      client,
-      displayName: await getDisplayName(user.userId),
-      groupId: input.groupId,
-      now: new Date().toISOString(),
-      program: input.program,
-      userId: user.userId,
-      weekNumber: input.activeWeekNumber
-    });
 
-    return { ok: true, data: score };
+    // Sync score via Lambda (server-side computation, prevents client score manipulation)
+    const [syncResult, completedSections] = await Promise.all([
+      requireSaved(
+        client.mutations.syncUserScore({
+          groupId: input.groupId,
+          weekNumber: input.activeWeekNumber,
+          programId: input.program.program.id
+        }),
+        "Score sync failed."
+      ),
+      getCompletedSectionsFromProgress({
+        client,
+        groupId: input.groupId,
+        programId: input.program.program.id,
+        userId: user.userId
+      })
+    ]);
+
+    // dayProgress and max values are derived from program structure + local SectionProgress
+    const localScore = calculateScores(input.program, input.activeWeekNumber, completedSections);
+
+    return {
+      ok: true,
+      data: {
+        weeklyScore: syncResult.data?.weeklyScore ?? 0,
+        cumulativeScore: syncResult.data?.cumulativeScore ?? 0,
+        maxWeeklyScore: localScore.maxWeeklyScore,
+        maxCumulativeScore: localScore.maxCumulativeScore,
+        dayProgress: localScore.dayProgress
+      }
+    };
   } catch (error) {
     return serviceError(error);
   }
@@ -1467,53 +1488,6 @@ async function getCompletedSectionsFromProgress(input: {
   );
 }
 
-async function syncUserScoreFromProgress(input: {
-  client: DataClient;
-  displayName: string;
-  groupId: string;
-  now: string;
-  program: Program;
-  userId: string;
-  weekNumber: number;
-}): Promise<ScoreSummary> {
-  const completedSections = await getCompletedSectionsFromProgress({
-    client: input.client,
-    groupId: input.groupId,
-    programId: input.program.program.id,
-    userId: input.userId
-  });
-  const score = calculateScores(input.program, input.weekNumber, completedSections);
-  const scoreId = getScoreId(input.userId, input.groupId, input.program.program.id, input.weekNumber);
-
-  await upsert(
-    async () =>
-      input.client.models.UserScore.create({
-        scoreId,
-        userId: input.userId,
-        groupId: input.groupId,
-        programId: input.program.program.id,
-        displayName: input.displayName,
-        weekNumber: input.weekNumber,
-        weeklyScore: score.weeklyScore,
-        cumulativeScore: score.cumulativeScore,
-        updatedAt: input.now
-      }),
-    async () =>
-      input.client.models.UserScore.update({
-        scoreId,
-        displayName: input.displayName,
-        weeklyScore: score.weeklyScore,
-        cumulativeScore: score.cumulativeScore,
-        updatedAt: input.now
-      })
-  );
-
-  return score;
-}
-
-function getScoreId(userId: string, groupId: string, programId: string, weekNumber: number): string {
-  return `${userId}:${groupId}:${programId}:${weekNumber}`;
-}
 
 export async function saveJournalDay(input: {
   groupId: string;
@@ -1577,17 +1551,15 @@ export async function saveJournalDay(input: {
         })
     ]);
 
-    // Score sync must come after progress writes
-    const displayName = await getDisplayName(user.userId);
-    await syncUserScoreFromProgress({
-      client,
-      displayName,
-      groupId: input.groupId,
-      now,
-      program: input.program,
-      userId: user.userId,
-      weekNumber: input.weekNumber
-    });
+    // Score sync must come after progress writes; Lambda computes score server-side
+    await requireSaved(
+      client.mutations.syncUserScore({
+        groupId: input.groupId,
+        weekNumber: input.weekNumber,
+        programId: input.program.program.id
+      }),
+      "Score sync failed."
+    );
 
     // If no journal key is present, skip all answer processing entirely.
     // This prevents empty answers from being mistaken for deletions and wiping encrypted content.

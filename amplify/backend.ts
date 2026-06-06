@@ -4,12 +4,14 @@ import { auth } from "./auth/resource.ts";
 import { data } from "./data/resource.ts";
 import { joinGroupByCode } from "./functions/join-group-by-code/resource.ts";
 import { manageAdminUsers } from "./functions/manage-admin-users/resource.ts";
+import { syncUserScore } from "./functions/sync-user-score/resource.ts";
 
 const backend = defineBackend({
   auth,
   data,
   joinGroupByCode,
-  manageAdminUsers
+  manageAdminUsers,
+  syncUserScore
 });
 
 backend.manageAdminUsers.addEnvironment("USER_POOL_ID", backend.auth.resources.userPool.userPoolId);
@@ -40,6 +42,33 @@ backend.joinGroupByCode.resources.lambda.addToRolePolicy(
       groupTable.tableArn,
       `${groupTable.tableArn}/index/*`,
       membershipTable.tableArn,
+      userProfileTable.tableArn
+    ]
+  })
+);
+
+const sectionProgressTable = backend.data.resources.tables.SectionProgress;
+const groupProgramWeekTable = backend.data.resources.tables.GroupProgramWeek;
+const programSnapshotTable = backend.data.resources.tables.ProgramSnapshot;
+const userScoreTable = backend.data.resources.tables.UserScore;
+
+backend.syncUserScore.addEnvironment("SECTION_PROGRESS_TABLE_NAME", sectionProgressTable.tableName);
+backend.syncUserScore.addEnvironment("SECTION_PROGRESS_USER_ID_INDEX_NAME", "sectionProgressesByUserId");
+backend.syncUserScore.addEnvironment("GROUP_PROGRAM_WEEK_TABLE_NAME", groupProgramWeekTable.tableName);
+backend.syncUserScore.addEnvironment("GROUP_PROGRAM_WEEK_GROUP_ID_INDEX_NAME", "groupProgramWeeksByGroupId");
+backend.syncUserScore.addEnvironment("PROGRAM_SNAPSHOT_TABLE_NAME", programSnapshotTable.tableName);
+backend.syncUserScore.addEnvironment("USER_SCORE_TABLE_NAME", userScoreTable.tableName);
+backend.syncUserScore.addEnvironment("USER_PROFILE_TABLE_NAME", userProfileTable.tableName);
+backend.syncUserScore.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:UpdateItem"],
+    resources: [
+      sectionProgressTable.tableArn,
+      `${sectionProgressTable.tableArn}/index/*`,
+      groupProgramWeekTable.tableArn,
+      `${groupProgramWeekTable.tableArn}/index/*`,
+      programSnapshotTable.tableArn,
+      userScoreTable.tableArn,
       userProfileTable.tableArn
     ]
   })
