@@ -1718,20 +1718,8 @@ async function saveJournalKeyEnvelope(
 
     return { ok: true, data: undefined };
   } catch (error) {
-    if (isMissingJournalKeyEnvelopeSchemaError(error)) {
-      return { ok: true, data: undefined };
-    }
-
     return serviceError(error);
   }
-}
-
-function isMissingJournalKeyEnvelopeSchemaError(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    error.message.includes("UpdateUserProfileInput") &&
-    error.message.includes("field that is not defined")
-  );
 }
 
 function getLegacyJournalSecret(email: string, password: string): string {
