@@ -39,6 +39,8 @@ export function DayJournal({
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState("");
   const [needsReauth, setNeedsReauth] = useState(false);
+  const [failedAnswerKeys, setFailedAnswerKeys] = useState<string[]>([]);
+  const [approvedReplacementKeys, setApprovedReplacementKeys] = useState<string[]>([]);
   const [groupStatus, setGroupStatus] = useState("Loading group...");
   const [programStatus, setProgramStatus] = useState("Loading program...");
   const [journalStatus, setJournalStatus] = useState("");
@@ -100,6 +102,8 @@ export function DayJournal({
     setNeedsReauth(false);
     setAnswers({});
     setCompletedSectionIds([]);
+    setFailedAnswerKeys([]);
+    setApprovedReplacementKeys([]);
 
     void loadActiveProgramForGroup(activeGroup.groupId).then((result) => {
       if (cancelled) {
@@ -156,6 +160,8 @@ export function DayJournal({
       setAnswers(result.data.answers);
       setCompletedSectionIds(result.data.completedSectionIds);
       setNeedsReauth(result.data.needsReauth);
+      setFailedAnswerKeys(result.data.failedAnswerKeys);
+      setApprovedReplacementKeys([]);
       setJournalStatus(result.data.needsReauth ? "" : (result.data.warning ?? ""));
       hasLoadedRef.current = true;
     });
@@ -171,7 +177,7 @@ export function DayJournal({
     }
   }, [answers]);
 
-  async function save() {
+  async function save(approvedKeys = approvedReplacementKeys) {
     if (!activeGroup || !program || !day) return;
 
     const hasReflections = Object.values(answers).some((answer) => answer.trim());
@@ -182,6 +188,8 @@ export function DayJournal({
     }
 
     setSaveStatus("saving");
+    const approvedReplacementSet = new Set(approvedKeys);
+    const blockedAnswerKeys = failedAnswerKeys.filter((answerKey) => !approvedReplacementSet.has(answerKey));
 
     const result = await saveJournalDay({
       groupId: activeGroup.groupId,
@@ -189,6 +197,7 @@ export function DayJournal({
       weekNumber,
       dayNumber: day.dayNumber,
       completedSectionIds,
+      blockedAnswerKeys,
       answers: Object.fromEntries(
         day.sections.flatMap((section) => {
           const prompts = section.prompts ?? [];
@@ -212,6 +221,19 @@ export function DayJournal({
     if (!result.ok) {
       setSaveStatus("error");
       setSaveError(result.error);
+      return;
+    }
+
+    if (approvedKeys.length > 0) {
+      setFailedAnswerKeys((current) => current.filter((answerKey) => !approvedReplacementSet.has(answerKey)));
+      setApprovedReplacementKeys((current) => current.filter((answerKey) => !approvedReplacementSet.has(answerKey)));
+    }
+
+    if (blockedAnswerKeys.length > 0) {
+      setSaveStatus("error");
+      setSaveError(
+        `${blockedAnswerKeys.length} saved reflection${blockedAnswerKeys.length === 1 ? "" : "s"} could not be decrypted. Replace the unreadable field before it can be saved over.`
+      );
       return;
     }
 
@@ -252,6 +274,19 @@ export function DayJournal({
     if (value.trim()) {
       setCompletedSectionIds((current) => (current.includes(sectionId) ? current : [...current, sectionId]));
     }
+  }
+
+  function replaceUnreadableAnswer(answerKey: string) {
+    if (!answers[answerKey]?.trim()) {
+      setSaveStatus("error");
+      setSaveError("Type a replacement reflection before replacing unreadable saved text.");
+      return;
+    }
+
+    const nextApprovedKeys = Array.from(new Set([...approvedReplacementKeys, answerKey]));
+    setApprovedReplacementKeys(nextApprovedKeys);
+    hasUserChangedRef.current = true;
+    void save(nextApprovedKeys);
   }
 
   function resizeTextarea(element: HTMLTextAreaElement) {
@@ -339,9 +374,16 @@ export function DayJournal({
               {!needsReauth && section.prompts && section.prompts.length > 0
                 ? section.prompts.map((prompt) => {
                     const answerKey = journalPromptAnswerKey(section.id, prompt.id);
+                    const decryptFailed = failedAnswerKeys.includes(answerKey);
+                    const replacementApproved = approvedReplacementKeys.includes(answerKey);
                     return (
-                      <label className="field" key={answerKey}>
+                      <div className="field" key={answerKey}>
                         <span>{prompt.label}</span>
+                        {decryptFailed ? (
+                          <span className="warning">
+                            A saved reflection exists here, but this session cannot decrypt it.
+                          </span>
+                        ) : null}
                         <textarea
                           className="journal-textarea"
                           value={resolveJournalAnswer(answers, section.id, prompt.id)}
@@ -349,15 +391,31 @@ export function DayJournal({
                             updateAnswer(answerKey, section.id, event.target.value);
                             resizeTextarea(event.currentTarget);
                           }}
-                          placeholder="Optional reflection"
+                          placeholder={decryptFailed ? "Type replacement text here" : "Optional reflection"}
                         />
-                      </label>
+                        {decryptFailed && !replacementApproved ? (
+                          <button
+                            className="button secondary"
+                            onClick={() => replaceUnreadableAnswer(answerKey)}
+                            type="button"
+                          >
+                            Replace unreadable reflection
+                          </button>
+                        ) : null}
+                      </div>
                     );
                   })
                 : !needsReauth ? (() => {
                     const reflectionId = journalSectionReflectionKey(section.id);
+                    const decryptFailed = failedAnswerKeys.includes(reflectionId);
+                    const replacementApproved = approvedReplacementKeys.includes(reflectionId);
                     return (
-                      <label className="field" key={reflectionId}>
+                      <div className="field" key={reflectionId}>
+                        {decryptFailed ? (
+                          <span className="warning">
+                            A saved reflection exists here, but this session cannot decrypt it.
+                          </span>
+                        ) : null}
                         <textarea
                           className="journal-textarea"
                           value={answers[reflectionId] ?? ""}
@@ -365,9 +423,18 @@ export function DayJournal({
                             updateAnswer(reflectionId, section.id, event.target.value);
                             resizeTextarea(event.currentTarget);
                           }}
-                          placeholder="Optional reflection"
+                          placeholder={decryptFailed ? "Type replacement text here" : "Optional reflection"}
                         />
-                      </label>
+                        {decryptFailed && !replacementApproved ? (
+                          <button
+                            className="button secondary"
+                            onClick={() => replaceUnreadableAnswer(reflectionId)}
+                            type="button"
+                          >
+                            Replace unreadable reflection
+                          </button>
+                        ) : null}
+                      </div>
                     );
                   })() : null}
             </div>

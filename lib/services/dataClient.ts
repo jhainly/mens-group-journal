@@ -106,6 +106,7 @@ export type JournalDayState = {
   answers: Record<string, string>;
   completedSectionIds: string[];
   encryptedAnswerCount: number;
+  failedAnswerKeys: string[];
   needsReauth: boolean;
   warning?: string;
 };
@@ -1422,13 +1423,15 @@ export async function loadJournalDay(input: {
     }
 
     const answers: Record<string, string> = {};
+    const failedAnswerKeys: string[] = [];
     let warning: string | undefined;
     const needsReauth = !secret;
 
     if (secret) {
       for (const answer of encryptedAnswers.data) {
+        const answerKey = journalPromptAnswerKey(answer.sectionId, answer.promptId);
         try {
-          answers[journalPromptAnswerKey(answer.sectionId, answer.promptId)] = await decryptJournalAnswer(
+          answers[answerKey] = await decryptJournalAnswer(
             {
               algorithm: "AES-GCM",
               ciphertext: answer.ciphertext,
@@ -1441,6 +1444,7 @@ export async function loadJournalDay(input: {
             secret
           );
         } catch {
+          failedAnswerKeys.push(answerKey);
           warning = "Some saved reflections could not be decrypted with this session.";
         }
       }
@@ -1449,11 +1453,12 @@ export async function loadJournalDay(input: {
     return {
       ok: true,
       data: {
-        answers,
-        completedSectionIds: progress.data.map((row) => row.sectionId),
-        encryptedAnswerCount: encryptedAnswers.data.length,
-        needsReauth,
-        warning
+          answers,
+          completedSectionIds: progress.data.map((row) => row.sectionId),
+          encryptedAnswerCount: encryptedAnswers.data.length,
+          failedAnswerKeys,
+          needsReauth,
+          warning
       }
     };
   } catch (error) {
@@ -1497,6 +1502,7 @@ export async function saveJournalDay(input: {
   dayNumber: number;
   completedSectionIds: string[];
   answers: Record<string, { promptId: string; sectionId: string; value: string }>;
+  blockedAnswerKeys?: string[];
 }): Promise<ServiceResult<void>> {
   try {
     await configureAmplify();
@@ -1568,10 +1574,14 @@ export async function saveJournalDay(input: {
       return { ok: true, data: undefined };
     }
 
-    // Encrypt all answers in parallel, then write in parallel
-    await Promise.all(
-      Object.values(input.answers).map(async (answer) => {
-        const promptId = answer.promptId;
+      // Encrypt all answers in parallel, then write in parallel
+      await Promise.all(
+        Object.entries(input.answers).map(async ([answerKey, answer]) => {
+          if (input.blockedAnswerKeys?.includes(answerKey)) {
+            return;
+          }
+
+          const promptId = answer.promptId;
         const answerId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${answer.sectionId}:${promptId}`;
 
         if (!answer.value.trim()) {
