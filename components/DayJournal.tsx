@@ -9,6 +9,7 @@ import { configureAmplify } from "@/lib/amplifyClient";
 import { clearJournalEncryptionSecret } from "@/lib/journalKey";
 import {
   journalPromptAnswerKey,
+  journalPromptStorageIds,
   journalSectionReflectionKey,
   resolveJournalAnswer
 } from "@/lib/journalAnswerKeys";
@@ -202,15 +203,19 @@ export function DayJournal({
         day.sections.flatMap((section) => {
           const prompts = section.prompts ?? [];
           if (prompts.length > 0) {
+            const promptStorageIds = journalPromptStorageIds(prompts);
             // UI state keys include the section id so repeated prompt ids in imported YAML cannot collide.
-            return prompts.map((prompt) => [
-              journalPromptAnswerKey(section.id, prompt.id),
-              {
-                promptId: prompt.id,
-                sectionId: section.id,
-                value: resolveJournalAnswer(answers, section.id, prompt.id)
-              }
-            ]);
+            return prompts.map((prompt, promptIndex) => {
+              const promptStorageId = promptStorageIds[promptIndex];
+              return [
+                journalPromptAnswerKey(section.id, promptStorageId),
+                {
+                  promptId: promptStorageId,
+                  sectionId: section.id,
+                  value: resolveJournalAnswer(answers, section.id, promptStorageId)
+                }
+              ];
+            });
           }
           const reflectionId = journalSectionReflectionKey(section.id);
           return [[reflectionId, { promptId: "reflection", sectionId: section.id, value: answers[reflectionId] ?? "" }]];
@@ -372,39 +377,43 @@ export function DayJournal({
                 </blockquote>
               ))}
               {!needsReauth && section.prompts && section.prompts.length > 0
-                ? section.prompts.map((prompt) => {
-                    const answerKey = journalPromptAnswerKey(section.id, prompt.id);
-                    const decryptFailed = failedAnswerKeys.includes(answerKey);
-                    const replacementApproved = approvedReplacementKeys.includes(answerKey);
-                    return (
-                      <div className="field" key={answerKey}>
-                        <span>{prompt.label}</span>
-                        {decryptFailed ? (
-                          <span className="warning">
-                            A saved reflection exists here, but this session cannot decrypt it.
-                          </span>
-                        ) : null}
-                        <textarea
-                          className="journal-textarea"
-                          value={resolveJournalAnswer(answers, section.id, prompt.id)}
-                          onChange={(event) => {
-                            updateAnswer(answerKey, section.id, event.target.value);
-                            resizeTextarea(event.currentTarget);
-                          }}
-                          placeholder={decryptFailed ? "Type replacement text here" : "Optional reflection"}
-                        />
-                        {decryptFailed && !replacementApproved ? (
-                          <button
-                            className="button secondary"
-                            onClick={() => replaceUnreadableAnswer(answerKey)}
-                            type="button"
-                          >
-                            Replace unreadable reflection
-                          </button>
-                        ) : null}
-                      </div>
-                    );
-                  })
+                  ? (() => {
+                    const promptStorageIds = journalPromptStorageIds(section.prompts);
+                    return section.prompts.map((prompt, promptIndex) => {
+                      const promptStorageId = promptStorageIds[promptIndex];
+                      const answerKey = journalPromptAnswerKey(section.id, promptStorageId);
+                      const decryptFailed = failedAnswerKeys.includes(answerKey);
+                      const replacementApproved = approvedReplacementKeys.includes(answerKey);
+                      return (
+                        <div className="field" key={answerKey}>
+                          <span>{prompt.label}</span>
+                          {decryptFailed ? (
+                            <span className="warning">
+                              A saved reflection exists here, but this session cannot decrypt it.
+                            </span>
+                          ) : null}
+                          <textarea
+                            className="journal-textarea"
+                            value={resolveJournalAnswer(answers, section.id, promptStorageId)}
+                            onChange={(event) => {
+                              updateAnswer(answerKey, section.id, event.target.value);
+                              resizeTextarea(event.currentTarget);
+                            }}
+                            placeholder={decryptFailed ? "Type replacement text here" : "Optional reflection"}
+                          />
+                          {decryptFailed && !replacementApproved ? (
+                            <button
+                              className="button secondary"
+                              onClick={() => replaceUnreadableAnswer(answerKey)}
+                              type="button"
+                            >
+                              Replace unreadable reflection
+                            </button>
+                          ) : null}
+                        </div>
+                      );
+                    });
+                  })()
                 : !needsReauth ? (() => {
                     const reflectionId = journalSectionReflectionKey(section.id);
                     const decryptFailed = failedAnswerKeys.includes(reflectionId);
