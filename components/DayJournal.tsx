@@ -21,9 +21,16 @@ import {
   loadActiveProgramForGroup,
   loadJournalDay,
   saveJournalDay,
+  type JournalDayState,
   type UserGroupSummary
 } from "@/lib/services/dataClient";
 import type { Program, ProgramDay } from "@/types/program";
+
+type VerificationFailure = {
+  answerKey: string;
+  encryptedRecordReturned: boolean;
+  reason: "delete-not-applied" | "decrypt-failed" | "missing-record" | "value-mismatch";
+};
 
 export function DayJournal({
   weekNumber,
@@ -319,7 +326,8 @@ export function DayJournal({
     }
 
     const waitTimesMs = [0, 300, 900];
-    let missingKeys: string[] = [];
+    let failures: VerificationFailure[] = [];
+    let lastLoaded: JournalDayState | null = null;
 
     for (const waitTimeMs of waitTimesMs) {
       if (waitTimeMs > 0) {
@@ -337,25 +345,59 @@ export function DayJournal({
         return { ok: false, error: loaded.error };
       }
 
-      missingKeys = expectedAnswers
-        .filter(([answerKey, answer]) => {
-          const loadedValue = loaded.data.answers[answerKey] ?? "";
-          return answer.value.trim() ? loadedValue !== answer.value : Boolean(loadedValue);
-        })
-        .map(([answerKey]) => answerKey);
+      lastLoaded = loaded.data;
+      failures = expectedAnswers.flatMap<VerificationFailure>(([answerKey, answer]) => {
+        const encryptedRecordReturned = loaded.data.encryptedAnswerKeys.includes(answerKey);
+        const decryptFailed = loaded.data.failedAnswerKeys.includes(answerKey);
+        const loadedValue = loaded.data.answers[answerKey] ?? "";
 
-      if (missingKeys.length === 0) {
+        if (!answer.value.trim()) {
+          if (encryptedRecordReturned || decryptFailed || loadedValue) {
+            return [{ answerKey, encryptedRecordReturned, reason: "delete-not-applied" as const }];
+          }
+
+          return [];
+        }
+
+        if (!encryptedRecordReturned) {
+          return [{ answerKey, encryptedRecordReturned, reason: "missing-record" as const }];
+        }
+
+        if (decryptFailed) {
+          return [{ answerKey, encryptedRecordReturned, reason: "decrypt-failed" as const }];
+        }
+
+        if (loadedValue !== answer.value) {
+          return [{ answerKey, encryptedRecordReturned, reason: "value-mismatch" as const }];
+        }
+
+        return [];
+      });
+
+      if (failures.length === 0) {
         return { ok: true };
       }
     }
 
     if (process.env.NODE_ENV !== "production") {
-      console.warn("Journal save verification failed for answer keys:", missingKeys);
+      console.warn("Journal save verification failed", {
+        dayNumber: day.dayNumber,
+        decryptedAnswerKeys: Object.keys(lastLoaded?.answers ?? {}),
+        encryptedAnswerCount: lastLoaded?.encryptedAnswerCount ?? 0,
+        encryptedAnswerKeys: lastLoaded?.encryptedAnswerKeys ?? [],
+        failedAnswerKeys: lastLoaded?.failedAnswerKeys ?? [],
+        failures,
+        groupId: activeGroup.groupId,
+        programId: program.program.id,
+        weekNumber
+      });
     }
+
+    const reasons = Array.from(new Set(failures.map((failure) => failure.reason))).join(", ");
 
     return {
       ok: false,
-      error: "The reflection save could not be verified. Your text is still on this page; wait a moment and try saving again before leaving."
+      error: `The reflection save could not be verified${reasons ? ` (${reasons})` : ""}. Your text is still on this page. Use Retry save before leaving.`
     };
   }
 
@@ -494,9 +536,16 @@ export function DayJournal({
       <section className="panel stack">
         <div className="row">
           <h1>{day ? `${getProgramDayLabel(day.dayNumber)}: ${day.title}` : "Program day"}</h1>
-          <p className="muted" aria-live="polite" style={{ whiteSpace: "nowrap" }}>
-            {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : saveStatus === "error" ? saveError : ""}
-          </p>
+          <div className="row" style={{ justifyContent: "flex-end" }}>
+            <p className="muted" aria-live="polite" style={{ whiteSpace: "nowrap" }}>
+              {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : saveStatus === "error" ? saveError : ""}
+            </p>
+            {saveStatus === "error" ? (
+              <button className="button secondary" onClick={() => void saveRef.current()} type="button">
+                Retry save
+              </button>
+            ) : null}
+          </div>
         </div>
         {day ? (
           <div className="day-progress">

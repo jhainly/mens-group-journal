@@ -105,6 +105,7 @@ export type WeekReplacementImpact = {
 export type JournalDayState = {
   answers: Record<string, string>;
   completedSectionIds: string[];
+  encryptedAnswerKeys: string[];
   encryptedAnswerCount: number;
   failedAnswerKeys: string[];
   needsReauth: boolean;
@@ -1455,6 +1456,7 @@ export async function loadJournalDay(input: {
       data: {
           answers,
           completedSectionIds: progress.data.map((row) => row.sectionId),
+          encryptedAnswerKeys: encryptedAnswers.data.map((answer) => journalPromptAnswerKey(answer.sectionId, answer.promptId)),
           encryptedAnswerCount: encryptedAnswers.data.length,
           failedAnswerKeys,
           needsReauth,
