@@ -158,12 +158,19 @@ export function DayJournal({
         return;
       }
 
+      const completedFromAnswers = getCompletedSectionIdsFromAnswers(day, result.data.answers);
+      const mergedCompletedSectionIds = Array.from(
+        new Set([...result.data.completedSectionIds, ...completedFromAnswers])
+      );
+      const repairedMissingCompletions = mergedCompletedSectionIds.length > result.data.completedSectionIds.length;
+
       setAnswers(result.data.answers);
-      setCompletedSectionIds(result.data.completedSectionIds);
+      setCompletedSectionIds(mergedCompletedSectionIds);
       setNeedsReauth(result.data.needsReauth);
       setFailedAnswerKeys(result.data.failedAnswerKeys);
       setApprovedReplacementKeys([]);
       setJournalStatus(result.data.needsReauth ? "" : (result.data.warning ?? ""));
+      hasUserChangedRef.current = repairedMissingCompletions;
       hasLoadedRef.current = true;
     });
 
@@ -297,6 +304,23 @@ export function DayJournal({
   function resizeTextarea(element: HTMLTextAreaElement) {
     element.style.height = "auto";
     element.style.height = `${element.scrollHeight}px`;
+  }
+
+  function getCompletedSectionIdsFromAnswers(currentDay: ProgramDay, currentAnswers: Record<string, string>): string[] {
+    return currentDay.sections
+      .filter((section) => {
+        const prompts = section.prompts ?? [];
+
+        if (prompts.length > 0) {
+          const promptStorageIds = journalPromptStorageIds(prompts);
+          return promptStorageIds.some((promptStorageId) =>
+            resolveJournalAnswer(currentAnswers, section.id, promptStorageId).trim()
+          );
+        }
+
+        return Boolean(currentAnswers[journalSectionReflectionKey(section.id)]?.trim());
+      })
+      .map((section) => section.id);
   }
 
   async function handleReauth() {
