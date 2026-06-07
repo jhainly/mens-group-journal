@@ -49,8 +49,13 @@ export function DayJournal({
   const router = useRouter();
   const hasLoadedRef = useRef(false);
   const hasUserChangedRef = useRef(false);
+  const answersRef = useRef<Record<string, string>>({});
+  const dirtyAnswerKeysRef = useRef<Set<string>>(new Set());
+  const isSavingRef = useRef(false);
+  const saveAgainRef = useRef(false);
+  const queuedApprovedReplacementKeysRef = useRef<Set<string>>(new Set());
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const saveRef = useRef<() => Promise<void>>(async () => undefined);
+  const saveRef = useRef<(approvedKeys?: string[]) => Promise<void>>(async () => undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -102,6 +107,9 @@ export function DayJournal({
     setSaveStatus("idle");
     setNeedsReauth(false);
     setAnswers({});
+    answersRef.current = {};
+    dirtyAnswerKeysRef.current.clear();
+    queuedApprovedReplacementKeysRef.current.clear();
     setCompletedSectionIds([]);
     setFailedAnswerKeys([]);
     setApprovedReplacementKeys([]);
@@ -165,6 +173,9 @@ export function DayJournal({
       const repairedMissingCompletions = mergedCompletedSectionIds.length > result.data.completedSectionIds.length;
 
       setAnswers(result.data.answers);
+      answersRef.current = result.data.answers;
+      dirtyAnswerKeysRef.current.clear();
+      queuedApprovedReplacementKeysRef.current.clear();
       setCompletedSectionIds(mergedCompletedSectionIds);
       setNeedsReauth(result.data.needsReauth);
       setFailedAnswerKeys(result.data.failedAnswerKeys);
@@ -180,6 +191,8 @@ export function DayJournal({
   }, [activeGroup, day, program, weekNumber]);
 
   useEffect(() => {
+    answersRef.current = answers;
+
     for (const textarea of document.querySelectorAll<HTMLTextAreaElement>(".journal-textarea")) {
       resizeTextarea(textarea);
     }
@@ -188,7 +201,19 @@ export function DayJournal({
   async function save(approvedKeys = approvedReplacementKeys) {
     if (!activeGroup || !program || !day) return;
 
-    const hasReflections = Object.values(answers).some((answer) => answer.trim());
+    if (isSavingRef.current) {
+      saveAgainRef.current = true;
+      for (const answerKey of approvedKeys) {
+        queuedApprovedReplacementKeysRef.current.add(answerKey);
+      }
+      return;
+    }
+
+    const answersSnapshot = answersRef.current;
+    const dirtyAnswerKeys = Array.from(dirtyAnswerKeysRef.current);
+    const keysToSave = Array.from(new Set([...dirtyAnswerKeys, ...approvedKeys]));
+    const answerPayload = getAnswerPayload(day, answersSnapshot, keysToSave);
+    const hasReflections = Object.values(answerPayload).some((answer) => answer.value.trim());
     if (hasReflections && !canEncryptJournalAnswers()) {
       setSaveStatus("error");
       setSaveError(getJournalEncryptionRequirementMessage());
@@ -196,6 +221,7 @@ export function DayJournal({
     }
 
     setSaveStatus("saving");
+    isSavingRef.current = true;
     const approvedReplacementSet = new Set(approvedKeys);
     const blockedAnswerKeys = failedAnswerKeys.filter((answerKey) => !approvedReplacementSet.has(answerKey));
 
@@ -206,34 +232,24 @@ export function DayJournal({
       dayNumber: day.dayNumber,
       completedSectionIds,
       blockedAnswerKeys,
-      answers: Object.fromEntries(
-        day.sections.flatMap((section) => {
-          const prompts = section.prompts ?? [];
-          if (prompts.length > 0) {
-            const promptStorageIds = journalPromptStorageIds(prompts);
-            // UI state keys include the section id so repeated prompt ids in imported YAML cannot collide.
-            return prompts.map((prompt, promptIndex) => {
-              const promptStorageId = promptStorageIds[promptIndex];
-              return [
-                journalPromptAnswerKey(section.id, promptStorageId),
-                {
-                  promptId: promptStorageId,
-                  sectionId: section.id,
-                  value: resolveJournalAnswer(answers, section.id, promptStorageId)
-                }
-              ];
-            });
-          }
-          const reflectionId = journalSectionReflectionKey(section.id);
-          return [[reflectionId, { promptId: "reflection", sectionId: section.id, value: answers[reflectionId] ?? "" }]];
-        })
-      )
+      answers: answerPayload
     });
+
+    isSavingRef.current = false;
 
     if (!result.ok) {
       setSaveStatus("error");
       setSaveError(result.error);
+      if (saveAgainRef.current) {
+        runQueuedSave();
+      }
       return;
+    }
+
+    for (const [answerKey, savedAnswer] of Object.entries(answerPayload)) {
+      if ((answersRef.current[answerKey] ?? "") === savedAnswer.value) {
+        dirtyAnswerKeysRef.current.delete(answerKey);
+      }
     }
 
     if (approvedKeys.length > 0) {
@@ -246,10 +262,24 @@ export function DayJournal({
       setSaveError(
         `${blockedAnswerKeys.length} saved reflection${blockedAnswerKeys.length === 1 ? "" : "s"} could not be decrypted. Replace the unreadable field before it can be saved over.`
       );
+      if (saveAgainRef.current) {
+        runQueuedSave();
+      }
       return;
     }
 
     setSaveStatus("saved");
+
+    if (saveAgainRef.current) {
+      runQueuedSave();
+    }
+  }
+
+  function runQueuedSave() {
+    const queuedApprovedKeys = Array.from(queuedApprovedReplacementKeysRef.current);
+    queuedApprovedReplacementKeysRef.current.clear();
+    saveAgainRef.current = false;
+    void saveRef.current(queuedApprovedKeys);
   }
 
   // Keep saveRef pointing at the latest save closure
@@ -281,6 +311,8 @@ export function DayJournal({
 
   function updateAnswer(promptId: string, sectionId: string, value: string) {
     hasUserChangedRef.current = true;
+    dirtyAnswerKeysRef.current.add(promptId);
+    answersRef.current = { ...answersRef.current, [promptId]: value };
     setAnswers((current) => ({ ...current, [promptId]: value }));
 
     if (value.trim()) {
@@ -321,6 +353,50 @@ export function DayJournal({
         return Boolean(currentAnswers[journalSectionReflectionKey(section.id)]?.trim());
       })
       .map((section) => section.id);
+  }
+
+  function getAnswerPayload(
+    currentDay: ProgramDay,
+    currentAnswers: Record<string, string>,
+    answerKeys: string[]
+  ): Record<string, { promptId: string; sectionId: string; value: string }> {
+    const keysToSave = new Set(answerKeys);
+
+    return Object.fromEntries(
+      currentDay.sections.flatMap((section) => {
+        const prompts = section.prompts ?? [];
+
+        if (prompts.length > 0) {
+          const promptStorageIds = journalPromptStorageIds(prompts);
+          return promptStorageIds.flatMap((promptStorageId) => {
+            const answerKey = journalPromptAnswerKey(section.id, promptStorageId);
+
+            if (!keysToSave.has(answerKey)) {
+              return [];
+            }
+
+            return [
+              [
+                answerKey,
+                {
+                  promptId: promptStorageId,
+                  sectionId: section.id,
+                  value: currentAnswers[answerKey] ?? ""
+                }
+              ]
+            ];
+          });
+        }
+
+        const reflectionId = journalSectionReflectionKey(section.id);
+
+        if (!keysToSave.has(reflectionId)) {
+          return [];
+        }
+
+        return [[reflectionId, { promptId: "reflection", sectionId: section.id, value: currentAnswers[reflectionId] ?? "" }]];
+      })
+    );
   }
 
   async function handleReauth() {
@@ -419,12 +495,13 @@ export function DayJournal({
                           <textarea
                             className="journal-textarea"
                             value={resolveJournalAnswer(answers, section.id, promptStorageId)}
-                            onChange={(event) => {
-                              updateAnswer(answerKey, section.id, event.target.value);
-                              resizeTextarea(event.currentTarget);
-                            }}
-                            placeholder={decryptFailed ? "Type replacement text here" : "Optional reflection"}
-                          />
+                          onChange={(event) => {
+                            updateAnswer(answerKey, section.id, event.target.value);
+                            resizeTextarea(event.currentTarget);
+                          }}
+                          onBlur={() => void saveRef.current()}
+                          placeholder={decryptFailed ? "Type replacement text here" : "Optional reflection"}
+                        />
                           {decryptFailed && !replacementApproved ? (
                             <button
                               className="button secondary"
@@ -456,6 +533,7 @@ export function DayJournal({
                             updateAnswer(reflectionId, section.id, event.target.value);
                             resizeTextarea(event.currentTarget);
                           }}
+                          onBlur={() => void saveRef.current()}
                           placeholder={decryptFailed ? "Type replacement text here" : "Optional reflection"}
                         />
                         {decryptFailed && !replacementApproved ? (
