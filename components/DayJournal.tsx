@@ -259,6 +259,16 @@ export function DayJournal({
       return;
     }
 
+    const verified = await verifySavedAnswers(answerPayload, blockedAnswerKeys);
+    if (!verified.ok) {
+      setSaveStatus("error");
+      setSaveError(verified.error);
+      if (saveAgainRef.current) {
+        runQueuedSave();
+      }
+      return;
+    }
+
     for (const [answerKey, savedAnswer] of Object.entries(answerPayload)) {
       if ((answersRef.current[answerKey] ?? "") === savedAnswer.value) {
         dirtyAnswerKeysRef.current.delete(answerKey);
@@ -295,6 +305,60 @@ export function DayJournal({
     void saveRef.current(queuedApprovedKeys);
   }
 
+  async function verifySavedAnswers(
+    answerPayload: Record<string, { promptId: string; sectionId: string; value: string }>,
+    blockedAnswerKeys: string[]
+  ): Promise<{ ok: true } | { ok: false; error: string }> {
+    if (!activeGroup || !program || !day) {
+      return { ok: true };
+    }
+
+    const expectedAnswers = Object.entries(answerPayload).filter(([answerKey]) => !blockedAnswerKeys.includes(answerKey));
+    if (expectedAnswers.length === 0) {
+      return { ok: true };
+    }
+
+    const waitTimesMs = [0, 300, 900];
+    let missingKeys: string[] = [];
+
+    for (const waitTimeMs of waitTimesMs) {
+      if (waitTimeMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, waitTimeMs));
+      }
+
+      const loaded = await loadJournalDay({
+        groupId: activeGroup.groupId,
+        program,
+        weekNumber,
+        dayNumber: day.dayNumber
+      });
+
+      if (!loaded.ok) {
+        return { ok: false, error: loaded.error };
+      }
+
+      missingKeys = expectedAnswers
+        .filter(([answerKey, answer]) => {
+          const loadedValue = loaded.data.answers[answerKey] ?? "";
+          return answer.value.trim() ? loadedValue !== answer.value : Boolean(loadedValue);
+        })
+        .map(([answerKey]) => answerKey);
+
+      if (missingKeys.length === 0) {
+        return { ok: true };
+      }
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Journal save verification failed for answer keys:", missingKeys);
+    }
+
+    return {
+      ok: false,
+      error: "The reflection save could not be verified. Your text is still on this page; wait a moment and try saving again before leaving."
+    };
+  }
+
   // Keep saveRef pointing at the latest save closure
   useEffect(() => {
     saveRef.current = save;
@@ -312,7 +376,6 @@ export function DayJournal({
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answers, completedSectionIds]);
 
   function toggleSection(sectionId: string) {
