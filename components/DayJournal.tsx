@@ -32,6 +32,11 @@ type VerificationFailure = {
   encryptedRecordReturned: boolean;
   reason: "delete-not-applied" | "decrypt-failed" | "missing-record" | "value-mismatch";
 };
+type ProgressVerificationFailure = {
+  expectedCompleted: boolean;
+  progressId?: string;
+  sectionId: string;
+};
 
 export function DayJournal({
   weekNumber,
@@ -256,9 +261,8 @@ export function DayJournal({
       answers: answerPayload
     });
 
-    isSavingRef.current = false;
-
     if (!result.ok) {
+      isSavingRef.current = false;
       setSaveStatus("error");
       setSaveError(result.error);
       if (saveAgainRef.current) {
@@ -267,8 +271,20 @@ export function DayJournal({
       return;
     }
 
+    const progressVerified = await verifySavedProgress();
+    if (!progressVerified.ok) {
+      isSavingRef.current = false;
+      setSaveStatus("error");
+      setSaveError(progressVerified.error);
+      if (saveAgainRef.current) {
+        runQueuedSave();
+      }
+      return;
+    }
+
     const verified = await verifySavedAnswers(answerPayload, blockedAnswerKeys);
     if (!verified.ok) {
+      isSavingRef.current = false;
       setSaveStatus("error");
       setSaveError(verified.error);
       if (saveAgainRef.current) {
@@ -293,12 +309,14 @@ export function DayJournal({
       setSaveError(
         `${blockedAnswerKeys.length} saved reflection${blockedAnswerKeys.length === 1 ? "" : "s"} could not be decrypted. Replace the unreadable field before it can be saved over.`
       );
+      isSavingRef.current = false;
       if (saveAgainRef.current) {
         runQueuedSave();
       }
       return;
     }
 
+    isSavingRef.current = false;
     setSaveStatus("saved");
 
     if (saveAgainRef.current) {
@@ -311,6 +329,71 @@ export function DayJournal({
     queuedApprovedReplacementKeysRef.current.clear();
     saveAgainRef.current = false;
     void saveRef.current(queuedApprovedKeys);
+  }
+
+  async function verifySavedProgress(): Promise<{ ok: true } | { ok: false; error: string }> {
+    if (!activeGroup || !program || !day) {
+      return { ok: true };
+    }
+
+    const expectedCompletedSectionIds = new Set(completedSectionIdsRef.current);
+    const waitTimesMs = [0, 300, 900];
+    let failures: ProgressVerificationFailure[] = [];
+    let lastLoaded: JournalDayState | null = null;
+
+    for (const waitTimeMs of waitTimesMs) {
+      if (waitTimeMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, waitTimeMs));
+      }
+
+      const loaded = await loadJournalDay({
+        groupId: activeGroup.groupId,
+        program,
+        weekNumber,
+        dayNumber: day.dayNumber
+      });
+
+      if (!loaded.ok) {
+        return { ok: false, error: loaded.error };
+      }
+
+      lastLoaded = loaded.data;
+      const loadedCompletedSectionIds = new Set(loaded.data.completedSectionIds);
+      failures = day.sections.flatMap<ProgressVerificationFailure>((section) => {
+        const expectedCompleted = expectedCompletedSectionIds.has(section.id);
+        const actualCompleted = loadedCompletedSectionIds.has(section.id);
+
+        return expectedCompleted === actualCompleted
+          ? []
+          : [
+              {
+                expectedCompleted,
+                progressId: loaded.data.expectedProgressIdsBySectionId[section.id],
+                sectionId: section.id
+              }
+            ];
+      });
+
+      if (failures.length === 0) {
+        return { ok: true };
+      }
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Journal progress verification failed", {
+        completedSectionIds: lastLoaded?.completedSectionIds ?? [],
+        dayNumber: day.dayNumber,
+        failures,
+        groupId: activeGroup.groupId,
+        programId: program.program.id,
+        weekNumber
+      });
+    }
+
+    return {
+      ok: false,
+      error: "The completion save could not be verified. Use Retry save before leaving."
+    };
   }
 
   async function verifySavedAnswers(
@@ -431,6 +514,7 @@ export function DayJournal({
       : [...completedSectionIdsRef.current, sectionId];
     completedSectionIdsRef.current = nextCompletedSectionIds;
     setCompletedSectionIds(nextCompletedSectionIds);
+    void saveRef.current();
   }
 
   function updateAnswer(promptId: string, sectionId: string, value: string) {

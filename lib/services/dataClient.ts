@@ -27,6 +27,12 @@ type JournalAnswerDescriptor = {
   promptId: string;
   sectionId: string;
 };
+type SectionProgressDescriptor = {
+  dayNumber: number;
+  progressId: string;
+  sectionId: string;
+  weekNumber: number;
+};
 
 let dataClient: DataClient | null = null;
 
@@ -114,6 +120,7 @@ export type JournalDayState = {
   encryptedAnswerKeys: string[];
   encryptedAnswerCount: number;
   expectedAnswerIdsByKey: Record<string, string>;
+  expectedProgressIdsBySectionId: Record<string, string>;
   failedAnswerKeys: string[];
   needsReauth: boolean;
   warning?: string;
@@ -1104,6 +1111,7 @@ export async function getCurrentUserScoreSummary(input: {
       getCompletedSectionsFromProgress({
         client,
         groupId: input.groupId,
+        program: input.program,
         programId: input.program.program.id,
         userId: user.userId
       })
@@ -1394,31 +1402,19 @@ export async function loadJournalDay(input: {
           weekNumber: input.weekNumber
         })
       : [];
-    const [progress, encryptedAnswerResults] = await Promise.all([
-      client.models.SectionProgress.list({
-        filter: {
-          userId: {
-            eq: user.userId
-          },
-          groupId: {
-            eq: input.groupId
-          },
-          programId: {
-            eq: input.program.program.id
-          },
-          weekNumber: {
-            eq: input.weekNumber
-          },
-          dayNumber: {
-            eq: input.dayNumber
-          },
-          completed: {
-            eq: true
-          }
-        }
-      }),
+    const progressDescriptors = getSectionProgressDescriptors({
+      dayNumber: input.dayNumber,
+      groupId: input.groupId,
+      program: input.program,
+      programId: input.program.program.id,
+      userId: user.userId,
+      weekNumber: input.weekNumber
+    });
+    const [progressResults, encryptedAnswerResults] = await Promise.all([
+      Promise.all(progressDescriptors.map((descriptor) => client.models.SectionProgress.get({ progressId: descriptor.progressId }))),
       Promise.all(answerDescriptors.map((descriptor) => client.models.EncryptedAnswer.get({ answerId: descriptor.answerId })))
     ]);
+    const progressRows = progressResults.flatMap((result) => (result.data ? [result.data] : []));
     const encryptedAnswers = encryptedAnswerResults.flatMap((result, index) =>
       result.data
         ? [
@@ -1468,11 +1464,14 @@ export async function loadJournalDay(input: {
       ok: true,
       data: {
           answers,
-          completedSectionIds: progress.data.map((row) => row.sectionId),
+          completedSectionIds: progressRows.filter((row) => row.completed).map((row) => row.sectionId),
           encryptedAnswerKeys: encryptedAnswers.map(({ answer }) => journalPromptAnswerKey(answer.sectionId, answer.promptId)),
           encryptedAnswerCount: encryptedAnswers.length,
           expectedAnswerIdsByKey: Object.fromEntries(
             answerDescriptors.map((descriptor) => [descriptor.answerKey, descriptor.answerId])
+          ),
+          expectedProgressIdsBySectionId: Object.fromEntries(
+            progressDescriptors.map((descriptor) => [descriptor.sectionId, descriptor.progressId])
           ),
           failedAnswerKeys,
           needsReauth,
@@ -1543,31 +1542,68 @@ function buildJournalAnswerId(input: {
   return `${input.userId}:${input.groupId}:${input.programId}:${input.weekNumber}:${input.dayNumber}:${input.sectionId}:${input.promptId}`;
 }
 
+function getSectionProgressDescriptors(input: {
+  dayNumber?: number;
+  groupId: string;
+  program: Program;
+  programId: string;
+  userId: string;
+  weekNumber?: number;
+}): SectionProgressDescriptor[] {
+  return input.program.weeks.flatMap((week) => {
+    if (input.weekNumber != null && week.weekNumber !== input.weekNumber) {
+      return [];
+    }
+
+    return week.days.flatMap((day) => {
+      if (input.dayNumber != null && day.dayNumber !== input.dayNumber) {
+        return [];
+      }
+
+      return day.sections.map((section) => ({
+        dayNumber: day.dayNumber,
+        progressId: buildSectionProgressId({
+          dayNumber: day.dayNumber,
+          groupId: input.groupId,
+          programId: input.programId,
+          sectionId: section.id,
+          userId: input.userId,
+          weekNumber: week.weekNumber
+        }),
+        sectionId: section.id,
+        weekNumber: week.weekNumber
+      }));
+    });
+  });
+}
+
+function buildSectionProgressId(input: {
+  dayNumber: number;
+  groupId: string;
+  programId: string;
+  sectionId: string;
+  userId: string;
+  weekNumber: number;
+}): string {
+  return `${input.userId}:${input.groupId}:${input.programId}:${input.weekNumber}:${input.dayNumber}:${input.sectionId}`;
+}
+
 async function getCompletedSectionsFromProgress(input: {
   client: DataClient;
   groupId: string;
+  program: Program;
   programId: string;
   userId: string;
 }): Promise<Set<CompletedSectionKey>> {
-  const progress = await input.client.models.SectionProgress.list({
-    filter: {
-      userId: {
-        eq: input.userId
-      },
-      groupId: {
-        eq: input.groupId
-      },
-      programId: {
-        eq: input.programId
-      },
-      completed: {
-        eq: true
-      }
-    }
-  });
+  const progressDescriptors = getSectionProgressDescriptors(input);
+  const progressResults = await Promise.all(
+    progressDescriptors.map((descriptor) => input.client.models.SectionProgress.get({ progressId: descriptor.progressId }))
+  );
 
   return new Set<CompletedSectionKey>(
-    progress.data.map((row) => sectionKey(row.weekNumber, row.dayNumber, row.sectionId))
+    progressResults.flatMap((result) =>
+      result.data?.completed ? [sectionKey(result.data.weekNumber, result.data.dayNumber, result.data.sectionId)] : []
+    )
   );
 }
 
@@ -1599,7 +1635,14 @@ export async function saveJournalDay(input: {
     await Promise.all([
       ...input.completedSectionIds.map((sectionId) => {
         const section = allSectionIds.find((candidate) => candidate.id === sectionId);
-        const progressId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${sectionId}`;
+        const progressId = buildSectionProgressId({
+          dayNumber: input.dayNumber,
+          groupId: input.groupId,
+          programId: input.program.program.id,
+          sectionId,
+          userId: user.userId,
+          weekNumber: input.weekNumber
+        });
         return upsert(
           () =>
             client.models.SectionProgress.create({
@@ -1626,7 +1669,14 @@ export async function saveJournalDay(input: {
       ...allSectionIds
         .filter((section) => !input.completedSectionIds.includes(section.id))
         .map((section) => {
-          const progressId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${section.id}`;
+          const progressId = buildSectionProgressId({
+            dayNumber: input.dayNumber,
+            groupId: input.groupId,
+            programId: input.program.program.id,
+            sectionId: section.id,
+            userId: user.userId,
+            weekNumber: input.weekNumber
+          });
           return client.models.SectionProgress.update({
             progressId,
             completed: false,
