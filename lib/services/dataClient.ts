@@ -12,15 +12,21 @@ import {
   wrapJournalSecretV2,
   type JournalKeyEnvelope
 } from "@/lib/journalKey";
-import { journalPromptAnswerKey } from "@/lib/journalAnswerKeys";
+import { journalPromptAnswerKey, journalPromptStorageIds, journalSectionReflectionKey } from "@/lib/journalAnswerKeys";
 import { hashProgram, programSchema } from "@/lib/programValidation";
 import { calculateScores, sectionKey, type CompletedSectionKey, type ScoreSummary } from "@/lib/scoring";
 import type { Schema } from "@/amplify/data/resource";
 import type { JournalExportInput } from "@/lib/pdfExport";
 import type { SectionProgress } from "@/types/domain";
-import type { Program, ProgramImportPreview, ProgramWeek } from "@/types/program";
+import type { Program, ProgramDay, ProgramImportPreview, ProgramWeek } from "@/types/program";
 
 type DataClient = ReturnType<typeof generateClient<Schema>>;
+type JournalAnswerDescriptor = {
+  answerId: string;
+  answerKey: string;
+  promptId: string;
+  sectionId: string;
+};
 
 let dataClient: DataClient | null = null;
 
@@ -107,6 +113,7 @@ export type JournalDayState = {
   completedSectionIds: string[];
   encryptedAnswerKeys: string[];
   encryptedAnswerCount: number;
+  expectedAnswerIdsByKey: Record<string, string>;
   failedAnswerKeys: string[];
   needsReauth: boolean;
   warning?: string;
@@ -1373,7 +1380,21 @@ export async function loadJournalDay(input: {
     await configureAmplify();
     const client = getDataClient();
     const user = await getCurrentUser();
-    const [progress, encryptedAnswers] = await Promise.all([
+    const activeDay =
+      input.program.weeks
+        .find((week) => week.weekNumber === input.weekNumber)
+        ?.days.find((day) => day.dayNumber === input.dayNumber) ?? null;
+    const answerDescriptors = activeDay
+      ? getJournalAnswerDescriptors({
+          day: activeDay,
+          dayNumber: input.dayNumber,
+          groupId: input.groupId,
+          programId: input.program.program.id,
+          userId: user.userId,
+          weekNumber: input.weekNumber
+        })
+      : [];
+    const [progress, encryptedAnswerResults] = await Promise.all([
       client.models.SectionProgress.list({
         filter: {
           userId: {
@@ -1396,26 +1417,18 @@ export async function loadJournalDay(input: {
           }
         }
       }),
-      client.models.EncryptedAnswer.list({
-        filter: {
-          userId: {
-            eq: user.userId
-          },
-          groupId: {
-            eq: input.groupId
-          },
-          programId: {
-            eq: input.program.program.id
-          },
-          weekNumber: {
-            eq: input.weekNumber
-          },
-          dayNumber: {
-            eq: input.dayNumber
-          }
-        }
-      })
+      Promise.all(answerDescriptors.map((descriptor) => client.models.EncryptedAnswer.get({ answerId: descriptor.answerId })))
     ]);
+    const encryptedAnswers = encryptedAnswerResults.flatMap((result, index) =>
+      result.data
+        ? [
+            {
+              answer: result.data,
+              descriptor: answerDescriptors[index]
+            }
+          ]
+        : []
+    );
     let secret = getJournalEncryptionSecret();
 
     // If key is missing, try to recover it silently from the server (V2 envelopes only)
@@ -1429,7 +1442,7 @@ export async function loadJournalDay(input: {
     const needsReauth = !secret;
 
     if (secret) {
-      for (const answer of encryptedAnswers.data) {
+      for (const { answer } of encryptedAnswers) {
         const answerKey = journalPromptAnswerKey(answer.sectionId, answer.promptId);
         try {
           answers[answerKey] = await decryptJournalAnswer(
@@ -1456,8 +1469,11 @@ export async function loadJournalDay(input: {
       data: {
           answers,
           completedSectionIds: progress.data.map((row) => row.sectionId),
-          encryptedAnswerKeys: encryptedAnswers.data.map((answer) => journalPromptAnswerKey(answer.sectionId, answer.promptId)),
-          encryptedAnswerCount: encryptedAnswers.data.length,
+          encryptedAnswerKeys: encryptedAnswers.map(({ answer }) => journalPromptAnswerKey(answer.sectionId, answer.promptId)),
+          encryptedAnswerCount: encryptedAnswers.length,
+          expectedAnswerIdsByKey: Object.fromEntries(
+            answerDescriptors.map((descriptor) => [descriptor.answerKey, descriptor.answerId])
+          ),
           failedAnswerKeys,
           needsReauth,
           warning
@@ -1466,6 +1482,65 @@ export async function loadJournalDay(input: {
   } catch (error) {
     return serviceError(error);
   }
+}
+
+function getJournalAnswerDescriptors(input: {
+  day: ProgramDay;
+  dayNumber: number;
+  groupId: string;
+  programId: string;
+  userId: string;
+  weekNumber: number;
+}): JournalAnswerDescriptor[] {
+  return input.day.sections.flatMap((section) => {
+    const prompts = section.prompts ?? [];
+
+    if (prompts.length > 0) {
+      return journalPromptStorageIds(prompts).map((promptId) => ({
+        answerId: buildJournalAnswerId({
+          dayNumber: input.dayNumber,
+          groupId: input.groupId,
+          programId: input.programId,
+          promptId,
+          sectionId: section.id,
+          userId: input.userId,
+          weekNumber: input.weekNumber
+        }),
+        answerKey: journalPromptAnswerKey(section.id, promptId),
+        promptId,
+        sectionId: section.id
+      }));
+    }
+
+    return [
+      {
+        answerId: buildJournalAnswerId({
+          dayNumber: input.dayNumber,
+          groupId: input.groupId,
+          programId: input.programId,
+          promptId: "reflection",
+          sectionId: section.id,
+          userId: input.userId,
+          weekNumber: input.weekNumber
+        }),
+        answerKey: journalSectionReflectionKey(section.id),
+        promptId: "reflection",
+        sectionId: section.id
+      }
+    ];
+  });
+}
+
+function buildJournalAnswerId(input: {
+  dayNumber: number;
+  groupId: string;
+  programId: string;
+  promptId: string;
+  sectionId: string;
+  userId: string;
+  weekNumber: number;
+}): string {
+  return `${input.userId}:${input.groupId}:${input.programId}:${input.weekNumber}:${input.dayNumber}:${input.sectionId}:${input.promptId}`;
 }
 
 async function getCompletedSectionsFromProgress(input: {
@@ -1591,7 +1666,15 @@ export async function saveJournalDay(input: {
         }
 
         const promptId = answer.promptId;
-        const answerId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${answer.sectionId}:${promptId}`;
+        const answerId = buildJournalAnswerId({
+          dayNumber: input.dayNumber,
+          groupId: input.groupId,
+          programId: input.program.program.id,
+          promptId,
+          sectionId: answer.sectionId,
+          userId: user.userId,
+          weekNumber: input.weekNumber
+        });
 
         if (!answer.value.trim()) {
           return client.models.EncryptedAnswer.delete({ answerId });

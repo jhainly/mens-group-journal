@@ -27,6 +27,7 @@ import {
 import type { Program, ProgramDay } from "@/types/program";
 
 type VerificationFailure = {
+  answerId?: string;
   answerKey: string;
   encryptedRecordReturned: boolean;
   reason: "delete-not-applied" | "decrypt-failed" | "missing-record" | "value-mismatch";
@@ -350,25 +351,26 @@ export function DayJournal({
         const encryptedRecordReturned = loaded.data.encryptedAnswerKeys.includes(answerKey);
         const decryptFailed = loaded.data.failedAnswerKeys.includes(answerKey);
         const loadedValue = loaded.data.answers[answerKey] ?? "";
+        const answerId = loaded.data.expectedAnswerIdsByKey[answerKey];
 
         if (!answer.value.trim()) {
           if (encryptedRecordReturned || decryptFailed || loadedValue) {
-            return [{ answerKey, encryptedRecordReturned, reason: "delete-not-applied" as const }];
+            return [{ answerId, answerKey, encryptedRecordReturned, reason: "delete-not-applied" as const }];
           }
 
           return [];
         }
 
         if (!encryptedRecordReturned) {
-          return [{ answerKey, encryptedRecordReturned, reason: "missing-record" as const }];
+          return [{ answerId, answerKey, encryptedRecordReturned, reason: "missing-record" as const }];
         }
 
         if (decryptFailed) {
-          return [{ answerKey, encryptedRecordReturned, reason: "decrypt-failed" as const }];
+          return [{ answerId, answerKey, encryptedRecordReturned, reason: "decrypt-failed" as const }];
         }
 
         if (loadedValue !== answer.value) {
-          return [{ answerKey, encryptedRecordReturned, reason: "value-mismatch" as const }];
+          return [{ answerId, answerKey, encryptedRecordReturned, reason: "value-mismatch" as const }];
         }
 
         return [];
