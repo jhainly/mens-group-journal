@@ -1509,7 +1509,8 @@ export async function saveJournalDay(input: {
     const client = getDataClient();
     const user = await getCurrentUser();
     const now = new Date().toISOString();
-    const secret = getJournalEncryptionSecret();
+    let secret = getJournalEncryptionSecret();
+    const answerEntries = Object.entries(input.answers);
 
     const allSectionIds =
       input.program.weeks
@@ -1568,20 +1569,26 @@ export async function saveJournalDay(input: {
       "Score sync failed."
     );
 
-    // If no journal key is present, skip all answer processing entirely.
-    // This prevents empty answers from being mistaken for deletions and wiping encrypted content.
+    if (!secret && answerEntries.length > 0) {
+      secret = await tryAutoRecoverJournalKey(client, user.userId);
+    }
+
+    if (!secret && answerEntries.length > 0) {
+      return { ok: false, error: "Sign in again before saving reflections." };
+    }
+
     if (!secret) {
       return { ok: true, data: undefined };
     }
 
-      // Encrypt all answers in parallel, then write in parallel
-      await Promise.all(
-        Object.entries(input.answers).map(async ([answerKey, answer]) => {
-          if (input.blockedAnswerKeys?.includes(answerKey)) {
-            return;
-          }
+    // Encrypt all answers in parallel, then write in parallel.
+    await Promise.all(
+      answerEntries.map(async ([answerKey, answer]) => {
+        if (input.blockedAnswerKeys?.includes(answerKey)) {
+          return;
+        }
 
-          const promptId = answer.promptId;
+        const promptId = answer.promptId;
         const answerId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${answer.sectionId}:${promptId}`;
 
         if (!answer.value.trim()) {

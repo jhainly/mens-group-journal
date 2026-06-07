@@ -45,6 +45,7 @@ export function DayJournal({
   const [groupStatus, setGroupStatus] = useState("Loading group...");
   const [programStatus, setProgramStatus] = useState("Loading program...");
   const [journalStatus, setJournalStatus] = useState("");
+  const [isJournalLoaded, setIsJournalLoaded] = useState(false);
 
   const router = useRouter();
   const hasLoadedRef = useRef(false);
@@ -105,6 +106,7 @@ export function DayJournal({
     setDay(null);
     setProgramStatus("Loading program...");
     setJournalStatus("");
+    setIsJournalLoaded(false);
     setSaveStatus("idle");
     setNeedsReauth(false);
     setAnswers({});
@@ -152,6 +154,7 @@ export function DayJournal({
     }
 
     setJournalStatus("Loading saved progress...");
+    setIsJournalLoaded(false);
 
     void loadJournalDay({
       groupId: activeGroup.groupId,
@@ -165,6 +168,7 @@ export function DayJournal({
 
       if (!result.ok) {
         setJournalStatus(result.error);
+        setIsJournalLoaded(false);
         return;
       }
 
@@ -178,6 +182,7 @@ export function DayJournal({
       setFailedAnswerKeys(result.data.failedAnswerKeys);
       setApprovedReplacementKeys([]);
       setJournalStatus(result.data.needsReauth ? "" : (result.data.warning ?? ""));
+      setIsJournalLoaded(true);
       hasUserChangedRef.current = false;
       hasLoadedRef.current = true;
     });
@@ -188,8 +193,6 @@ export function DayJournal({
   }, [activeGroup, day, program, weekNumber]);
 
   useEffect(() => {
-    answersRef.current = answers;
-
     for (const textarea of document.querySelectorAll<HTMLTextAreaElement>(".journal-textarea")) {
       resizeTextarea(textarea);
     }
@@ -197,6 +200,12 @@ export function DayJournal({
 
   async function save(approvedKeys = approvedReplacementKeys) {
     if (!activeGroup || !program || !day) return;
+
+    if (!isJournalLoaded) {
+      setSaveStatus("error");
+      setSaveError("Saved progress is still loading. Wait for it to finish before saving reflections.");
+      return;
+    }
 
     if (isSavingRef.current) {
       saveAgainRef.current = true;
@@ -210,6 +219,13 @@ export function DayJournal({
     const dirtyAnswerKeys = Array.from(dirtyAnswerKeysRef.current);
     const keysToSave = Array.from(new Set([...dirtyAnswerKeys, ...approvedKeys]));
     const answerPayload = getAnswerPayload(day, answersSnapshot, keysToSave);
+    const missingAnswerKeys = keysToSave.filter((answerKey) => !(answerKey in answerPayload));
+    if (missingAnswerKeys.length > 0) {
+      setSaveStatus("error");
+      setSaveError("Some changed reflections could not be matched to this program day. Reload the page before saving.");
+      return;
+    }
+
     const hasReflections = Object.values(answerPayload).some((answer) => answer.value.trim());
     if (hasReflections && !canEncryptJournalAnswers()) {
       setSaveStatus("error");
@@ -301,6 +317,8 @@ export function DayJournal({
 
   function toggleSection(sectionId: string) {
     hasUserChangedRef.current = true;
+    setSaveStatus("idle");
+    setSaveError("");
     const nextCompletedSectionIds = completedSectionIdsRef.current.includes(sectionId)
       ? completedSectionIdsRef.current.filter((id) => id !== sectionId)
       : [...completedSectionIdsRef.current, sectionId];
@@ -310,6 +328,8 @@ export function DayJournal({
 
   function updateAnswer(promptId: string, sectionId: string, value: string) {
     hasUserChangedRef.current = true;
+    setSaveStatus("idle");
+    setSaveError("");
     dirtyAnswerKeysRef.current.add(promptId);
     answersRef.current = { ...answersRef.current, [promptId]: value };
     setAnswers((current) => ({ ...current, [promptId]: value }));
@@ -439,7 +459,7 @@ export function DayJournal({
         </section>
       ) : null}
 
-      {!needsReauth && day?.sections.map((section) => (
+      {isJournalLoaded && !needsReauth && day?.sections.map((section) => (
         <section className={`panel${completedSectionIds.includes(section.id) ? " section-complete" : ""}`} key={section.id}>
           <div className="section-layout">
             <label className="section-check" aria-label={`Mark ${section.title} complete`}>
