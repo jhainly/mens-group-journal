@@ -48,9 +48,3 @@ export type ProgramImportPreview = {
   warnings: string[];
   contentHash: string;
 };
-
-export type PublishedProgramSnapshot = Program & {
-  contentHash: string;
-  publishedAt: string;
-  publishedByUserId: string;
-};

@@ -60,17 +60,6 @@ export function calculateScores(
   return { weeklyScore, cumulativeScore, maxWeeklyScore, maxCumulativeScore, dayProgress };
 }
 
-export function getSectionPoints(section: ProgramSection): number {
+function getSectionPoints(section: ProgramSection): number {
   return Math.max(0, section.points);
-}
-
-export function calculateStreak(completedDayKeys: Set<string>, orderedDayKeys: string[]): number {
-  let streak = 0;
-  for (let index = orderedDayKeys.length - 1; index >= 0; index -= 1) {
-    if (!completedDayKeys.has(orderedDayKeys[index])) {
-      break;
-    }
-    streak += 1;
-  }
-  return streak;
 }
