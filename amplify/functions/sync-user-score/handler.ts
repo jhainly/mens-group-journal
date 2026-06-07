@@ -112,7 +112,7 @@ async function loadProgramWeeks(groupId: string, programId: string): Promise<Wee
 
   if (result.Items && result.Items.length > 0) {
     return result.Items.flatMap((item) => {
-      const raw = getString(item, "content");
+      const raw = getJsonValue(item, "content");
       return raw ? parseWeekContent(raw) : [];
     });
   }
@@ -129,7 +129,7 @@ async function loadProgramWeeks(groupId: string, programId: string): Promise<Wee
     return [];
   }
 
-  const raw = getString(snapshot.Item, "content");
+  const raw = getJsonValue(snapshot.Item, "content");
   return raw ? parseProgramContent(raw) : [];
 }
 
@@ -209,9 +209,9 @@ function calculateScores(
   return { weeklyScore, cumulativeScore };
 }
 
-function parseWeekContent(raw: string): WeekLite[] {
+function parseWeekContent(raw: unknown): WeekLite[] {
   try {
-    const parsed = JSON.parse(raw) as WeekLite;
+    const parsed = parseJsonContent(raw) as WeekLite;
     if (typeof parsed.weekNumber === "number" && Array.isArray(parsed.days)) {
       return [parsed];
     }
@@ -221,13 +221,21 @@ function parseWeekContent(raw: string): WeekLite[] {
   }
 }
 
-function parseProgramContent(raw: string): WeekLite[] {
+function parseProgramContent(raw: unknown): WeekLite[] {
   try {
-    const parsed = JSON.parse(raw) as { weeks?: WeekLite[] };
+    const parsed = parseJsonContent(raw) as { weeks?: WeekLite[] };
     return Array.isArray(parsed.weeks) ? parsed.weeks : [];
   } catch {
     return [];
   }
+}
+
+function parseJsonContent(raw: unknown): unknown {
+  if (typeof raw !== "string") {
+    return raw;
+  }
+
+  return JSON.parse(raw);
 }
 
 function getUserId(event: SyncUserScoreEvent): string | undefined {
@@ -238,6 +246,41 @@ function getUserId(event: SyncUserScoreEvent): string | undefined {
 function getString(item: Record<string, AttributeValue>, field: string): string | undefined {
   const val = item[field];
   return val && "S" in val ? val.S : undefined;
+}
+
+function getJsonValue(item: Record<string, AttributeValue>, field: string): unknown {
+  const value = item[field];
+  return value ? attributeValueToJson(value) : undefined;
+}
+
+function attributeValueToJson(value: AttributeValue): unknown {
+  if ("S" in value) {
+    return value.S;
+  }
+
+  if ("N" in value) {
+    return value.N == null ? undefined : Number(value.N);
+  }
+
+  if ("BOOL" in value) {
+    return value.BOOL;
+  }
+
+  if ("NULL" in value) {
+    return null;
+  }
+
+  if ("L" in value) {
+    return value.L?.map(attributeValueToJson) ?? [];
+  }
+
+  if ("M" in value) {
+    return Object.fromEntries(
+      Object.entries(value.M ?? {}).map(([key, childValue]) => [key, attributeValueToJson(childValue)])
+    );
+  }
+
+  return undefined;
 }
 
 function getNumber(item: Record<string, AttributeValue>, field: string): number | undefined {

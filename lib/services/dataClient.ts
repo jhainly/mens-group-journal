@@ -1082,8 +1082,8 @@ export async function getCurrentUserScoreSummary(input: {
     const client = getDataClient();
     const user = await getCurrentUser();
 
-    // Sync score via Lambda (server-side computation, prevents client score manipulation)
-    const [syncResult, completedSections] = await Promise.all([
+    // Sync persists the leaderboard row. The dashboard display is derived from SectionProgress below.
+    const [, completedSections] = await Promise.all([
       requireSaved(
         client.mutations.syncUserScore({
           groupId: input.groupId,
@@ -1106,8 +1106,8 @@ export async function getCurrentUserScoreSummary(input: {
     return {
       ok: true,
       data: {
-        weeklyScore: syncResult.data?.weeklyScore ?? 0,
-        cumulativeScore: syncResult.data?.cumulativeScore ?? 0,
+        weeklyScore: localScore.weeklyScore,
+        cumulativeScore: localScore.cumulativeScore,
         maxWeeklyScore: localScore.maxWeeklyScore,
         maxCumulativeScore: localScore.maxCumulativeScore,
         dayProgress: localScore.dayProgress
