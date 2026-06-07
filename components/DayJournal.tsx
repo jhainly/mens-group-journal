@@ -7,6 +7,11 @@ import { signOut } from "aws-amplify/auth";
 import { canEncryptJournalAnswers, getJournalEncryptionRequirementMessage } from "@/lib/encryption";
 import { configureAmplify } from "@/lib/amplifyClient";
 import { clearJournalEncryptionSecret } from "@/lib/journalKey";
+import {
+  journalPromptAnswerKey,
+  journalSectionReflectionKey,
+  resolveJournalAnswer
+} from "@/lib/journalAnswerKeys";
 import { formatPoints } from "@/lib/format";
 import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramDayLabel } from "@/lib/programDays";
@@ -18,10 +23,6 @@ import {
   type UserGroupSummary
 } from "@/lib/services/dataClient";
 import type { Program, ProgramDay } from "@/types/program";
-
-function sectionReflectionId(sectionId: string): string {
-  return `${sectionId}:reflection`;
-}
 
 export function DayJournal({
   weekNumber,
@@ -192,13 +193,18 @@ export function DayJournal({
         day.sections.flatMap((section) => {
           const prompts = section.prompts ?? [];
           if (prompts.length > 0) {
+            // UI state keys include the section id so repeated prompt ids in imported YAML cannot collide.
             return prompts.map((prompt) => [
-              prompt.id,
-              { sectionId: section.id, value: answers[prompt.id] ?? "" }
+              journalPromptAnswerKey(section.id, prompt.id),
+              {
+                promptId: prompt.id,
+                sectionId: section.id,
+                value: resolveJournalAnswer(answers, section.id, prompt.id)
+              }
             ]);
           }
-          const reflectionId = sectionReflectionId(section.id);
-          return [[reflectionId, { sectionId: section.id, value: answers[reflectionId] ?? "" }]];
+          const reflectionId = journalSectionReflectionKey(section.id);
+          return [[reflectionId, { promptId: "reflection", sectionId: section.id, value: answers[reflectionId] ?? "" }]];
         })
       )
     });
@@ -331,22 +337,25 @@ export function DayJournal({
                 </blockquote>
               ))}
               {!needsReauth && section.prompts && section.prompts.length > 0
-                ? section.prompts.map((prompt) => (
-                    <label className="field" key={prompt.id}>
-                      <span>{prompt.label}</span>
-                      <textarea
-                        className="journal-textarea"
-                        value={answers[prompt.id] ?? ""}
-                        onChange={(event) => {
-                          updateAnswer(prompt.id, section.id, event.target.value);
-                          resizeTextarea(event.currentTarget);
-                        }}
-                        placeholder="Optional reflection"
-                      />
-                    </label>
-                  ))
+                ? section.prompts.map((prompt) => {
+                    const answerKey = journalPromptAnswerKey(section.id, prompt.id);
+                    return (
+                      <label className="field" key={answerKey}>
+                        <span>{prompt.label}</span>
+                        <textarea
+                          className="journal-textarea"
+                          value={resolveJournalAnswer(answers, section.id, prompt.id)}
+                          onChange={(event) => {
+                            updateAnswer(answerKey, section.id, event.target.value);
+                            resizeTextarea(event.currentTarget);
+                          }}
+                          placeholder="Optional reflection"
+                        />
+                      </label>
+                    );
+                  })
                 : !needsReauth ? (() => {
-                    const reflectionId = sectionReflectionId(section.id);
+                    const reflectionId = journalSectionReflectionKey(section.id);
                     return (
                       <label className="field" key={reflectionId}>
                         <textarea

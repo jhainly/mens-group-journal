@@ -102,6 +102,16 @@ function validateProgramSemantics(program: Program): string[] {
           warnings.push(`Duplicate section id "${section.id}" in week ${week.weekNumber}, day ${day.dayNumber}.`);
         }
         sectionIds.add(section.id);
+
+        const promptIds = new Set<string>();
+        for (const prompt of section.prompts ?? []) {
+          if (promptIds.has(prompt.id)) {
+            warnings.push(
+              `Duplicate prompt id "${prompt.id}" in section "${section.id}" for week ${week.weekNumber}, day ${day.dayNumber}.`
+            );
+          }
+          promptIds.add(prompt.id);
+        }
       }
     }
   }

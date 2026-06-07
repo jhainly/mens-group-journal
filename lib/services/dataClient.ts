@@ -12,6 +12,7 @@ import {
   wrapJournalSecretV2,
   type JournalKeyEnvelope
 } from "@/lib/journalKey";
+import { journalPromptAnswerKey } from "@/lib/journalAnswerKeys";
 import { hashProgram, programSchema } from "@/lib/programValidation";
 import { calculateScores, sectionKey, type CompletedSectionKey, type ScoreSummary } from "@/lib/scoring";
 import type { Schema } from "@/amplify/data/resource";
@@ -1295,7 +1296,7 @@ export async function loadJournalExport(input: {
 
     if (secret) {
       for (const answer of encryptedAnswers.data) {
-        decryptedAnswers[answer.promptId] = await decryptJournalAnswer(
+        decryptedAnswers[journalPromptAnswerKey(answer.sectionId, answer.promptId)] = await decryptJournalAnswer(
           {
             algorithm: "AES-GCM",
             ciphertext: answer.ciphertext,
@@ -1427,7 +1428,7 @@ export async function loadJournalDay(input: {
     if (secret) {
       for (const answer of encryptedAnswers.data) {
         try {
-          answers[answer.promptId] = await decryptJournalAnswer(
+          answers[journalPromptAnswerKey(answer.sectionId, answer.promptId)] = await decryptJournalAnswer(
             {
               algorithm: "AES-GCM",
               ciphertext: answer.ciphertext,
@@ -1495,7 +1496,7 @@ export async function saveJournalDay(input: {
   weekNumber: number;
   dayNumber: number;
   completedSectionIds: string[];
-  answers: Record<string, { sectionId: string; value: string }>;
+  answers: Record<string, { promptId: string; sectionId: string; value: string }>;
 }): Promise<ServiceResult<void>> {
   try {
     await configureAmplify();
@@ -1569,7 +1570,8 @@ export async function saveJournalDay(input: {
 
     // Encrypt all answers in parallel, then write in parallel
     await Promise.all(
-      Object.entries(input.answers).map(async ([promptId, answer]) => {
+      Object.values(input.answers).map(async (answer) => {
+        const promptId = answer.promptId;
         const answerId = `${user.userId}:${input.groupId}:${input.program.program.id}:${input.weekNumber}:${input.dayNumber}:${answer.sectionId}:${promptId}`;
 
         if (!answer.value.trim()) {

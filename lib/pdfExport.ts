@@ -1,5 +1,6 @@
 import type { Program } from "@/types/program";
 import type { SectionProgress } from "@/types/domain";
+import { journalSectionReflectionKey, resolveJournalAnswer } from "@/lib/journalAnswerKeys";
 
 export type WeeklyExportTotal = {
   maxScore: number;
@@ -124,7 +125,7 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
         if (prompts.length > 0) {
           for (const prompt of prompts) {
             addWrapped("", prompt.label, { bullet: true, indent: 1 }, 2);
-            const answer = input.decryptedAnswers[prompt.id];
+            const answer = resolveJournalAnswer(input.decryptedAnswers, section.id, prompt.id);
 
             if (answer) {
               addWrapped("", answer, { indent: 1.35 }, 20);
@@ -133,7 +134,7 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
             }
           }
         } else {
-          const reflectionAnswer = input.decryptedAnswers[`${section.id}:reflection`];
+          const reflectionAnswer = input.decryptedAnswers[journalSectionReflectionKey(section.id)];
           if (reflectionAnswer) {
             addWrapped("", reflectionAnswer, { indent: 1 }, 20);
           }
