@@ -50,6 +50,7 @@ export function DayJournal({
   const hasLoadedRef = useRef(false);
   const hasUserChangedRef = useRef(false);
   const answersRef = useRef<Record<string, string>>({});
+  const completedSectionIdsRef = useRef<string[]>([]);
   const dirtyAnswerKeysRef = useRef<Set<string>>(new Set());
   const isSavingRef = useRef(false);
   const saveAgainRef = useRef(false);
@@ -108,6 +109,7 @@ export function DayJournal({
     setNeedsReauth(false);
     setAnswers({});
     answersRef.current = {};
+    completedSectionIdsRef.current = [];
     dirtyAnswerKeysRef.current.clear();
     queuedApprovedReplacementKeysRef.current.clear();
     setCompletedSectionIds([]);
@@ -166,22 +168,17 @@ export function DayJournal({
         return;
       }
 
-      const completedFromAnswers = getCompletedSectionIdsFromAnswers(day, result.data.answers);
-      const mergedCompletedSectionIds = Array.from(
-        new Set([...result.data.completedSectionIds, ...completedFromAnswers])
-      );
-      const repairedMissingCompletions = mergedCompletedSectionIds.length > result.data.completedSectionIds.length;
-
       setAnswers(result.data.answers);
       answersRef.current = result.data.answers;
+      completedSectionIdsRef.current = result.data.completedSectionIds;
       dirtyAnswerKeysRef.current.clear();
       queuedApprovedReplacementKeysRef.current.clear();
-      setCompletedSectionIds(mergedCompletedSectionIds);
+      setCompletedSectionIds(result.data.completedSectionIds);
       setNeedsReauth(result.data.needsReauth);
       setFailedAnswerKeys(result.data.failedAnswerKeys);
       setApprovedReplacementKeys([]);
       setJournalStatus(result.data.needsReauth ? "" : (result.data.warning ?? ""));
-      hasUserChangedRef.current = repairedMissingCompletions;
+      hasUserChangedRef.current = false;
       hasLoadedRef.current = true;
     });
 
@@ -230,7 +227,7 @@ export function DayJournal({
       program,
       weekNumber,
       dayNumber: day.dayNumber,
-      completedSectionIds,
+      completedSectionIds: completedSectionIdsRef.current,
       blockedAnswerKeys,
       answers: answerPayload
     });
@@ -304,9 +301,11 @@ export function DayJournal({
 
   function toggleSection(sectionId: string) {
     hasUserChangedRef.current = true;
-    setCompletedSectionIds((current) =>
-      current.includes(sectionId) ? current.filter((id) => id !== sectionId) : [...current, sectionId]
-    );
+    const nextCompletedSectionIds = completedSectionIdsRef.current.includes(sectionId)
+      ? completedSectionIdsRef.current.filter((id) => id !== sectionId)
+      : [...completedSectionIdsRef.current, sectionId];
+    completedSectionIdsRef.current = nextCompletedSectionIds;
+    setCompletedSectionIds(nextCompletedSectionIds);
   }
 
   function updateAnswer(promptId: string, sectionId: string, value: string) {
@@ -316,7 +315,11 @@ export function DayJournal({
     setAnswers((current) => ({ ...current, [promptId]: value }));
 
     if (value.trim()) {
-      setCompletedSectionIds((current) => (current.includes(sectionId) ? current : [...current, sectionId]));
+      if (!completedSectionIdsRef.current.includes(sectionId)) {
+        const nextCompletedSectionIds = [...completedSectionIdsRef.current, sectionId];
+        completedSectionIdsRef.current = nextCompletedSectionIds;
+        setCompletedSectionIds(nextCompletedSectionIds);
+      }
     }
   }
 
@@ -336,23 +339,6 @@ export function DayJournal({
   function resizeTextarea(element: HTMLTextAreaElement) {
     element.style.height = "auto";
     element.style.height = `${element.scrollHeight}px`;
-  }
-
-  function getCompletedSectionIdsFromAnswers(currentDay: ProgramDay, currentAnswers: Record<string, string>): string[] {
-    return currentDay.sections
-      .filter((section) => {
-        const prompts = section.prompts ?? [];
-
-        if (prompts.length > 0) {
-          const promptStorageIds = journalPromptStorageIds(prompts);
-          return promptStorageIds.some((promptStorageId) =>
-            resolveJournalAnswer(currentAnswers, section.id, promptStorageId).trim()
-          );
-        }
-
-        return Boolean(currentAnswers[journalSectionReflectionKey(section.id)]?.trim());
-      })
-      .map((section) => section.id);
   }
 
   function getAnswerPayload(
