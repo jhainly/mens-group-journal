@@ -15,13 +15,13 @@ import type { ScoreSummary } from "@/lib/scoring";
 import type { Program } from "@/types/program";
 
 type DashboardProps = {
-  initialWeekNumber: number;
+  initialWeekNumber: number | null;
 };
 
 export function Dashboard({ initialWeekNumber }: DashboardProps) {
-  const [selectedWeekNumber, setSelectedWeekNumber] = useState(initialWeekNumber);
+  const [selectedWeekNumber, setSelectedWeekNumber] = useState(initialWeekNumber ?? 1);
   const [program, setProgram] = useState<Program | null>(null);
-  const [scores, setScores] = useState<ScoreSummary>(() => getEmptyScores(null, initialWeekNumber));
+  const [scores, setScores] = useState<ScoreSummary>(() => getEmptyScores(null, initialWeekNumber ?? 1));
   const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [groupStatus, setGroupStatus] = useState("Loading group...");
@@ -83,19 +83,20 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
       }
 
       if (!result.ok) {
-        setScores(getEmptyScores(null, initialWeekNumber));
+        setScores(getEmptyScores(null, initialWeekNumber ?? 1));
         setProgramStatus("Your leader has not published content for this group yet.");
         return;
       }
 
       const activeProgram = result.data.program;
+      const newestWeekNumber = getNewestWeekNumber(activeProgram);
 
       setProgram(activeProgram);
       setProgramStatus("");
-      setSelectedWeekNumber((currentWeekNumber) =>
-        activeProgram.weeks.some((week) => week.weekNumber === currentWeekNumber)
-          ? currentWeekNumber
-          : activeProgram.weeks[0]?.weekNumber ?? 1
+      setSelectedWeekNumber(
+        initialWeekNumber && activeProgram.weeks.some((week) => week.weekNumber === initialWeekNumber)
+          ? initialWeekNumber
+          : newestWeekNumber
       );
     });
 
@@ -271,4 +272,8 @@ function getMaxWeeklyScore(program: Program, activeWeekNumber: number): number {
         0
       ) ?? 0
   );
+}
+
+function getNewestWeekNumber(program: Program): number {
+  return program.weeks.reduce((newest, week) => Math.max(newest, week.weekNumber), 1);
 }
