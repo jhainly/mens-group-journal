@@ -547,8 +547,8 @@ details[open] > .group-accordion-summary:hover {
   border-radius: 20px;
   color: var(--accent-strong);
   display: flex;
-  gap: 6px;
-  padding: 5px 12px 5px 16px;
+  min-height: 36px;
+  position: relative;
 }
 
 .week-select {
@@ -557,11 +557,18 @@ details[open] > .group-accordion-summary:hover {
   border: none;
   color: inherit;
   cursor: pointer;
-  flex: 1;
   font-size: 1rem;
   font-weight: 700;
+  height: 100%;
   outline: none;
-  padding: 0;
+  padding: 5px 34px 5px 16px;
+  width: 100%;
+}
+
+.week-select-pill svg {
+  pointer-events: none;
+  position: absolute;
+  right: 14px;
 }
 
 .week-select-pill:hover {
