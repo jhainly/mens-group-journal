@@ -7,11 +7,15 @@ import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import {
   listCurrentUserGroups,
   listLeaderboard,
+  type LeaderboardRow,
   type UserGroupSummary
 } from "@/lib/services/dataClient";
 
+type LeaderboardView = "weekly" | "allTime";
+
 export function Leaderboard() {
-  const [rows, setRows] = useState<Array<{ displayName: string; score: number }>>([]);
+  const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [view, setView] = useState<LeaderboardView>("weekly");
   const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [status, setStatus] = useState("Loading group...");
@@ -102,6 +106,26 @@ export function Leaderboard() {
           </select>
         </label>
       ) : null}
+      {activeGroup ? (
+        <div className="segmented-control" aria-label="Leaderboard view">
+          <button
+            aria-pressed={view === "weekly"}
+            className={view === "weekly" ? "active" : ""}
+            onClick={() => setView("weekly")}
+            type="button"
+          >
+            Weekly
+          </button>
+          <button
+            aria-pressed={view === "allTime"}
+            className={view === "allTime" ? "active" : ""}
+            onClick={() => setView("allTime")}
+            type="button"
+          >
+            All time
+          </button>
+        </div>
+      ) : null}
       {!activeGroup ? (
         <div className="row">
           <Link className="button" href="/join">
@@ -111,13 +135,13 @@ export function Leaderboard() {
       ) : null}
       {rows.length > 0 ? (
         <ul className="list">
-          {rows.map((row, index) => (
+          {getSortedRows(rows, view).map((row, index) => (
             <li className="card row" key={row.displayName}>
               <div className="row">
                 <span className="leaderboard-rank">{index + 1}</span>
                 <strong>{row.displayName}</strong>
               </div>
-              <span>{formatPoints(row.score)}</span>
+              <span>{formatPoints(getRowScore(row, view))}</span>
             </li>
           ))}
         </ul>
@@ -125,5 +149,15 @@ export function Leaderboard() {
         <p className="muted">{status || "No scores yet."}</p>
       )}
     </section>
+  );
+}
+
+function getRowScore(row: LeaderboardRow, view: LeaderboardView): number {
+  return view === "weekly" ? row.weeklyScore : row.cumulativeScore;
+}
+
+function getSortedRows(rows: LeaderboardRow[], view: LeaderboardView): LeaderboardRow[] {
+  return [...rows].sort(
+    (left, right) => getRowScore(right, view) - getRowScore(left, view) || left.displayName.localeCompare(right.displayName)
   );
 }

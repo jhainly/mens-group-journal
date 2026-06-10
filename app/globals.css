@@ -633,6 +633,31 @@ details[open] > .group-accordion-summary:hover {
   text-align: right;
 }
 
+.segmented-control {
+  align-items: stretch;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--surface));
+  border-radius: 8px;
+  display: inline-flex;
+  max-width: 100%;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.segmented-control button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-weight: 700;
+  min-width: 112px;
+  padding: 9px 16px;
+}
+
+.segmented-control button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 .section-complete {
   background: var(--surface-strong);
 }

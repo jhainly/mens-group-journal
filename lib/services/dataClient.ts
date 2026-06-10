@@ -1052,7 +1052,13 @@ export async function previewWeekReplacementImpacts(input: {
   }
 }
 
-export async function listLeaderboard(groupId: string): Promise<ServiceResult<Array<{ displayName: string; score: number }>>> {
+export type LeaderboardRow = {
+  cumulativeScore: number;
+  displayName: string;
+  weeklyScore: number;
+};
+
+export async function listLeaderboard(groupId: string): Promise<ServiceResult<LeaderboardRow[]>> {
   try {
     await configureAmplify();
     const client = getDataClient();
@@ -1063,15 +1069,16 @@ export async function listLeaderboard(groupId: string): Promise<ServiceResult<Ar
         }
       }
     });
-    const latestRowsByUser = new Map<string, { displayName: string; score: number; updatedAt: string }>();
+    const latestRowsByUser = new Map<string, LeaderboardRow & { updatedAt: string }>();
 
     for (const row of rows.data) {
       const current = latestRowsByUser.get(row.userId);
 
       if (!current || row.updatedAt > current.updatedAt) {
         latestRowsByUser.set(row.userId, {
+          cumulativeScore: row.cumulativeScore,
           displayName: row.displayName,
-          score: row.cumulativeScore,
+          weeklyScore: row.weeklyScore,
           updatedAt: row.updatedAt
         });
       }
@@ -1080,8 +1087,8 @@ export async function listLeaderboard(groupId: string): Promise<ServiceResult<Ar
     return {
       ok: true,
       data: Array.from(latestRowsByUser.values())
-        .map(({ displayName, score }) => ({ displayName, score }))
-        .sort((left, right) => right.score - left.score || left.displayName.localeCompare(right.displayName))
+        .map(({ cumulativeScore, displayName, weeklyScore }) => ({ cumulativeScore, displayName, weeklyScore }))
+        .sort((left, right) => right.weeklyScore - left.weeklyScore || left.displayName.localeCompare(right.displayName))
     };
   } catch (error) {
     return serviceError(error);
