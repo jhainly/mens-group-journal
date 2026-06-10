@@ -1058,36 +1058,62 @@ export type LeaderboardRow = {
   weeklyScore: number;
 };
 
-export async function listLeaderboard(groupId: string): Promise<ServiceResult<LeaderboardRow[]>> {
+export async function listLeaderboard(input: {
+  groupId: string;
+  weekNumber: number;
+}): Promise<ServiceResult<LeaderboardRow[]>> {
   try {
     await configureAmplify();
     const client = getDataClient();
     const rows = await client.models.UserScore.list({
       filter: {
         groupId: {
-          eq: groupId
+          eq: input.groupId
         }
       }
     });
-    const latestRowsByUser = new Map<string, LeaderboardRow & { updatedAt: string }>();
+    const rowsByUser = new Map<
+      string,
+      LeaderboardRow & {
+        latestUpdatedAt: string;
+        weeklyUpdatedAt: string;
+      }
+    >();
 
     for (const row of rows.data) {
-      const current = latestRowsByUser.get(row.userId);
-
-      if (!current || row.updatedAt > current.updatedAt) {
-        latestRowsByUser.set(row.userId, {
-          cumulativeScore: row.cumulativeScore,
+      const current =
+        rowsByUser.get(row.userId) ??
+        ({
+          cumulativeScore: 0,
           displayName: row.displayName,
-          weeklyScore: row.weeklyScore,
-          updatedAt: row.updatedAt
-        });
+          latestUpdatedAt: "",
+          weeklyScore: 0,
+          weeklyUpdatedAt: ""
+        } satisfies LeaderboardRow & { latestUpdatedAt: string; weeklyUpdatedAt: string });
+
+      if (row.updatedAt > current.latestUpdatedAt) {
+        current.displayName = row.displayName;
+        current.latestUpdatedAt = row.updatedAt;
       }
+
+      current.cumulativeScore = Math.max(current.cumulativeScore, row.cumulativeScore);
+
+      if (row.weekNumber === input.weekNumber && row.updatedAt >= current.weeklyUpdatedAt) {
+        current.weeklyScore = row.weeklyScore;
+        current.weeklyUpdatedAt = row.updatedAt;
+      }
+
+      rowsByUser.set(row.userId, current);
     }
 
     return {
       ok: true,
-      data: Array.from(latestRowsByUser.values())
-        .map(({ cumulativeScore, displayName, weeklyScore }) => ({ cumulativeScore, displayName, weeklyScore }))
+      data: Array.from(rowsByUser.values())
+        .map(({ cumulativeScore, displayName, weeklyScore }) => ({
+          cumulativeScore,
+          displayName,
+          weeklyScore
+        }))
         .sort((left, right) => right.weeklyScore - left.weeklyScore || left.displayName.localeCompare(right.displayName))
     };
   } catch (error) {

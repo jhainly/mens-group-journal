@@ -7,9 +7,11 @@ import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import {
   listCurrentUserGroups,
   listLeaderboard,
+  loadActiveProgramForGroup,
   type LeaderboardRow,
   type UserGroupSummary
 } from "@/lib/services/dataClient";
+import type { Program } from "@/types/program";
 
 type LeaderboardView = "weekly" | "allTime";
 
@@ -18,6 +20,7 @@ export function Leaderboard() {
   const [view, setView] = useState<LeaderboardView>("weekly");
   const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
+  const [activeWeekNumber, setActiveWeekNumber] = useState<number | null>(null);
   const [status, setStatus] = useState("Loading group...");
 
   useEffect(() => {
@@ -60,17 +63,36 @@ export function Leaderboard() {
 
     setStatus("Loading scores...");
 
-    void listLeaderboard(activeGroup.groupId).then((result) => {
+    void loadActiveProgramForGroup(activeGroup.groupId).then(async (programResult) => {
       if (cancelled) {
         return;
       }
 
-      if (!result.ok) {
-        setStatus(result.error);
+      if (!programResult.ok) {
+        setActiveWeekNumber(null);
+        setRows([]);
+        setStatus("Your leader has not published content for this group yet.");
         return;
       }
 
-      setRows(result.data);
+      const weekNumber = getNewestWeekNumber(programResult.data.program);
+      setActiveWeekNumber(weekNumber);
+
+      const leaderboardResult = await listLeaderboard({
+        groupId: activeGroup.groupId,
+        weekNumber
+      });
+
+      if (cancelled) {
+        return;
+      }
+
+      if (!leaderboardResult.ok) {
+        setStatus(leaderboardResult.error);
+        return;
+      }
+
+      setRows(leaderboardResult.data);
       setStatus("");
     });
 
@@ -88,6 +110,7 @@ export function Leaderboard() {
 
     setSelectedGroupId(nextGroup.groupId);
     setActiveGroup(nextGroup);
+    setActiveWeekNumber(null);
     setRows([]);
   }
 
@@ -107,23 +130,26 @@ export function Leaderboard() {
         </label>
       ) : null}
       {activeGroup ? (
-        <div className="segmented-control" aria-label="Leaderboard view">
-          <button
-            aria-pressed={view === "weekly"}
-            className={view === "weekly" ? "active" : ""}
-            onClick={() => setView("weekly")}
-            type="button"
-          >
-            Weekly
-          </button>
-          <button
-            aria-pressed={view === "allTime"}
-            className={view === "allTime" ? "active" : ""}
-            onClick={() => setView("allTime")}
-            type="button"
-          >
-            All time
-          </button>
+        <div className="row wrap">
+          <div className="segmented-control" aria-label="Leaderboard view">
+            <button
+              aria-pressed={view === "weekly"}
+              className={view === "weekly" ? "active" : ""}
+              onClick={() => setView("weekly")}
+              type="button"
+            >
+              Weekly
+            </button>
+            <button
+              aria-pressed={view === "allTime"}
+              className={view === "allTime" ? "active" : ""}
+              onClick={() => setView("allTime")}
+              type="button"
+            >
+              All time
+            </button>
+          </div>
+          {activeWeekNumber ? <span className="muted">Week {activeWeekNumber}</span> : null}
         </div>
       ) : null}
       {!activeGroup ? (
@@ -160,4 +186,8 @@ function getSortedRows(rows: LeaderboardRow[], view: LeaderboardView): Leaderboa
   return [...rows].sort(
     (left, right) => getRowScore(right, view) - getRowScore(left, view) || left.displayName.localeCompare(right.displayName)
   );
+}
+
+function getNewestWeekNumber(program: Program): number {
+  return program.weeks.reduce((newest, week) => Math.max(newest, week.weekNumber), 1);
 }
