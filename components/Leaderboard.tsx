@@ -180,9 +180,9 @@ export function Leaderboard() {
             </button>
           </div>
           {view === "weekly" && weekOptions.length > 0 ? (
-            <label className="field compact-field">
-              <span>Week</span>
+            <div className="week-select-pill">
               <select
+                className="week-select"
                 value={activeWeekNumber ?? ""}
                 onChange={(event) => setActiveWeekNumber(Number(event.target.value))}
               >
@@ -192,7 +192,21 @@ export function Leaderboard() {
                   </option>
                 ))}
               </select>
-            </label>
+              <svg
+                aria-hidden="true"
+                fill="none"
+                height="14"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2.5"
+                style={{ pointerEvents: "none", flexShrink: 0 }}
+                viewBox="0 0 24 24"
+                width="14"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
           ) : null}
         </div>
       ) : null}
