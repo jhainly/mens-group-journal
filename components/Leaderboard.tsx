@@ -220,12 +220,10 @@ export function Leaderboard() {
       {rows.length > 0 ? (
         <ul className="list">
           {getSortedRows(rows, view).map((row, index) => (
-            <li className="card row" key={row.displayName}>
-              <div className="row">
-                <span className="leaderboard-rank">{index + 1}</span>
-                <strong>{row.displayName}</strong>
-              </div>
-              <span>{formatPoints(getRowScore(row, view))}</span>
+            <li className="card leaderboard-row" key={row.displayName}>
+              <span className="leaderboard-rank">{index + 1}</span>
+              <strong className="leaderboard-name">{row.displayName}</strong>
+              <span className="leaderboard-score">{formatPoints(getRowScore(row, view))}</span>
             </li>
           ))}
         </ul>

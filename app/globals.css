@@ -626,13 +626,6 @@ details[open] > .group-accordion-summary:hover {
   white-space: nowrap;
 }
 
-.leaderboard-rank {
-  color: var(--muted);
-  font-size: 0.85rem;
-  min-width: 1.5rem;
-  text-align: right;
-}
-
 .segmented-control {
   align-items: stretch;
   background: color-mix(in srgb, var(--accent) 8%, var(--surface));
@@ -656,6 +649,32 @@ details[open] > .group-accordion-summary:hover {
 .segmented-control button.active {
   background: var(--accent);
   color: #fff;
+}
+
+.leaderboard-row {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+}
+
+.leaderboard-rank {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.leaderboard-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-score {
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .section-complete {
