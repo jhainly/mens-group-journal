@@ -14,6 +14,10 @@ import {
 import type { Program } from "@/types/program";
 
 type LeaderboardView = "weekly" | "allTime";
+type WeekOption = {
+  title: string;
+  weekNumber: number;
+};
 
 export function Leaderboard() {
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
@@ -21,6 +25,7 @@ export function Leaderboard() {
   const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [activeWeekNumber, setActiveWeekNumber] = useState<number | null>(null);
+  const [weekOptions, setWeekOptions] = useState<WeekOption[]>([]);
   const [status, setStatus] = useState("Loading group...");
 
   useEffect(() => {
@@ -61,28 +66,52 @@ export function Leaderboard() {
       };
     }
 
-    setStatus("Loading scores...");
+    setRows([]);
+    setActiveWeekNumber(null);
+    setWeekOptions([]);
+    setStatus("Loading weeks...");
 
-    void loadActiveProgramForGroup(activeGroup.groupId).then(async (programResult) => {
+    void loadActiveProgramForGroup(activeGroup.groupId).then((programResult) => {
       if (cancelled) {
         return;
       }
 
       if (!programResult.ok) {
         setActiveWeekNumber(null);
+        setWeekOptions([]);
         setRows([]);
         setStatus("Your leader has not published content for this group yet.");
         return;
       }
 
-      const weekNumber = getNewestWeekNumber(programResult.data.program);
-      setActiveWeekNumber(weekNumber);
+      const weeks = getWeekOptions(programResult.data.program);
 
-      const leaderboardResult = await listLeaderboard({
-        groupId: activeGroup.groupId,
-        weekNumber
-      });
+      setWeekOptions(weeks);
+      setActiveWeekNumber(weeks.at(-1)?.weekNumber ?? null);
+      setStatus("");
+    });
 
+    return () => {
+      cancelled = true;
+    };
+  }, [activeGroup]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!activeGroup || activeWeekNumber == null) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setRows([]);
+    setStatus("Loading scores...");
+
+    void listLeaderboard({
+      groupId: activeGroup.groupId,
+      weekNumber: activeWeekNumber
+    }).then((leaderboardResult) => {
       if (cancelled) {
         return;
       }
@@ -99,7 +128,7 @@ export function Leaderboard() {
     return () => {
       cancelled = true;
     };
-  }, [activeGroup]);
+  }, [activeGroup, activeWeekNumber]);
 
   function changeGroup(groupId: string) {
     const nextGroup = groups.find((group) => group.groupId === groupId) ?? null;
@@ -111,6 +140,7 @@ export function Leaderboard() {
     setSelectedGroupId(nextGroup.groupId);
     setActiveGroup(nextGroup);
     setActiveWeekNumber(null);
+    setWeekOptions([]);
     setRows([]);
   }
 
@@ -149,7 +179,21 @@ export function Leaderboard() {
               All time
             </button>
           </div>
-          {activeWeekNumber ? <span className="muted">Week {activeWeekNumber}</span> : null}
+          {view === "weekly" && weekOptions.length > 0 ? (
+            <label className="field compact-field">
+              <span>Week</span>
+              <select
+                value={activeWeekNumber ?? ""}
+                onChange={(event) => setActiveWeekNumber(Number(event.target.value))}
+              >
+                {weekOptions.map((week) => (
+                  <option key={week.weekNumber} value={week.weekNumber}>
+                    Week {week.weekNumber}: {week.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
       ) : null}
       {!activeGroup ? (
@@ -188,6 +232,11 @@ function getSortedRows(rows: LeaderboardRow[], view: LeaderboardView): Leaderboa
   );
 }
 
-function getNewestWeekNumber(program: Program): number {
-  return program.weeks.reduce((newest, week) => Math.max(newest, week.weekNumber), 1);
+function getWeekOptions(program: Program): WeekOption[] {
+  return [...program.weeks]
+    .sort((left, right) => left.weekNumber - right.weekNumber)
+    .map((week) => ({
+      title: week.title,
+      weekNumber: week.weekNumber
+    }));
 }
