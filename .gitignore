@@ -19,3 +19,6 @@ amplify_outputs.json
 
 # local diagnostic logs
 .codex-dev-*.log
+
+# Claude Code local settings
+.claude/settings.local.json
