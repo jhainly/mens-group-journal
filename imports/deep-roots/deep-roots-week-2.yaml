@@ -1,0 +1,283 @@
+program:
+  id: priority-one-deep-roots-week-2
+  title: Deep Roots
+  version: "1.0.0"
+  description: Week Two Mission from the Deep Roots weekly missions format.
+weeks:
+  - weekNumber: 2
+    title: Week Two Mission
+    summary: Complete the Week Two mission, including the daily Reading and Reflection, by Friday at midnight.
+    sourcePdfUrl: /program-pdfs/deep-roots-week-2.pdf
+    days:
+      - dayNumber: 1
+        label: Weekly Mission
+        title: Weekly Mission
+        sections:
+          - id: chapter-challenge
+            title: Chapter Challenge
+            body: For this week's physical/spiritual discipline, you'll be meditating on God's truth for 10 minutes every day, Monday through Friday. Get a pencil and paper, find a quiet place free from distractions, and shut your phone off and put it in a different room. Open your Bible to the passage in the Reading and Reflection section of your mission for that day. Set a timer for 5 minutes. Read the passage slowly and then sit in silence. Think about the things you just read and what God might be saying to you through His word. After the 5 minutes ends, set the timer for 5 minutes again. Write down how you are feeling, what you think God might be teaching you, or what you want to praise/thank God for, ask forgiveness for, or ask God to do for you or others.
+            completionUnit: day
+            completionItems:
+              - id: monday
+                label: Monday
+              - id: tuesday
+                label: Tuesday
+              - id: wednesday
+                label: Wednesday
+              - id: thursday
+                label: Thursday
+              - id: friday
+                label: Friday
+            maxCompletions: 5
+            points: 5
+            pointsPerCompletion: 1
+          - id: chapter-reading
+            title: Chapter Reading
+            body: Read Chapter 2 of the book.
+            points: 6
+          - id: memorization
+            title: Memorization
+            body: Romans 12:2 - Don't copy the behavior and customs of this world, but let God transform you into a new person by changing the way you think. Then you will learn to know God's will for you, which is good and pleasing and perfect. (NLT)
+            points: 2
+          - id: aerobic-exercise
+            title: Aerobic Exercise
+            body: 10 minutes, 2 days this week. Some suggestions are walking, running, hiking, bike riding, swimming, etc.
+            completionUnit: day
+            maxCompletions: 2
+            points: 2
+            pointsPerCompletion: 1
+          - id: strength-training
+            title: Strength Training
+            body: 10 minutes, 2 days this week. Some suggestions are weights, stretching, ab work like sit-ups/planks, etc.
+            completionUnit: day
+            maxCompletions: 2
+            points: 2
+            pointsPerCompletion: 1
+          - id: physical-action
+            title: Physical Action
+            body: Turn your phone off for one hour every day, Monday through Friday. Put your phone in a drawer in a room that you will not be in. Do this outside of work hours.
+            completionUnit: day
+            maxCompletions: 5
+            points: 5
+            pointsPerCompletion: 1
+          - id: team-meeting
+            title: TEAM Meeting
+            body: Meet with your TEAM for 1 hour this week. Check in with each other, recite the memory verse, discuss the daily book questions, and pray for each other.
+            points: 5
+          - id: relational-action
+            title: Relational Action
+            body: Have a phone free hour of deep conversation with a family member or friend this week. Schedule it. Turn your phone off and keep it in a separate room or in your car. Ask the other person to do the same. Blame it on Deep Roots.
+            points: 5
+          - id: friday-zoom
+            title: Zoom Meeting
+            body: Join the 10-minute Friday morning Zoom call at 7 AM EST.
+            points: 2
+          - id: weekly-check-in
+            title: Weekly Check-In
+            body: Report your score from Week Two to your TEAM Captain by Friday at midnight.
+            points: 1
+      - dayNumber: 2
+        label: Monday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: monday-book-question
+                label: "Write your answer to the following question from the book reading: Define shalom. Do you have shalom in your life? Explain."
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read Proverbs 4:20-27 slowly two times.
+            points: 1
+            prompts:
+              - id: monday-q1
+                label: The Bible teaches that the heart is the core of your being. It is the center and source of your emotions (feelings), intellect (thoughts), and will (choices). What specific ways does this passage teach you to guard your heart and follow God's path for your life? In which of these areas are you enjoying victory? In which of these areas are you struggling?
+              - id: monday-q2
+                label: Proverbs 4:23 states that everything you do flows from your heart. What influences are shaping your heart today? Which of these influences are helping you draw closer to God? Which are pulling you away from Him?
+              - id: monday-q3
+                label: That which fills your heart will shape your life. What is one influence (a habit, media source, relationship, thought pattern, or distraction) that you need to guard against this week? What is one healthy influence that you want to cultivate? Text your response to your TEAM.
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: Guard my heart...
+                exhale: For it directs the course of my life.
+              - inhale: Guide my tongue...
+                exhale: Help me speak words of truth wrapped in love.
+              - inhale: Help me fix my eyes on You...
+                exhale: So that I stay on Your path.
+              - inhale: Direct my feet...
+                exhale: Help me walk with integrity.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: monday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: monday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer.
+      - dayNumber: 3
+        label: Tuesday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: tuesday-book-question
+                label: What unhealthy mental patterns are you stuck in? How can you change them?
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read Romans 12:1-2 and Ephesians 4:17-32.
+            points: 1
+            prompts:
+              - id: tuesday-q1
+                label: Jesus gave His whole self for you. Following Jesus requires that you choose to give your whole self to the One who gave everything for you. What does this passage reveal about what it means to give yourself fully to Jesus?
+              - id: tuesday-q2
+                label: What does the Apostle Paul mean when he writes in Romans 12:2, "Don't copy the behavior of this world..."? In what ways do you see the culture around you shaping the way people think, live, and make decisions? In what ways is the world around you shaping the way you think, live, and make decisions?
+              - id: tuesday-q3
+                label: Paul continues in Romans 12:2 by writing, "let God transform you into a new person by changing the way you think." Ephesians 4:17-32 gives specific instructions for what it looks like to think with a renewed mind. What thoughts, beliefs, attitudes, or habits of thinking do you need God to change in your life? How can you join God in changing the way you think by replacing worldly patterns of thinking with meditation on God's truth? Text your answer to your TEAM.
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: Jesus, thank you for giving your life for me...
+                exhale: Help me to live my life fully for you.
+              - inhale: Help me reject the patterns of this world...
+                exhale: Teach me to follow Your ways.
+              - inhale: Transform every area of my life...
+                exhale: By changing the way I think.
+              - inhale: Your will is good, pleasing, and perfect...
+                exhale: Help me to discern what it is.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: tuesday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: tuesday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer.
+      - dayNumber: 4
+        label: Wednesday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: wednesday-book-question
+                label: Personal relationships are key to our emotional well-being. Why is that? How are you doing with maintaining a few deep personal relationships?
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read Psalm 1:1-6 slowly two times.
+            points: 1
+            prompts:
+              - id: wednesday-q1
+                label: Psalms are the God-inspired prayer songs of God's people written before Jesus was born. According to this psalm, what is the difference between the person who delights in God's Word and the person who rejects God's ways?
+              - id: wednesday-q2
+                label: "What does it mean to meditate on God's Word \"day and night\"? What is one simple way you can add meditation on God's Word to your daily rhythms?"
+              - id: wednesday-q3
+                label: The righteous person is compared to a tree in the desert planted by streams of water. What characteristics of that type of tree would you like to become true of your own life?
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: Plant me in Your living water...
+                exhale: Help me delight in Your Word.
+              - inhale: Root my heart in Your truth...
+                exhale: Make my life fruitful.
+              - inhale: Guard my mind from ungodly influences...
+                exhale: Teach me to walk in Your ways.
+              - inhale: Shape my thoughts each day...
+                exhale: That I may flourish for Your glory.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: wednesday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: wednesday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer.
+      - dayNumber: 5
+        label: Thursday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: thursday-book-question
+                label: 'Fill out the "Rule of Life" chart on page 58 of the book. Use the chart on pages 53-54 for ideas. Share your chart with your team.'
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read James 3:13-18 slowly two times.
+            points: 1
+            prompts:
+              - id: thursday-q1
+                label: Knowledge is not wisdom. Knowledge of God's truth applied to daily life is godly wisdom. According to James, what qualities characterize godly wisdom? What is the result when someone practices godly wisdom?
+              - id: thursday-q2
+                label: What qualities characterize earthly wisdom? What is the result when someone practices earthly wisdom?
+              - id: thursday-q3
+                label: Which qualities of godly wisdom do you most want God to help you develop in your life? Why? Text your answer to your TEAM.
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: Fill me with Your wisdom...
+                exhale: Teach me to walk in Your ways.
+              - inhale: Show me areas of selfish ambition...
+                exhale: Help me replace them with selfless ambition that builds others up.
+              - inhale: Make me peace-loving, gentle, and merciful toward others...
+                exhale: Just like Jesus is toward me.
+              - inhale: Help me become a peacemaker...
+                exhale: Produce a harvest of righteousness in and through my life.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: thursday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: thursday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer.
+      - dayNumber: 6
+        label: Friday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: friday-book-question
+                label: Earley writes on page 58, "Start your rule of life today. Don't wait for a better day. We overestimate what can happen in a day, but we underestimate what can happen in a year." What is your plan for implementing the rule of life you created yesterday?
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read Colossians 3:1-17.
+            points: 1
+            prompts:
+              - id: friday-q1
+                label: According to this passage, what qualities should Christians put to death in their lives? Which one of these do you struggle with most? What is one way you can ruthlessly put this thing to death?
+              - id: friday-q2
+                label: According to this passage, what qualities should Christians clothe themselves with? Which one of these is most present in your life? What is one way you can practice this even more in your life?
+              - id: friday-q3
+                label: The Apostle Paul commands Christians to "let the peace that comes from Christ rule in your hearts." What do you think it means to let Jesus's peace rule over your thoughts, emotions, and decisions? What would be different in your life if you lived this way?
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: Put to death the sinful things within me...
+                exhale: Renew my heart and help me become more like Jesus.
+              - inhale: Clothe me with godliness...
+                exhale: Make me a vessel of your goodness.
+              - inhale: Let Your Word dwell richly within me...
+                exhale: Shape my thoughts and actions.
+              - inhale: Help me honor Jesus in all that I do...
+                exhale: Give me a grateful heart filled with Your love and peace.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: friday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: friday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer.

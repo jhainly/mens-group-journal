@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "adapt-week": "node scripts/adapt-deep-roots-week.mjs"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.7.3",

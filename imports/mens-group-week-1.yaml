@@ -1,0 +1,282 @@
+program:
+  id: lifepoint-deep-roots-fall-2026
+  title: Deep Roots
+  version: 1.0.0
+  description: Deep Roots weekly missions adapted for the Lifepoint men's group.
+weeks:
+  - weekNumber: 1
+    title: Week One Mission
+    summary: Complete the Week One mission, including the daily Reading and Reflection, before Tuesday evening's meeting.
+    days:
+      - dayNumber: 1
+        label: Weekly Mission
+        title: Weekly Mission
+        sections:
+          - id: chapter-challenge
+            title: Chapter Challenge
+            body: You'll be practicing the physical/spiritual discipline of breath prayers this week. Breath prayers are included in the Reading and Reflection section of the mission every mission day (Wednesday, Thursday, Friday, Monday, and Tuesday). See pages 26-36 in the book for further explanation, if desired. Prayer involves speaking with God. Breath prayers involve speaking with God to the rhythm of your breathing. Find a quiet place free from distractions. Set a timer for five minutes. Open your mission to the breath prayer for that day. Sit quietly and breathe the breath prayer. Pray the first part of the prayer as you slowly inhale. Pray the second part of the prayer as you slowly exhale. Repeat the breath prayer for five minutes. Do this every day this week.
+            completionUnit: day
+            completionItems:
+              - id: wednesday
+                label: Wednesday
+              - id: thursday
+                label: Thursday
+              - id: friday
+                label: Friday
+              - id: monday
+                label: Monday
+              - id: tuesday
+                label: Tuesday
+            maxCompletions: 5
+            points: 5
+            pointsPerCompletion: 1
+          - id: chapter-reading
+            title: Chapter Reading
+            body: Complete the assigned reading.
+            completionUnit: reading
+            completionItems:
+              - id: introduction
+                label: Introduction
+              - id: chapter-1
+                label: Chapter 1
+            maxCompletions: 2
+            points: 6
+            pointsPerCompletion: 3
+          - id: memorization
+            title: Memorization
+            body: Romans 12:1 - And so, dear brothers and sisters, I plead with you to give your bodies to God because of all he has done for you. Let them be a living and holy sacrifice - the kind he will find acceptable. This is truly the way to worship him. (NLT)
+            points: 2
+          - id: aerobic-exercise
+            title: Aerobic Exercise
+            body: 10 minutes, 2 days this week. Some suggestions are walking, running, hiking, bike riding, swimming, etc.
+            completionUnit: day
+            maxCompletions: 2
+            points: 2
+            pointsPerCompletion: 1
+          - id: strength-training
+            title: Strength Training
+            body: 10 minutes, 2 days this week. Some suggestions are weights, stretching, ab work like sit-ups/planks, etc.
+            completionUnit: day
+            maxCompletions: 2
+            points: 2
+            pointsPerCompletion: 1
+          - id: physical-action
+            title: Physical Action
+            body: Write down all the snacks you eat between meals every mission day (Wednesday, Thursday, Friday, Monday, and Tuesday).
+            completionUnit: day
+            maxCompletions: 5
+            points: 5
+            pointsPerCompletion: 1
+          - id: team-meeting
+            title: TEAM Meeting
+            body: Meet with your TEAM at the Tuesday evening group meeting. Check in with each other, recite the memory verse, discuss the book questions, and pray for each other.
+            points: 8
+          - id: relational-action
+            title: Relational Action
+            body: Identify an activity, task, or chore you would normally do yourself this week and find someone to do it with you. Choose something that will take 60 minutes or more. This can be a meal, a drive, a home project, a hobby, etc.
+            points: 5
+      - dayNumber: 2
+        label: Wednesday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: wednesday-growth
+                label: It is easy to ignore your body. What are some ways you are ignoring your body?
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read Genesis 1:26-28, Genesis 2:4-9, and Colossians 1:15-20.
+            points: 1
+            prompts:
+              - id: wednesday-q1
+                label: What do these passages teach you about God as the giver and sustainer of life?
+              - id: wednesday-q2
+                label: What do they teach you about what it means to be human?
+              - id: wednesday-q3
+                label: Every aspect of your existence is dependent on God. Each ordinary breath you take is a reminder that your loving God is gifting you another moment of life. What other ordinary gifts from God are you overlooking or taking for granted? Write down three things that are easy for you to overlook and thank God for them. Text your TEAM one ordinary gift you wrote down.
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: You breathed life into me...
+                exhale: Every breath is Your gift to me.
+              - inhale: You sustain me each moment...
+                exhale: My existence depends on You.
+              - inhale: I am made in Your image...
+                exhale: Help me reflect Your goodness and greatness.
+              - inhale: Thank You for this day...
+                exhale: Help me receive it with gratitude.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: wednesday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: wednesday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer.
+      - dayNumber: 3
+        label: Thursday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: thursday-growth
+                label: "What does Earley mean by this statement: \"Our habits won't change God's love for us, but God's love for us should change our habits.\"?"
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read Psalm 139:13-18 slowly two times.
+            points: 1
+            prompts:
+              - id: thursday-q1
+                label: What does this passage teach you about God?
+              - id: thursday-q2
+                label: What does this passage teach you about what it means to be human?
+              - id: thursday-q3
+                label: What does this passage teach you about how God uniquely created you? Your physical body? Your personality? Your lifespan? Your purpose?
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: You thoughtfully formed me...
+                exhale: I am wonderfully made.
+              - inhale: You intentionally put me together...
+                exhale: You created me for a purpose.
+              - inhale: You know me completely...
+                exhale: Help me rest in Your love and acceptance.
+              - inhale: Every day of my life is recorded in Your book...
+                exhale: Help me walk with faithfulness and trust.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: thursday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: thursday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer. Share your answer with your TEAM.
+      - dayNumber: 4
+        label: Friday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: friday-growth
+                label: Do you tend to ignore your body or idolize your body? What would it look like for you to image (reflect) God through your body?
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read John 3:16-21 slowly two times.
+            points: 1
+            prompts:
+              - id: friday-q1
+                label: What do you learn about God from this passage?
+              - id: friday-q2
+                label: What do you learn about human beings from this passage?
+              - id: friday-q3
+                label: God created the world good and made human beings in His image to know Him, enjoy His love, and spread His goodness. Yet every one of us has rejected God and chosen to live our own way. The Bible calls this sin. Sin separates us from our holy and loving God, brings brokenness into our lives and relationships, and leads to eternal separation from Him in hell. BUT God loves us so much that He sent His Son, Jesus, to rescue us. Jesus became God in the flesh, lived the perfect life we could not live, died on the cross to take the punishment our sins deserve, and rose from the dead, conquering Satan, sin, and death. God wants you to be saved and to enjoy Him forever. If you have not trusted in Jesus, talk with your TEAM or contact me at bsullivan@priorityone.org to learn more about how you can do this. If you haven't placed your trust in Jesus, what is stopping you? If you have placed your trust in Jesus, what men in your life need to hear that God loves them and has a great plan for their lives through Jesus? Write down their names and pray for them right now.
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: You love me so deeply...
+                exhale: That you gave your Son to save me.
+              - inhale: Jesus is my Savior...
+                exhale: Help me trust in Him.
+              - inhale: Your light shines in the darkness...
+                exhale: Help me walk in the light as a light for You.
+              - inhale: You love every person in my life...
+                exhale: Help me show them Your love.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: friday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: friday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer. Share your answer with your TEAM.
+      - dayNumber: 5
+        label: Monday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: monday-growth
+                label: How can Box Breathing or Breath Prayers help you become more like Jesus? Did you try either of these things? How did it go?
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read Romans 6:1-14.
+            points: 1
+            prompts:
+              - id: monday-q1
+                label: What is your relationship with sin if you have placed your trust in Jesus?
+              - id: monday-q2
+                label: The guy who wrote the letter of Romans, the Apostle Paul, teaches that followers of Jesus are dead to sin. Because believers in Jesus now belong to Him and have died to sin, they are commanded not to use their physical bodies as weapons of sinfulness, but as instruments of godliness. In what areas of your life are you using your body (physical strength, words, eyes, actions, etc.) as a weapon of sinfulness, rather than an instrument of godliness? What is one step you can take today to turn one weapon of sinfulness into an instrument of godliness? For example, "Instead of criticizing my wife/kids/coworkers, I will say one encouraging thing to them today to build them up." Text your TEAM your answer.
+              - id: monday-q3
+                label: If you are a follower of Jesus, God sees you through the righteousness of His Son Jesus. Righteousness is a fancy theological word used to describe the perfection and rightness of all that Jesus is, has done, and will ever do. Your identity is no longer in your sinfulness, but in your sonfulness. You have been filled with the righteousness of Jesus, the Son of God, through His Spirit within you. In what ways could this truth help you persevere when facing sinful struggles that feel overwhelming and impossible?
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: I died with Jesus...
+                exhale: I no longer belong to sin.
+              - inhale: You have raised me to new life...
+                exhale: Help me live as Your instrument of godliness.
+              - inhale: Sin no longer rules over me...
+                exhale: Your grace gives me victory.
+              - inhale: I am Your beloved son...
+                exhale: My identity is in Jesus, not my sinfulness.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: monday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: monday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer.
+      - dayNumber: 6
+        label: Tuesday
+        title: Reading and Reflection
+        sections:
+          - id: chapter-challenge
+            title: Answer the daily book question.
+            points: 0
+            prompts:
+              - id: tuesday-growth
+                label: Review the list of breath prayers on pages 33-34 of the book. Which one of them would be most helpful for you? Write it down and put it somewhere you will see it often.
+          - id: spiritual-action
+            title: "Spiritual Action: Reading and Reflection"
+            body: Read Romans 8:12-25 two times.
+            points: 1
+            prompts:
+              - id: tuesday-q1
+                label: What does this passage reveal about the identity of those who have put their trust in Jesus?
+              - id: tuesday-q2
+                label: When someone surrenders his life to Jesus, God puts His Spirit within him and makes him a new creation (Titus 3:4-8). What does the Spirit of God do for the person He dwells within?
+              - id: tuesday-q3
+                label: What do you think it means to be an heir with Jesus (Christ) who will share in His inheritance? How does that encourage you as you live in a corrupted world with a broken body?
+          - id: breath-prayer
+            title: Breath Prayer
+            breathPrayer:
+              - inhale: Abba, Father...
+                exhale: I belong to You.
+              - inhale: Your Spirit reminds me...
+                exhale: That I am Your child.
+              - inhale: I have an inheritance with Jesus...
+                exhale: And it is going to be AMAZING!
+              - inhale: Help me find hope in You...
+                exhale: Not in earthly pleasures and treasures.
+            points: 0
+          - id: apply-gods-truth
+            title: Apply God's Truth to Your Life
+            points: 0
+            prompts:
+              - id: tuesday-apply-summary
+                label: Write down one or two sentences that summarize what God might be saying to you through reading and praying His word.
+              - id: tuesday-apply-action
+                label: Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer.
