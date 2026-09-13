@@ -13,7 +13,7 @@ async function loadOutputs(): Promise<AmplifyConfig | null> {
   }
 }
 
-export async function getServerAmplify() {
+async function getServerAmplify() {
   const outputs = await loadOutputs();
 
   if (!outputs) {

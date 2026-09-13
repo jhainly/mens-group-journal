@@ -6,14 +6,14 @@ UAT-IMPORT-001
 
 ## Purpose
 
-Verify that an admin can import a YAML program, preview it, publish it to a selected group, and that members of that same group can load the published active program on the dashboard and day journal screens.
+Verify that an admin can import a YAML week, preview it, import it to a selected group, and that members of that same group can load the imported content on the dashboard and day journal screens, including show/hide visibility and archived read-only behavior.
 
 ## Scope
 
 This test covers:
 
 - Admin YAML import preview.
-- Program publish to a selected group.
+- Week import to a selected group, visible immediately or hidden.
 - Group active program pointer update.
 - Member dashboard loading from the persisted active program snapshot.
 - Member day view loading from the persisted active program snapshot.
@@ -61,34 +61,37 @@ Record these values before testing:
 | Step | Action | Expected Result |
 | --- | --- | --- |
 | 1 | Sign in as an admin or leader. | User is authenticated and top navigation shows admin access. |
-| 2 | Open `/admin/import`. | Import page loads with YAML source panel and preview panel. |
+| 2 | Open `/admin/programs/import`. | Import page loads with YAML source panel and preview panel. |
 | 3 | Paste the test YAML into the Program content field. | YAML remains editable and no validation result is shown yet. |
 | 4 | Click `Preview program`. | Preview panel renders the program title, week/day counts, week selector, day selector, and rendered sections. |
-| 5 | Confirm the selected group is the intended test group. | Group selector displays the intended group. |
-| 6 | Click `Publish program`. | Page displays `Program published.` |
+| 5 | Confirm the selected group is the intended test group and is not archived. | Group checkbox for the intended group is checked; archived groups are disabled. |
+| 6 | Leave `Make imported weeks visible to group members immediately` checked and click `Import weeks`. | Page displays `Published 1 week to 1 group.` |
 | 7 | If an error appears, copy the exact error text. | Test fails. Record the error under Actual Result. Current known failure: `Variable 'content' has an invalid value.` |
 | 8 | Open `/dashboard`. | Dashboard loads without server error. |
-| 9 | If more than one group exists, select the same group used during publish. | Dashboard switches to the selected group. |
+| 9 | If more than one group exists, select the same group used during import from the Program switcher. | Dashboard switches to the selected group; the switcher shows `Program - Group`. |
 | 10 | Review the program section of the dashboard. | Dashboard shows the imported program title, selected week title, week summary, days, and available points from the persisted snapshot. |
 | 11 | Open day 1 from the dashboard. | Day journal page opens for the imported program's day 1 content. |
-| 12 | Compare day title, sections, scripture, prompts, and point values to the imported YAML. | Day journal content matches the imported YAML exactly. |
+| 12 | Compare day title, sections, scripture, prompts, breath prayers, completion checkboxes, and point values to the imported YAML. | Day journal content matches the imported YAML exactly; zero-point sections show no checkbox. |
+| 13 | In `/admin/groups/<groupId>`, click `Hide week` for the imported week, then reload `/dashboard`. | The week disappears from the member's week selector; clicking `Show week` brings it back. |
+| 14 | In `/admin/groups/<groupId>`, click `Archive group` and confirm, then open the day journal as a member. | Switcher label ends with `(Archived)`, an archived notice is shown, all inputs are disabled, and no save status appears. `Unarchive group` restores editing. |
 
 ## Pass Criteria
 
 The test passes only if:
 
 - Preview renders successfully.
-- Publish returns `Program published.`
-- Dashboard loads the selected group's active program from the persisted snapshot.
+- Import returns `Published 1 week to 1 group.`
+- Dashboard loads the selected group's imported weeks from the persisted week records.
 - Day journal loads the same persisted program content.
-- No sample program content appears unless that exact sample content was imported and published.
+- No sample program content appears unless that exact sample content was imported.
+- Hide/show and archive/unarchive behave as described in steps 13-14.
 
 ## Fail Criteria
 
 The test fails if:
 
-- Publish returns an error.
-- Dashboard says no active program was published after a successful publish.
+- Import returns an error.
+- Dashboard says no active program was published after a successful import.
 - Dashboard shows sample content instead of imported content.
 - Day journal 404s for a valid imported week/day.
 - Day journal content does not match the imported YAML.
