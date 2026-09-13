@@ -119,6 +119,8 @@ const schema = a.schema({
         allow.groups(["ADMINS", "LEADERS"]).to(["read", "create", "update"])
       ]),
       activeProgramId: a.string(),
+      activeProgramTitle: a.string(),
+      isArchived: a.boolean(),
       createdByUserId: a.string().required().authorization((allow) => [
         allow.groups(["ADMINS", "LEADERS"]),
         allow.authenticated().to(["read"])

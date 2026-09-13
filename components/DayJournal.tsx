@@ -218,8 +218,14 @@ export function DayJournal({
     }
   }, [answers]);
 
+  const isReadOnly = Boolean(activeGroup?.isArchived);
+
   async function save(approvedKeys = approvedReplacementKeys) {
     if (!activeGroup || !program || !day) return;
+
+    if (isReadOnly) {
+      return;
+    }
 
     if (!isJournalLoaded) {
       setSaveStatus("error");
@@ -734,17 +740,24 @@ export function DayJournal({
       <section className="panel stack">
         <div className="row">
           <h1>{day ? getProgramDayDisplayName(day) : "Program day"}</h1>
-          <div className="row" style={{ justifyContent: "flex-end" }}>
-            <p className="muted" aria-live="polite" style={{ whiteSpace: "nowrap" }}>
-              {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : saveStatus === "error" ? saveError : ""}
-            </p>
-            {saveStatus === "error" ? (
-              <button className="button secondary" onClick={() => void saveRef.current()} type="button">
-                Retry save
-              </button>
-            ) : null}
-          </div>
+          {isReadOnly ? null : (
+            <div className="row" style={{ justifyContent: "flex-end" }}>
+              <p className="muted" aria-live="polite" style={{ whiteSpace: "nowrap" }}>
+                {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : saveStatus === "error" ? saveError : ""}
+              </p>
+              {saveStatus === "error" ? (
+                <button className="button secondary" onClick={() => void saveRef.current()} type="button">
+                  Retry save
+                </button>
+              ) : null}
+            </div>
+          )}
         </div>
+        {isReadOnly ? (
+          <p className="archived-notice" role="status">
+            This program is archived. Your journal is read-only.
+          </p>
+        ) : null}
         {day ? (
           <div className="day-progress">
             <div className="day-progress-track">
@@ -778,6 +791,7 @@ export function DayJournal({
               <label className="section-check" aria-label={`Mark ${section.title} complete`}>
                 <input
                   checked={completedSectionIds.includes(section.id)}
+                  disabled={isReadOnly}
                   onChange={() => toggleSection(section.id)}
                   type="checkbox"
                 />
@@ -802,6 +816,7 @@ export function DayJournal({
                           <label className="completion-check-item" key={item.id}>
                             <input
                               checked={checked}
+                              disabled={isReadOnly}
                               onChange={() => updateCompletionItem(section, itemIndex, checked)}
                               type="checkbox"
                             />
@@ -818,6 +833,7 @@ export function DayJournal({
                         return (
                           <button
                             className={selected ? "active" : ""}
+                            disabled={isReadOnly}
                             key={completionCount}
                             onClick={() => {
                               updatePartialSection(section, completionCount);
@@ -879,6 +895,7 @@ export function DayJournal({
                           ) : null}
                           <textarea
                             className="journal-textarea"
+                            readOnly={isReadOnly}
                             value={resolveJournalAnswer(answers, section.id, promptStorageId)}
                           onChange={(event) => {
                             updateAnswer(answerKey, section.id, event.target.value);
@@ -887,7 +904,7 @@ export function DayJournal({
                           onBlur={() => void saveRef.current()}
                           placeholder={decryptFailed ? "Type replacement text here" : "Write your response"}
                         />
-                          {decryptFailed && !replacementApproved ? (
+                          {decryptFailed && !replacementApproved && !isReadOnly ? (
                             <button
                               className="button secondary"
                               onClick={() => replaceUnreadableAnswer(answerKey)}
@@ -913,6 +930,7 @@ export function DayJournal({
                         ) : null}
                         <textarea
                           className="journal-textarea"
+                          readOnly={isReadOnly}
                           value={answers[reflectionId] ?? ""}
                           onChange={(event) => {
                             updateAnswer(reflectionId, section.id, event.target.value);
@@ -921,7 +939,7 @@ export function DayJournal({
                           onBlur={() => void saveRef.current()}
                           placeholder={decryptFailed ? "Type replacement text here" : "Write your response"}
                         />
-                        {decryptFailed && !replacementApproved ? (
+                        {decryptFailed && !replacementApproved && !isReadOnly ? (
                           <button
                             className="button secondary"
                             onClick={() => replaceUnreadableAnswer(reflectionId)}

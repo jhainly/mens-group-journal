@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { JournalExportButton } from "@/components/JournalExportButton";
 import { ProgramNavigator } from "@/components/ProgramNavigator";
-import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
+import { getGroupDisplayName, resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import {
   getCurrentUserScoreSummary,
   listCurrentUserGroups,
@@ -171,15 +171,20 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
         </div>
         {groups.length > 1 ? (
           <label className="field compact-field">
-            <span>Group</span>
+            <span>Program</span>
             <select value={activeGroup?.groupId ?? ""} onChange={(event) => changeGroup(event.target.value)}>
               {groups.map((group) => (
                 <option key={group.groupId} value={group.groupId}>
-                  {group.name}
+                  {getGroupDisplayName(group)}
                 </option>
               ))}
             </select>
           </label>
+        ) : null}
+        {activeGroup?.isArchived ? (
+          <p className="archived-notice" role="status">
+            This program is archived. You can still read your journal and scores, but nothing new can be saved.
+          </p>
         ) : null}
         {program ? (
           <div className="stack">

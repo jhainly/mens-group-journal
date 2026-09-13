@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { getProgramWeekDisplayName } from "@/lib/programDays";
 import {
   getAdminGroupDetail,
   listActiveProgramWeeksForGroups,
+  setGroupArchived,
   setProgramWeekVisibility,
   updateGroupSettings,
   type ActiveProgramWeekSummary,
@@ -26,6 +28,8 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
   const [weekMessage, setWeekMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [visibilityWeekSnapshotId, setVisibilityWeekSnapshotId] = useState("");
+  const [archiveMessage, setArchiveMessage] = useState("");
+  const [isArchiving, setIsArchiving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +121,34 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
     await refreshGroup();
   }
 
+  async function toggleArchived() {
+    if (!group) {
+      return;
+    }
+
+    const nextIsArchived = !group.isArchived;
+    const confirmation = nextIsArchived
+      ? `Archive ${group.name}? Members keep read-only access to their journals and scores, but nothing new can be saved and score sync stops.`
+      : `Make ${group.name} active again? Members will be able to save journal entries and earn points.`;
+
+    if (!window.confirm(confirmation)) {
+      return;
+    }
+
+    setArchiveMessage("");
+    setIsArchiving(true);
+    const result = await setGroupArchived({ groupId, isArchived: nextIsArchived });
+    setIsArchiving(false);
+
+    if (!result.ok) {
+      setArchiveMessage(result.error);
+      return;
+    }
+
+    setArchiveMessage(result.data);
+    await refreshGroup();
+  }
+
   async function changeWeekVisibility(week: ActiveProgramWeekSummary) {
     setWeekMessage("");
     setVisibilityWeekSnapshotId(week.weekSnapshotId);
@@ -142,7 +174,12 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
         <div className="row">
           <div>
             <h1>{group.name}</h1>
-            <p className="muted">{group.memberCount} {group.memberCount === 1 ? "member" : "members"} - {group.leaderCount} {group.leaderCount === 1 ? "leader" : "leaders"}</p>
+            <p className="muted">
+              {group.activeProgramTitle ? `${group.activeProgramTitle} - ` : ""}
+              {group.memberCount} {group.memberCount === 1 ? "member" : "members"} - {group.leaderCount}{" "}
+              {group.leaderCount === 1 ? "leader" : "leaders"}
+              {group.isArchived ? " - Archived" : ""}
+            </p>
           </div>
           <Link className="button secondary" href="/admin/groups">
             Back
@@ -170,6 +207,23 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
 
       <section className="panel stack">
         <div className="row">
+          <div>
+            <h2>{group.isArchived ? "Archived program" : "Archive program"}</h2>
+            <p className="muted">
+              {group.isArchived
+                ? "This group is read-only. Members can review their journals, scores, and leaderboard, but cannot save anything new."
+                : "Archive this group when its program ends. Members keep read-only access to their journals and scores; new entries and score sync are turned off."}
+            </p>
+          </div>
+          <button className="button secondary" disabled={isArchiving} onClick={() => void toggleArchived()} type="button">
+            {isArchiving ? "Saving..." : group.isArchived ? "Unarchive group" : "Archive group"}
+          </button>
+        </div>
+        {archiveMessage ? <p>{archiveMessage}</p> : null}
+      </section>
+
+      <section className="panel stack">
+        <div className="row">
           <h2>Imported weeks</h2>
           <button className="button secondary" onClick={() => void refreshWeeks()} type="button">
             Refresh
@@ -180,7 +234,7 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
             {activeWeeks.map((week) => (
               <li className="card row" key={week.weekNumber}>
                 <div>
-                  <h3>Week {week.weekNumber}: {week.title}</h3>
+                  <h3>{getProgramWeekDisplayName(week)}</h3>
                   <p className="muted">{week.isVisible ? "Visible to members" : "Hidden from members"}</p>
                 </div>
                 <button

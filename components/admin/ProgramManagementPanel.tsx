@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { getProgramWeekDisplayName } from "@/lib/programDays";
 import {
   listProgramWeekAssignments,
   setProgramWeekVisibility,
@@ -86,7 +87,11 @@ export function ProgramManagementPanel({
               <li key={assignment.groupId}>
                 <details className="group-accordion">
                   <summary className="group-accordion-summary">
-                    <span className="group-accordion-name">{assignment.groupName}</span>
+                    <span className="group-accordion-name">
+                      {assignment.groupName}
+                      {assignment.activeProgramTitle ? <span className="muted"> · {assignment.activeProgramTitle}</span> : null}
+                      {assignment.isArchived ? <span className="role-label archived-label">Archived</span> : null}
+                    </span>
                     <span className="muted group-accordion-count">
                       {assignment.weeks.length} imported {assignment.weeks.length === 1 ? "week" : "weeks"}
                     </span>
@@ -97,7 +102,7 @@ export function ProgramManagementPanel({
                         {assignment.weeks.map((week) => (
                           <li className="assignment-week-row" key={`${assignment.groupId}:${week.weekNumber}`}>
                             <div>
-                              <strong>Week {week.weekNumber}: {week.title}</strong>
+                              <strong>{getProgramWeekDisplayName(week)}</strong>
                               <p className="muted">
                                 {week.isVisible ? "Visible to members" : "Hidden from members"} - Imported {formatDate(week.publishedAt)}
                               </p>

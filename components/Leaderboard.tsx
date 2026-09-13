@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPoints } from "@/lib/format";
-import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
+import { getGroupDisplayName, resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramWeekDisplayName } from "@/lib/programDays";
 import {
   listCurrentUserGroups,
@@ -169,11 +169,11 @@ export function Leaderboard() {
       <h1>Leaderboard</h1>
       {groups.length > 1 ? (
         <label className="field compact-field">
-          <span>Group</span>
+          <span>Program</span>
           <select value={activeGroup?.groupId ?? ""} onChange={(event) => changeGroup(event.target.value)}>
             {groups.map((group) => (
               <option key={group.groupId} value={group.groupId}>
-                {group.name}
+                {getGroupDisplayName(group)}
               </option>
             ))}
           </select>

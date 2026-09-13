@@ -39,13 +39,17 @@ let dataClient: DataClient | null = null;
 export type ServiceResult<T> = { ok: true; data: T } | { ok: false; error: string };
 export type UserGroupSummary = {
   activeProgramId?: string;
+  activeProgramTitle?: string;
   groupId: string;
+  isArchived: boolean;
   name: string;
   role?: "member" | "leader" | "admin" | null;
 };
 export type AdminGroupSummary = {
   activeProgramId?: string;
+  activeProgramTitle?: string;
   groupId: string;
+  isArchived: boolean;
   joinCode?: string | null;
   memberCount: number;
   leaderCount: number;
@@ -88,8 +92,10 @@ export type ActiveProgramWeekSummary = {
   weekSnapshotId: string;
 };
 export type ProgramWeekAssignment = {
+  activeProgramTitle?: string;
   groupId: string;
   groupName: string;
+  isArchived: boolean;
   weeks: Array<{
     isVisible: boolean;
     programId: string;
@@ -455,7 +461,9 @@ export async function listCurrentUserGroups(): Promise<ServiceResult<UserGroupSu
 
         return {
           activeProgramId: group.data.activeProgramId ?? undefined,
+          activeProgramTitle: await resolveGroupProgramTitle(client, group.data),
           groupId: group.data.groupId,
+          isArchived: group.data.isArchived ?? false,
           name: group.data.name,
           role: membership.role
         } satisfies UserGroupSummary;
@@ -547,7 +555,9 @@ export async function listAdminGroups(): Promise<ServiceResult<AdminGroupSummary
 
         return {
           activeProgramId: group.activeProgramId ?? undefined,
+          activeProgramTitle: await resolveGroupProgramTitle(client, group),
           groupId: group.groupId,
+          isArchived: group.isArchived ?? false,
           joinCode: group.joinCode ?? null,
           leaderCount: validMemberships.filter((membership) => isLeaderRole(membership.role)).length,
           memberCount: validMemberships.length,
@@ -597,7 +607,9 @@ export async function getAdminGroupDetail(groupId: string): Promise<ServiceResul
       ok: true,
       data: {
         activeProgramId: group.data.activeProgramId ?? undefined,
+        activeProgramTitle: await resolveGroupProgramTitle(client, group.data),
         groupId: group.data.groupId,
+        isArchived: group.data.isArchived ?? false,
         joinCode: group.data.joinCode ?? null,
         leaderCount: members.filter((member) => isLeaderRole(member.role)).length,
         memberCount: members.length,
@@ -789,10 +801,68 @@ async function publishWeeksForGroup(input: {
     input.client.models.Group.update({
       groupId: input.groupId,
       activeProgramId: input.program.program.id,
+      activeProgramTitle: input.program.program.title,
       updatedAt: input.now
     }),
     "The group active program could not be updated."
   );
+}
+
+export async function setGroupArchived(input: { groupId: string; isArchived: boolean }): Promise<ServiceResult<string>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const group = await client.models.Group.get({ groupId: input.groupId });
+
+    if (!group.data) {
+      return { ok: false, error: "Group not found." };
+    }
+
+    await requireSaved(
+      client.models.Group.update({
+        groupId: input.groupId,
+        isArchived: input.isArchived,
+        updatedAt: new Date().toISOString()
+      }),
+      "The group archive setting could not be updated."
+    );
+
+    return {
+      ok: true,
+      data: input.isArchived
+        ? `${group.data.name} is archived. Members can still read their journals and scores, but nothing new can be saved.`
+        : `${group.data.name} is active again.`
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+/**
+ * Groups created before activeProgramTitle existed only carry activeProgramId. Fall back to the
+ * title stored on the imported week records, then on the legacy program snapshot.
+ */
+async function resolveGroupProgramTitle(
+  client: DataClient,
+  group: { activeProgramId?: string | null; activeProgramTitle?: string | null; groupId: string }
+): Promise<string | undefined> {
+  if (group.activeProgramTitle) {
+    return group.activeProgramTitle;
+  }
+
+  if (!group.activeProgramId) {
+    return undefined;
+  }
+
+  const weekRecords = await listImportedWeekRecords(client, group.groupId);
+  const matchingWeek = weekRecords.find((record) => record.programId === group.activeProgramId) ?? weekRecords[0];
+
+  if (matchingWeek) {
+    return matchingWeek.programTitle;
+  }
+
+  const snapshot = await client.models.ProgramSnapshot.get({ programId: group.activeProgramId });
+  return snapshot.data?.title ?? undefined;
 }
 
 async function listActiveWeekRecords(client: DataClient, groupId: string) {
@@ -897,8 +967,10 @@ export async function listProgramWeekAssignments(groups: AdminGroupSummary[]): P
         const importedWeeks = await listImportedWeekRecords(client, group.groupId);
 
         return {
+          activeProgramTitle: group.activeProgramTitle,
           groupId: group.groupId,
           groupName: group.name,
+          isArchived: group.isArchived,
           weeks: importedWeeks
             .map((week) => ({
               isVisible: week.isActive,

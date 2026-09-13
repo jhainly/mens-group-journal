@@ -40,15 +40,12 @@ export function YamlImportPreview({ groups: providedGroups, onPublished }: YamlI
 
   useEffect(() => {
     if (providedGroups) {
-      const selectedGroup = resolveSelectedGroup(providedGroups);
+      const selectedGroup = resolveImportTargetGroup(providedGroups);
       setGroups(providedGroups);
 
       if (selectedGroup) {
         setSelectedGroupIds((current) => keepValidGroupSelection(current, providedGroups, selectedGroup.groupId));
         setSelectedGroupId(selectedGroup.groupId);
-      } else if (providedGroups[0]) {
-        setSelectedGroupIds((current) => keepValidGroupSelection(current, providedGroups, providedGroups[0].groupId));
-        setSelectedGroupId(providedGroups[0].groupId);
       } else {
         setSelectedGroupIds([]);
       }
@@ -67,15 +64,12 @@ export function YamlImportPreview({ groups: providedGroups, onPublished }: YamlI
         return;
       }
 
-      const selectedGroup = resolveSelectedGroup(result.data);
+      const selectedGroup = resolveImportTargetGroup(result.data);
       setGroups(result.data);
 
       if (selectedGroup) {
         setSelectedGroupIds([selectedGroup.groupId]);
         setSelectedGroupId(selectedGroup.groupId);
-      } else if (result.data[0]) {
-        setSelectedGroupIds([result.data[0].groupId]);
-        setSelectedGroupId(result.data[0].groupId);
       }
     });
 
@@ -103,13 +97,20 @@ export function YamlImportPreview({ groups: providedGroups, onPublished }: YamlI
   }
 
   async function publish() {
-    if (!preview || selectedGroupIds.length === 0) {
-      setMessage("Choose at least one group before importing.");
+    const archivedGroupIds = new Set(groups.filter((group) => group.isArchived).map((group) => group.groupId));
+    const targetGroupIds = selectedGroupIds.filter((groupId) => !archivedGroupIds.has(groupId));
+
+    if (!preview || targetGroupIds.length === 0) {
+      setMessage("Choose at least one active (non-archived) group before importing.");
       return;
     }
 
+    if (targetGroupIds.length !== selectedGroupIds.length) {
+      setSelectedGroupIds(targetGroupIds);
+    }
+
     const impacts = await previewWeekReplacementImpacts({
-      groupIds: selectedGroupIds,
+      groupIds: targetGroupIds,
       weeks: preview.program.weeks
     });
 
@@ -125,8 +126,8 @@ export function YamlImportPreview({ groups: providedGroups, onPublished }: YamlI
       return;
     }
 
-    setSelectedGroupId(selectedGroupIds[0]);
-    const result = await publishProgramWeeksToGroups(selectedGroupIds, preview, { isVisible: isVisibleOnImport });
+    setSelectedGroupId(targetGroupIds[0]);
+    const result = await publishProgramWeeksToGroups(targetGroupIds, preview, { isVisible: isVisibleOnImport });
     setMessage(result.ok ? result.data : result.error);
 
     if (result.ok) {
@@ -167,10 +168,15 @@ export function YamlImportPreview({ groups: providedGroups, onPublished }: YamlI
                   <label className="checkbox-row" key={group.groupId}>
                     <input
                       checked={selectedGroupIds.includes(group.groupId)}
+                      disabled={group.isArchived}
                       onChange={(event) => toggleGroup(group.groupId, event.target.checked)}
                       type="checkbox"
                     />
-                    <span>{group.name}</span>
+                    <span>
+                      {group.name}
+                      {group.activeProgramTitle ? ` (${group.activeProgramTitle})` : ""}
+                      {group.isArchived ? " - archived" : ""}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -253,9 +259,19 @@ export function YamlImportPreview({ groups: providedGroups, onPublished }: YamlI
 }
 
 function keepValidGroupSelection(current: string[], groups: AdminGroupSummary[], fallbackGroupId: string): string[] {
-  const availableGroupIds = new Set(groups.map((group) => group.groupId));
+  const availableGroupIds = new Set(groups.filter((group) => !group.isArchived).map((group) => group.groupId));
   const next = current.filter((groupId) => availableGroupIds.has(groupId));
   return next.length > 0 ? next : [fallbackGroupId];
+}
+
+/** Archived groups are read-only, so they are never a default import target. */
+function resolveImportTargetGroup(groups: AdminGroupSummary[]): AdminGroupSummary | null {
+  const remembered = resolveSelectedGroup(groups);
+  if (remembered && !remembered.isArchived) {
+    return remembered;
+  }
+
+  return groups.find((group) => !group.isArchived) ?? null;
 }
 
 function getReplacementConfirmationText(impacts: WeekReplacementImpact[]): string {

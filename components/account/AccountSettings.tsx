@@ -178,7 +178,11 @@ export function AccountSettings() {
               <li className="card row" key={group.groupId}>
                 <div>
                   <h3>{group.name}</h3>
-                  <p className="muted">{group.role ?? "member"}</p>
+                  <p className="muted">
+                    {group.role ?? "member"}
+                    {group.activeProgramTitle ? ` · ${group.activeProgramTitle}` : ""}
+                    {group.isArchived ? " · Archived" : ""}
+                  </p>
                 </div>
                 <button
                   className="button secondary"

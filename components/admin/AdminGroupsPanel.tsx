@@ -40,6 +40,7 @@ export function AdminGroupsPanel() {
 
     const createdGroup = {
       groupId: result.data,
+      isArchived: false,
       joinCode: groupJoinCode,
       leaderCount: 1,
       memberCount: 1,
@@ -110,8 +111,12 @@ export function AdminGroupsPanel() {
             {groups.map((group) => (
               <li className="card row" key={group.groupId}>
                 <div>
-                  <strong>{group.name}</strong>
+                  <strong>
+                    {group.name}
+                    {group.isArchived ? <span className="role-label archived-label">Archived</span> : null}
+                  </strong>
                   <p className="muted">
+                    {group.activeProgramTitle ? `${group.activeProgramTitle} · ` : ""}
                     {group.memberCount} {group.memberCount === 1 ? "member" : "members"} · {group.leaderCount} {group.leaderCount === 1 ? "leader" : "leaders"}{group.joinCode ? ` · code: ${group.joinCode}` : ""}
                   </p>
                 </div>

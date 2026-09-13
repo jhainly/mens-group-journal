@@ -61,6 +61,7 @@ backend.syncUserScore.addEnvironment("GROUP_PROGRAM_WEEK_GROUP_ID_INDEX_NAME", "
 backend.syncUserScore.addEnvironment("PROGRAM_SNAPSHOT_TABLE_NAME", programSnapshotTable.tableName);
 backend.syncUserScore.addEnvironment("USER_SCORE_TABLE_NAME", userScoreTable.tableName);
 backend.syncUserScore.addEnvironment("USER_PROFILE_TABLE_NAME", userProfileTable.tableName);
+backend.syncUserScore.addEnvironment("GROUP_TABLE_NAME", groupTable.tableName);
 backend.syncUserScore.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:UpdateItem"],
@@ -71,7 +72,8 @@ backend.syncUserScore.resources.lambda.addToRolePolicy(
       `${groupProgramWeekTable.tableArn}/index/*`,
       programSnapshotTable.tableArn,
       userScoreTable.tableArn,
-      userProfileTable.tableArn
+      userProfileTable.tableArn,
+      groupTable.tableArn
     ]
   })
 );

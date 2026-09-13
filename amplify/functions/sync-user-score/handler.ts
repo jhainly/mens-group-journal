@@ -36,6 +36,7 @@ const groupProgramWeekGroupIdIndexName = requiredEnv("GROUP_PROGRAM_WEEK_GROUP_I
 const programSnapshotTableName = requiredEnv("PROGRAM_SNAPSHOT_TABLE_NAME");
 const userScoreTableName = requiredEnv("USER_SCORE_TABLE_NAME");
 const userProfileTableName = requiredEnv("USER_PROFILE_TABLE_NAME");
+const groupTableName = requiredEnv("GROUP_TABLE_NAME");
 
 export const handler = async (event: SyncUserScoreEvent): Promise<SyncUserScoreResult> => {
   const groupId = event.arguments?.groupId?.trim();
@@ -51,13 +52,20 @@ export const handler = async (event: SyncUserScoreEvent): Promise<SyncUserScoreR
     throw new Error("You must be signed in to sync your score.");
   }
 
-  const [weeks, sectionProgressPoints, displayName] = await Promise.all([
+  const [weeks, sectionProgressPoints, displayName, isArchived] = await Promise.all([
     loadProgramWeeks(groupId, programId),
     loadSectionProgressPoints(userId, groupId, programId),
-    loadDisplayName(userId)
+    loadDisplayName(userId),
+    loadGroupIsArchived(groupId)
   ]);
 
   const score = calculateScores(weeks, weekNumber, sectionProgressPoints);
+
+  // Archived groups are read-only: report the score but never rewrite the persisted leaderboard row.
+  if (isArchived) {
+    return { weeklyScore: score.weeklyScore, cumulativeScore: score.cumulativeScore };
+  }
+
   const scoreId = `${userId}:${groupId}:${programId}:${weekNumber}`;
   const now = new Date().toISOString();
 
@@ -171,6 +179,18 @@ async function loadSectionProgressPoints(
   } while (lastKey);
 
   return pointsByKey;
+}
+
+async function loadGroupIsArchived(groupId: string): Promise<boolean> {
+  const result = await dynamo.send(
+    new GetItemCommand({
+      TableName: groupTableName,
+      Key: { groupId: { S: groupId } },
+      ProjectionExpression: "isArchived"
+    })
+  );
+
+  return result.Item?.isArchived?.BOOL === true;
 }
 
 async function loadDisplayName(userId: string): Promise<string> {
