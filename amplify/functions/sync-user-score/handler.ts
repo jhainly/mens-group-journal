@@ -51,13 +51,13 @@ export const handler = async (event: SyncUserScoreEvent): Promise<SyncUserScoreR
     throw new Error("You must be signed in to sync your score.");
   }
 
-  const [weeks, completedSectionKeys, displayName] = await Promise.all([
+  const [weeks, sectionProgressPoints, displayName] = await Promise.all([
     loadProgramWeeks(groupId, programId),
-    loadCompletedSectionKeys(userId, groupId, programId),
+    loadSectionProgressPoints(userId, groupId, programId),
     loadDisplayName(userId)
   ]);
 
-  const score = calculateScores(weeks, weekNumber, completedSectionKeys);
+  const score = calculateScores(weeks, weekNumber, sectionProgressPoints);
   const scoreId = `${userId}:${groupId}:${programId}:${weekNumber}`;
   const now = new Date().toISOString();
 
@@ -133,12 +133,12 @@ async function loadProgramWeeks(groupId: string, programId: string): Promise<Wee
   return raw ? parseProgramContent(raw) : [];
 }
 
-async function loadCompletedSectionKeys(
+async function loadSectionProgressPoints(
   userId: string,
   groupId: string,
   programId: string
-): Promise<Set<string>> {
-  const keys = new Set<string>();
+): Promise<Map<string, number>> {
+  const pointsByKey = new Map<string, number>();
   let lastKey: Record<string, AttributeValue> | undefined;
 
   do {
@@ -147,12 +147,11 @@ async function loadCompletedSectionKeys(
         TableName: sectionProgressTableName,
         IndexName: sectionProgressUserIdIndexName,
         KeyConditionExpression: "userId = :userId",
-        FilterExpression: "groupId = :groupId AND programId = :programId AND completed = :true",
+        FilterExpression: "groupId = :groupId AND programId = :programId",
         ExpressionAttributeValues: {
           ":userId": { S: userId },
           ":groupId": { S: groupId },
-          ":programId": { S: programId },
-          ":true": { BOOL: true }
+          ":programId": { S: programId }
         },
         ExclusiveStartKey: lastKey
       })
@@ -162,15 +161,16 @@ async function loadCompletedSectionKeys(
       const weekNum = getNumber(item, "weekNumber");
       const dayNum = getNumber(item, "dayNumber");
       const sectionId = getString(item, "sectionId");
+      const pointsEarned = getNumber(item, "pointsEarned") ?? 0;
       if (weekNum != null && dayNum != null && sectionId) {
-        keys.add(`${weekNum}:${dayNum}:${sectionId}`);
+        pointsByKey.set(`${weekNum}:${dayNum}:${sectionId}`, pointsEarned);
       }
     }
 
     lastKey = result.LastEvaluatedKey;
   } while (lastKey);
 
-  return keys;
+  return pointsByKey;
 }
 
 async function loadDisplayName(userId: string): Promise<string> {
@@ -186,7 +186,7 @@ async function loadDisplayName(userId: string): Promise<string> {
 function calculateScores(
   weeks: WeekLite[],
   activeWeekNumber: number,
-  completedKeys: Set<string>
+  sectionProgressPoints: Map<string, number>
 ): { weeklyScore: number; cumulativeScore: number } {
   let weeklyScore = 0;
   let cumulativeScore = 0;
@@ -196,10 +196,11 @@ function calculateScores(
       for (const section of day.sections) {
         const points = Math.max(0, section.points);
         const key = `${week.weekNumber}:${day.dayNumber}:${section.id}`;
-        if (completedKeys.has(key)) {
-          cumulativeScore += points;
+        const earnedPoints = clampPoints(sectionProgressPoints.get(key) ?? 0, points);
+        if (earnedPoints > 0) {
+          cumulativeScore += earnedPoints;
           if (week.weekNumber === activeWeekNumber) {
-            weeklyScore += points;
+            weeklyScore += earnedPoints;
           }
         }
       }
@@ -207,6 +208,14 @@ function calculateScores(
   }
 
   return { weeklyScore, cumulativeScore };
+}
+
+function clampPoints(value: number, maxPoints: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.min(maxPoints, Math.max(0, Math.round(value)));
 }
 
 function parseWeekContent(raw: unknown): WeekLite[] {

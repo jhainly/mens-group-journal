@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   getAdminGroupDetail,
   listActiveProgramWeeksForGroups,
-  removeWeekFromGroups,
+  setProgramWeekVisibility,
   updateGroupSettings,
   type ActiveProgramWeekSummary,
   type AdminGroupDetail as AdminGroupDetailData
@@ -25,7 +25,7 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
   const [settingsMessage, setSettingsMessage] = useState("");
   const [weekMessage, setWeekMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [removingWeekNumber, setRemovingWeekNumber] = useState<number | null>(null);
+  const [visibilityWeekSnapshotId, setVisibilityWeekSnapshotId] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -62,7 +62,7 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
     }
 
     setActiveWeeks(result.data);
-    setWeeksStatus(result.data.length > 0 ? "" : "No active weeks have been published for this group.");
+    setWeeksStatus(result.data.length > 0 ? "" : "No weeks have been imported for this group.");
   }, [groupId]);
 
   useEffect(() => {
@@ -117,27 +117,15 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
     await refreshGroup();
   }
 
-  async function removeWeek(weekNumber: number) {
-    const currentGroup = group;
-
-    if (!currentGroup) {
-      return;
-    }
-
-    const week = activeWeeks.find((candidate) => candidate.weekNumber === weekNumber);
-    const label = week ? `Week ${week.weekNumber}: ${week.title}` : `Week ${weekNumber}`;
-
-    if (!window.confirm(`Remove ${label} from ${currentGroup.name}?`)) {
-      return;
-    }
-
+  async function changeWeekVisibility(week: ActiveProgramWeekSummary) {
     setWeekMessage("");
-    setRemovingWeekNumber(weekNumber);
-    const result = await removeWeekFromGroups({
-      groupIds: [groupId],
-      weekNumber
+    setVisibilityWeekSnapshotId(week.weekSnapshotId);
+    const result = await setProgramWeekVisibility({
+      groupId,
+      isVisible: !week.isVisible,
+      weekSnapshotId: week.weekSnapshotId
     });
-    setRemovingWeekNumber(null);
+    setVisibilityWeekSnapshotId("");
 
     if (!result.ok) {
       setWeekMessage(result.error);
@@ -154,7 +142,7 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
         <div className="row">
           <div>
             <h1>{group.name}</h1>
-            <p className="muted">{group.memberCount} {group.memberCount === 1 ? "member" : "members"} · {group.leaderCount} {group.leaderCount === 1 ? "leader" : "leaders"}</p>
+            <p className="muted">{group.memberCount} {group.memberCount === 1 ? "member" : "members"} - {group.leaderCount} {group.leaderCount === 1 ? "leader" : "leaders"}</p>
           </div>
           <Link className="button secondary" href="/admin/groups">
             Back
@@ -182,7 +170,7 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
 
       <section className="panel stack">
         <div className="row">
-          <h2>Active weeks</h2>
+          <h2>Imported weeks</h2>
           <button className="button secondary" onClick={() => void refreshWeeks()} type="button">
             Refresh
           </button>
@@ -193,14 +181,15 @@ export function AdminGroupDetail({ groupId }: AdminGroupDetailProps) {
               <li className="card row" key={week.weekNumber}>
                 <div>
                   <h3>Week {week.weekNumber}: {week.title}</h3>
+                  <p className="muted">{week.isVisible ? "Visible to members" : "Hidden from members"}</p>
                 </div>
                 <button
                   className="button secondary"
-                  disabled={removingWeekNumber === week.weekNumber}
-                  onClick={() => void removeWeek(week.weekNumber)}
+                  disabled={visibilityWeekSnapshotId === week.weekSnapshotId}
+                  onClick={() => void changeWeekVisibility(week)}
                   type="button"
                 >
-                  {removingWeekNumber === week.weekNumber ? "Removing..." : "Remove week"}
+                  {visibilityWeekSnapshotId === week.weekSnapshotId ? "Saving..." : week.isVisible ? "Hide week" : "Show week"}
                 </button>
               </li>
             ))}

@@ -14,10 +14,7 @@ export async function AppNav() {
   return <ResponsiveNav authenticated items={items} />;
 }
 
-const unauthenticatedItems: NavItem[] = [
-  { href: "/auth", label: "Login" },
-  { href: "/join", label: "Join" }
-];
+const unauthenticatedItems: NavItem[] = [{ href: "/auth", label: "Login" }];
 
 const authenticatedMemberItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },

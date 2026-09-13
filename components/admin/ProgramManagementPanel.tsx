@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   listProgramWeekAssignments,
-  removeWeekFromGroups,
+  setProgramWeekVisibility,
   type AdminGroupSummary,
   type ProgramWeekAssignment
 } from "@/lib/services/dataClient";
@@ -19,7 +19,7 @@ export function ProgramManagementPanel({
   const [assignments, setAssignments] = useState<ProgramWeekAssignment[]>([]);
   const [assignmentStatus, setAssignmentStatus] = useState("Loading group assignments...");
   const [message, setMessage] = useState("");
-  const [removingKey, setRemovingKey] = useState("");
+  const [visibilityKey, setVisibilityKey] = useState("");
 
   const refreshAssignments = useCallback(async () => {
     if (groups.length === 0) {
@@ -45,20 +45,15 @@ export function ProgramManagementPanel({
     void refreshAssignments();
   }, [refreshAssignments]);
 
-  async function removeWeekFromGroup(input: {
+  async function changeWeekVisibility(input: {
     groupId: string;
-    groupName: string;
-    title: string;
-    weekNumber: number;
+    isVisible: boolean;
+    weekSnapshotId: string;
   }) {
-    if (!window.confirm(`Remove Week ${input.weekNumber}: ${input.title} from ${input.groupName}?`)) {
-      return;
-    }
-
     setMessage("");
-    setRemovingKey(`${input.groupId}:${input.weekNumber}`);
-    const result = await removeWeekFromGroups({ groupIds: [input.groupId], weekNumber: input.weekNumber });
-    setRemovingKey("");
+    setVisibilityKey(input.weekSnapshotId);
+    const result = await setProgramWeekVisibility(input);
+    setVisibilityKey("");
 
     if (!result.ok) {
       setMessage(result.error);
@@ -76,7 +71,7 @@ export function ProgramManagementPanel({
         <h2>Week assignments</h2>
         <div className="row">
           <Link className="button" href="/admin/programs/import">
-            Import new week
+            Import weeks
           </Link>
           <Link className="button secondary" href="/admin/programs/audit">
             Audit log
@@ -93,7 +88,7 @@ export function ProgramManagementPanel({
                   <summary className="group-accordion-summary">
                     <span className="group-accordion-name">{assignment.groupName}</span>
                     <span className="muted group-accordion-count">
-                      {assignment.weeks.length} active {assignment.weeks.length === 1 ? "week" : "weeks"}
+                      {assignment.weeks.length} imported {assignment.weeks.length === 1 ? "week" : "weeks"}
                     </span>
                   </summary>
                   <div className="group-accordion-body">
@@ -103,28 +98,29 @@ export function ProgramManagementPanel({
                           <li className="assignment-week-row" key={`${assignment.groupId}:${week.weekNumber}`}>
                             <div>
                               <strong>Week {week.weekNumber}: {week.title}</strong>
-                              <p className="muted">Published {formatDate(week.publishedAt)}</p>
+                              <p className="muted">
+                                {week.isVisible ? "Visible to members" : "Hidden from members"} - Imported {formatDate(week.publishedAt)}
+                              </p>
                             </div>
                             <button
                               className="button secondary"
-                              disabled={removingKey === `${assignment.groupId}:${week.weekNumber}`}
+                              disabled={visibilityKey === week.weekSnapshotId}
                               onClick={() =>
-                                void removeWeekFromGroup({
+                                void changeWeekVisibility({
                                   groupId: assignment.groupId,
-                                  groupName: assignment.groupName,
-                                  title: week.title,
-                                  weekNumber: week.weekNumber
+                                  isVisible: !week.isVisible,
+                                  weekSnapshotId: week.weekSnapshotId
                                 })
                               }
                               type="button"
                             >
-                              {removingKey === `${assignment.groupId}:${week.weekNumber}` ? "Removing..." : "Remove"}
+                              {visibilityKey === week.weekSnapshotId ? "Saving..." : week.isVisible ? "Hide" : "Show"}
                             </button>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="muted">No active weeks assigned.</p>
+                      <p className="muted">No weeks imported.</p>
                     )}
                   </div>
                 </details>

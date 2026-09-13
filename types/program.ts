@@ -19,6 +19,7 @@ export type ProgramWeek = {
 
 export type ProgramDay = {
   dayNumber: number;
+  label?: string;
   title: string;
   sections: ProgramSection[];
 };
@@ -27,9 +28,24 @@ export type ProgramSection = {
   id: string;
   title: string;
   body?: string;
+  completionUnit?: string;
+  completionItems?: CompletionItem[];
+  maxCompletions?: number;
+  pointsPerCompletion?: number;
+  breathPrayer?: BreathPrayerPair[];
   scripture?: ScriptureBlock[];
   prompts?: ProgramPrompt[];
   points: number;
+};
+
+export type CompletionItem = {
+  id: string;
+  label: string;
+};
+
+export type BreathPrayerPair = {
+  inhale: string;
+  exhale: string;
 };
 
 export type ScriptureBlock = {
@@ -40,7 +56,6 @@ export type ScriptureBlock = {
 export type ProgramPrompt = {
   id: string;
   label: string;
-  optional?: boolean;
 };
 
 export type ProgramImportPreview = {

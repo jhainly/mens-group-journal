@@ -4,6 +4,7 @@ import { auth } from "./auth/resource.ts";
 import { data } from "./data/resource.ts";
 import { joinGroupByCode } from "./functions/join-group-by-code/resource.ts";
 import { manageAdminUsers } from "./functions/manage-admin-users/resource.ts";
+import { syncDisplayName } from "./functions/sync-display-name/resource.ts";
 import { syncUserScore } from "./functions/sync-user-score/resource.ts";
 
 const backend = defineBackend({
@@ -11,6 +12,7 @@ const backend = defineBackend({
   data,
   joinGroupByCode,
   manageAdminUsers,
+  syncDisplayName,
   syncUserScore
 });
 
@@ -71,5 +73,14 @@ backend.syncUserScore.resources.lambda.addToRolePolicy(
       userScoreTable.tableArn,
       userProfileTable.tableArn
     ]
+  })
+);
+
+backend.syncDisplayName.addEnvironment("USER_SCORE_TABLE_NAME", userScoreTable.tableName);
+backend.syncDisplayName.addEnvironment("USER_SCORE_USER_ID_INDEX_NAME", "userScoresByUserId");
+backend.syncDisplayName.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["dynamodb:Query", "dynamodb:UpdateItem"],
+    resources: [userScoreTable.tableArn, `${userScoreTable.tableArn}/index/*`]
   })
 );

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { getProgramDayLabel } from "@/lib/programDays";
+import { getProgramDayDisplayName, getProgramWeekDisplayName } from "@/lib/programDays";
 import type { DayProgress } from "@/lib/scoring";
 import type { Program } from "@/types/program";
 
@@ -36,7 +36,7 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
           >
             {program.weeks.map((week) => (
               <option key={week.weekNumber} value={week.weekNumber}>
-                Week {week.weekNumber}: {week.title}
+                {getProgramWeekDisplayName(week)}
               </option>
             ))}
           </select>
@@ -57,7 +57,9 @@ export function ProgramNavigator({ action, dayProgress = [], onSelectedWeekNumbe
             const pct = maxPoints > 0 ? Math.round((earnedPoints / maxPoints) * 100) : 0;
             return (
               <li className="card day-card" key={day.dayNumber}>
-                <span className="day-card-name">{getProgramDayLabel(day.dayNumber)}: <strong>{day.title}</strong></span>
+                <span className="day-card-name">
+                  <strong>{getProgramDayDisplayName(day)}</strong>
+                </span>
                 <div className="day-progress day-card-bar">
                   <div className="day-progress-track">
                     <div className="day-progress-fill" style={{ width: `${pct}%` }} />

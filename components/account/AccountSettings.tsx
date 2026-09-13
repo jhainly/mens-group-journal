@@ -199,7 +199,7 @@ export function AccountSettings() {
         <div>
           <p className="eyebrow">Password</p>
           <h2>Change password</h2>
-          <p>Your journal key is re-protected when your password changes.</p>
+          <p>Update the password used to sign in to your account.</p>
         </div>
         <label className="field">
           <span>Current password</span>

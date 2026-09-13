@@ -18,7 +18,7 @@ import { calculateScores, sectionKey, type CompletedSectionKey, type ScoreSummar
 import type { Schema } from "@/amplify/data/resource";
 import type { JournalExportInput } from "@/lib/pdfExport";
 import type { SectionProgress } from "@/types/domain";
-import type { Program, ProgramDay, ProgramImportPreview, ProgramWeek } from "@/types/program";
+import type { Program, ProgramDay, ProgramImportPreview, ProgramSection, ProgramWeek } from "@/types/program";
 
 type DataClient = ReturnType<typeof generateClient<Schema>>;
 type JournalAnswerDescriptor = {
@@ -81,19 +81,23 @@ export type ActiveProgramSnapshot = {
 export type ActiveProgramWeekSummary = {
   groupCount: number;
   groupId: string;
+  isVisible: boolean;
   programId: string;
   title: string;
   weekNumber: number;
+  weekSnapshotId: string;
 };
 export type ProgramWeekAssignment = {
   groupId: string;
   groupName: string;
   weeks: Array<{
+    isVisible: boolean;
     programId: string;
     publishedAt: string;
     publishedByUserId: string;
     title: string;
     weekNumber: number;
+    weekSnapshotId: string;
   }>;
 };
 export type ProgramAuditEntry = {
@@ -123,6 +127,7 @@ export type JournalDayState = {
   expectedProgressIdsBySectionId: Record<string, string>;
   failedAnswerKeys: string[];
   needsReauth: boolean;
+  sectionPointsEarned: Record<string, number>;
   warning?: string;
 };
 export type CurrentUserProfile = {
@@ -269,7 +274,7 @@ export async function updateCurrentUserDisplayName(displayName: string): Promise
 
     await Promise.all([
       updateOwnMembershipDisplayNames(client, user.userId, normalizedDisplayName),
-      updateOwnScoreDisplayNames(client, user.userId, normalizedDisplayName),
+      syncOwnScoreDisplayNames(client, normalizedDisplayName),
       updateCognitoDisplayName(normalizedDisplayName)
     ]);
 
@@ -650,12 +655,11 @@ export async function setUserAdminRole(input: {
   }
 }
 
-export async function publishProgram(groupId: string, preview: ProgramImportPreview): Promise<ServiceResult<string>> {
-  const result = await publishProgramWeeksToGroups([groupId], preview);
-  return result.ok ? { ok: true, data: result.data } : result;
-}
-
-export async function publishProgramWeeksToGroups(groupIds: string[], preview: ProgramImportPreview): Promise<ServiceResult<string>> {
+export async function publishProgramWeeksToGroups(
+  groupIds: string[],
+  preview: ProgramImportPreview,
+  options: { isVisible?: boolean } = {}
+): Promise<ServiceResult<string>> {
   try {
     await configureAmplify();
     const client = getDataClient();
@@ -665,13 +669,14 @@ export async function publishProgramWeeksToGroups(groupIds: string[], preview: P
     const uniqueGroupIds = Array.from(new Set(groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
 
     if (uniqueGroupIds.length === 0) {
-      return { ok: false, error: "Choose at least one group before publishing." };
+      return { ok: false, error: "Choose at least one group before importing." };
     }
 
     for (const groupId of uniqueGroupIds) {
       await publishWeeksForGroup({
         client,
         groupId,
+        isVisible: options.isVisible ?? true,
         now,
         program: preview.program,
         actorDisplayName,
@@ -681,7 +686,10 @@ export async function publishProgramWeeksToGroups(groupIds: string[], preview: P
 
     const weekLabel = preview.program.weeks.length === 1 ? "week" : "weeks";
     const groupLabel = uniqueGroupIds.length === 1 ? "group" : "groups";
-    return { ok: true, data: `Published ${preview.program.weeks.length} ${weekLabel} to ${uniqueGroupIds.length} ${groupLabel}.` };
+    return {
+      ok: true,
+      data: `${options.isVisible === false ? "Imported" : "Published"} ${preview.program.weeks.length} ${weekLabel} to ${uniqueGroupIds.length} ${groupLabel}.`
+    };
   } catch (error) {
     return serviceError(error);
   }
@@ -691,12 +699,13 @@ async function publishWeeksForGroup(input: {
   actorDisplayName: string;
   client: DataClient;
   groupId: string;
+  isVisible: boolean;
   now: string;
   program: Program;
   publishedByUserId: string;
 }): Promise<void> {
   const group = await input.client.models.Group.get({ groupId: input.groupId });
-  const activeWeeks = await listActiveWeekRecords(input.client, input.groupId);
+  const importedWeeks = await listImportedWeekRecords(input.client, input.groupId);
 
   for (const week of input.program.weeks) {
     const contentHash = await hashProgram({
@@ -704,13 +713,13 @@ async function publishWeeksForGroup(input: {
       weeks: [week]
     });
     const weekSnapshotId = `${input.groupId}:${input.program.program.id}:${week.weekNumber}:${contentHash}`;
-    const staleActiveWeeks = activeWeeks.filter(
+    const staleWeeks = importedWeeks.filter(
       (record) => record.weekNumber === week.weekNumber && record.weekSnapshotId !== weekSnapshotId
     );
-    const replacedWeekTitles = staleActiveWeeks.map((record) => record.title);
+    const replacedWeekTitles = staleWeeks.map((record) => record.title);
 
     await Promise.all(
-      staleActiveWeeks.map((record) =>
+      staleWeeks.map((record) =>
         requireSaved(
           input.client.models.GroupProgramWeek.update({
             weekSnapshotId: record.weekSnapshotId,
@@ -735,7 +744,7 @@ async function publishWeeksForGroup(input: {
           title: week.title,
           contentHash,
           content: JSON.stringify(week),
-          isActive: true,
+          isActive: input.isVisible,
           publishedByUserId: input.publishedByUserId,
           publishedAt: input.now,
           updatedAt: input.now
@@ -752,7 +761,7 @@ async function publishWeeksForGroup(input: {
           title: week.title,
           contentHash,
           content: JSON.stringify(week),
-          isActive: true,
+          isActive: input.isVisible,
           publishedByUserId: input.publishedByUserId,
           publishedAt: input.now,
           updatedAt: input.now
@@ -760,14 +769,14 @@ async function publishWeeksForGroup(input: {
     );
 
     await createProgramAuditEvent(input.client, {
-      action: staleActiveWeeks.length > 0 ? "replace_week" : "import_week",
+      action: staleWeeks.length > 0 ? "replace_week" : "import_week",
       actorDisplayName: input.actorDisplayName,
       actorUserId: input.publishedByUserId,
       createdAt: input.now,
       details:
-        staleActiveWeeks.length > 0
+        staleWeeks.length > 0
           ? `Replaced ${replacedWeekTitles.map((title) => `"${title}"`).join(", ")}.`
-          : "Imported as a new active week.",
+          : `Imported as a new ${input.isVisible ? "visible" : "hidden"} week.`,
       groupId: input.groupId,
       groupName: group.data?.name ?? input.groupId,
       programId: input.program.program.id,
@@ -794,6 +803,18 @@ async function listActiveWeekRecords(client: DataClient, groupId: string) {
       },
       isActive: {
         eq: true
+      }
+    }
+  });
+
+  return result.data;
+}
+
+async function listImportedWeekRecords(client: DataClient, groupId: string) {
+  const result = await client.models.GroupProgramWeek.list({
+    filter: {
+      groupId: {
+        eq: groupId
       }
     }
   });
@@ -834,104 +855,26 @@ async function createProgramAuditEvent(
   );
 }
 
-export async function removeWeekFromActiveProgram(input: {
-  groupId: string;
-  weekNumber: number;
-}): Promise<ServiceResult<string>> {
-  const result = await removeWeekFromGroups({
-    groupIds: [input.groupId],
-    weekNumber: input.weekNumber
-  });
-  return result.ok ? { ok: true, data: result.data } : result;
-}
-
-export async function removeWeekFromGroups(input: {
-  groupIds: string[];
-  weekNumber: number;
-}): Promise<ServiceResult<string>> {
+export async function listActiveProgramWeeksForGroups(groupIds: string[]): Promise<ServiceResult<ActiveProgramWeekSummary[]>> {
   try {
     await configureAmplify();
     const client = getDataClient();
-    const user = await getCurrentUser();
-    const actorDisplayName = await getDisplayName(user.userId);
-    const now = new Date().toISOString();
-    const uniqueGroupIds = Array.from(new Set(input.groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
-    let removedCount = 0;
-
-    if (uniqueGroupIds.length === 0) {
-      return { ok: false, error: "Choose at least one group." };
-    }
-
-    for (const groupId of uniqueGroupIds) {
-      const [activeWeeks, group] = await Promise.all([
-        listActiveWeekRecords(client, groupId),
-        client.models.Group.get({ groupId })
-      ]);
-      const matchingWeeks = activeWeeks.filter((record) => record.weekNumber === input.weekNumber);
-
-      await Promise.all(
-        matchingWeeks.map((record) =>
-          requireSaved(
-            client.models.GroupProgramWeek.update({
-              weekSnapshotId: record.weekSnapshotId,
-              isActive: false,
-              updatedAt: now
-            }),
-            "The active week could not be removed."
-          )
-        )
-      );
-      await Promise.all(
-        matchingWeeks.map((record) =>
-          createProgramAuditEvent(client, {
-            action: "remove_week",
-            actorDisplayName,
-            actorUserId: user.userId,
-            createdAt: now,
-            details: "Removed from active group content.",
-            groupId,
-            groupName: group.data?.name ?? groupId,
-            programId: record.programId,
-            weekNumber: record.weekNumber,
-            weekTitle: record.title
-          })
-        )
-      );
-      removedCount += matchingWeeks.length;
-    }
-
-    if (removedCount === 0) {
-      return { ok: false, error: "That week was not active for the selected groups." };
-    }
-
-    const groupLabel = uniqueGroupIds.length === 1 ? "group" : "groups";
-    return { ok: true, data: `Removed Week ${input.weekNumber} from ${uniqueGroupIds.length} ${groupLabel}.` };
-  } catch (error) {
-    return serviceError(error);
-  }
-}
-
-export async function listActiveProgramWeeksForGroups(groupIds: string[]): Promise<ServiceResult<ActiveProgramWeekSummary[]>> {
-  try {
     const uniqueGroupIds = Array.from(new Set(groupIds.map((groupId) => groupId.trim()).filter(Boolean)));
     const weeksByNumber = new Map<number, ActiveProgramWeekSummary>();
 
     for (const groupId of uniqueGroupIds) {
-      const active = await loadActiveProgramForGroup(groupId);
+      const importedWeeks = await listImportedWeekRecords(client, groupId);
 
-      if (!active.ok) {
-        continue;
-      }
-
-      for (const week of active.data.program.weeks) {
+      for (const week of importedWeeks) {
         const current = weeksByNumber.get(week.weekNumber);
-
         weeksByNumber.set(week.weekNumber, {
           groupCount: (current?.groupCount ?? 0) + 1,
           groupId,
-          programId: active.data.programId,
+          isVisible: week.isActive,
+          programId: week.programId,
           title: current?.title ?? week.title,
-          weekNumber: week.weekNumber
+          weekNumber: week.weekNumber,
+          weekSnapshotId: week.weekSnapshotId
         });
       }
     }
@@ -951,18 +894,20 @@ export async function listProgramWeekAssignments(groups: AdminGroupSummary[]): P
     const client = getDataClient();
     const assignments = await Promise.all(
       groups.map(async (group) => {
-        const activeWeeks = await listActiveWeekRecords(client, group.groupId);
+        const importedWeeks = await listImportedWeekRecords(client, group.groupId);
 
         return {
           groupId: group.groupId,
           groupName: group.name,
-          weeks: activeWeeks
+          weeks: importedWeeks
             .map((week) => ({
+              isVisible: week.isActive,
               programId: week.programId,
               publishedAt: week.publishedAt,
               publishedByUserId: week.publishedByUserId,
               title: week.title,
-              weekNumber: week.weekNumber
+              weekNumber: week.weekNumber,
+              weekSnapshotId: week.weekSnapshotId
             }))
             .sort((left, right) => left.weekNumber - right.weekNumber)
         } satisfies ProgramWeekAssignment;
@@ -1029,18 +974,18 @@ export async function previewWeekReplacementImpacts(input: {
     const impacts: WeekReplacementImpact[] = [];
 
     for (const groupId of uniqueGroupIds) {
-      const [group, activeWeeks] = await Promise.all([client.models.Group.get({ groupId }), listActiveWeekRecords(client, groupId)]);
+      const [group, importedWeeks] = await Promise.all([client.models.Group.get({ groupId }), listImportedWeekRecords(client, groupId)]);
 
-      for (const activeWeek of activeWeeks) {
-        const importedWeek = importedWeeksByNumber.get(activeWeek.weekNumber);
+      for (const existingWeek of importedWeeks) {
+        const importedWeek = importedWeeksByNumber.get(existingWeek.weekNumber);
 
         if (importedWeek) {
           impacts.push({
             groupId,
             groupName: group.data?.name ?? groupId,
-            existingTitle: activeWeek.title,
+            existingTitle: existingWeek.title,
             importedTitle: importedWeek.title,
-            weekNumber: activeWeek.weekNumber
+            weekNumber: existingWeek.weekNumber
           });
         }
       }
@@ -1057,68 +1002,339 @@ export type LeaderboardRow = {
   displayName: string;
   weeklyScore: number;
 };
+export type TeamLeaderboardRow = {
+  cumulativeScore: number;
+  groupId: string;
+  groupName: string;
+  weeklyScore: number;
+};
+export type LeaderboardStandings = {
+  individualRows: LeaderboardRow[];
+  teamRows: TeamLeaderboardRow[];
+};
 
 export async function listLeaderboard(input: {
   groupId: string;
+  programId: string;
+  programTitle: string;
   weekNumber: number;
-}): Promise<ServiceResult<LeaderboardRow[]>> {
+}): Promise<ServiceResult<LeaderboardStandings>> {
   try {
     await configureAmplify();
     const client = getDataClient();
-    const rows = await client.models.UserScore.list({
-      filter: {
-        groupId: {
-          eq: input.groupId
+    const [groupScores, programScores, groups, activeWeekRows] = await Promise.all([
+      client.models.UserScore.list({
+        filter: {
+          groupId: {
+            eq: input.groupId
+          },
+          programId: {
+            eq: input.programId
+          }
         }
-      }
-    });
-    const rowsByUser = new Map<
-      string,
-      LeaderboardRow & {
-        latestUpdatedAt: string;
-        weeklyUpdatedAt: string;
-      }
-    >();
+      }),
+      client.models.UserScore.list(),
+      client.models.Group.list(),
+      client.models.GroupProgramWeek.list({
+        filter: {
+          isActive: {
+            eq: true
+          }
+        }
+      })
+    ]);
 
-    for (const row of rows.data) {
-      const current =
-        rowsByUser.get(row.userId) ??
-        ({
-          cumulativeScore: 0,
-          displayName: row.displayName,
-          latestUpdatedAt: "",
-          weeklyScore: 0,
-          weeklyUpdatedAt: ""
-        } satisfies LeaderboardRow & { latestUpdatedAt: string; weeklyUpdatedAt: string });
-
-      if (row.updatedAt > current.latestUpdatedAt) {
-        current.displayName = row.displayName;
-        current.latestUpdatedAt = row.updatedAt;
-      }
-
-      current.cumulativeScore = Math.max(current.cumulativeScore, row.cumulativeScore);
-
-      if (row.weekNumber === input.weekNumber && row.updatedAt >= current.weeklyUpdatedAt) {
-        current.weeklyScore = row.weeklyScore;
-        current.weeklyUpdatedAt = row.updatedAt;
-      }
-
-      rowsByUser.set(row.userId, current);
-    }
+    const individualRows = buildIndividualLeaderboardRows(groupScores.data, input.weekNumber);
+    const teamRows = buildTeamLeaderboardRows(
+      programScores.data,
+      groups.data,
+      activeWeekRows.data,
+      input.weekNumber,
+      input.programId,
+      input.programTitle
+    );
 
     return {
       ok: true,
-      data: Array.from(rowsByUser.values())
-        .map(({ cumulativeScore, displayName, weeklyScore }) => ({
-          cumulativeScore,
-          displayName,
-          weeklyScore
-        }))
-        .sort((left, right) => right.weeklyScore - left.weeklyScore || left.displayName.localeCompare(right.displayName))
+      data: {
+        individualRows,
+        teamRows
+      }
     };
   } catch (error) {
     return serviceError(error);
   }
+}
+
+export async function setProgramWeekVisibility(input: {
+  groupId: string;
+  isVisible: boolean;
+  weekSnapshotId: string;
+}): Promise<ServiceResult<string>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const actorDisplayName = await getDisplayName(user.userId);
+    const now = new Date().toISOString();
+    const [week, group] = await Promise.all([
+      client.models.GroupProgramWeek.get({ weekSnapshotId: input.weekSnapshotId }),
+      client.models.Group.get({ groupId: input.groupId })
+    ]);
+
+    if (!week.data || week.data.groupId !== input.groupId) {
+      return { ok: false, error: "That imported week could not be found for this group." };
+    }
+
+    await requireSaved(
+      client.models.GroupProgramWeek.update({
+        weekSnapshotId: input.weekSnapshotId,
+        isActive: input.isVisible,
+        updatedAt: now
+      }),
+      "The week visibility could not be updated."
+    );
+
+    await createProgramAuditEvent(client, {
+      action: input.isVisible ? "show_week" : "hide_week",
+      actorDisplayName,
+      actorUserId: user.userId,
+      createdAt: now,
+      details: input.isVisible ? "Made visible to group members." : "Hidden from group members.",
+      groupId: input.groupId,
+      groupName: group.data?.name ?? input.groupId,
+      programId: week.data.programId,
+      weekNumber: week.data.weekNumber,
+      weekTitle: week.data.title
+    });
+
+    return {
+      ok: true,
+      data: `Week ${week.data.weekNumber} is now ${input.isVisible ? "visible to" : "hidden from"} group members.`
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+type ScoreListRow = {
+  cumulativeScore: number;
+  displayName: string;
+  groupId: string;
+  programId: string;
+  updatedAt: string;
+  userId: string;
+  weekNumber: number;
+  weeklyScore: number;
+};
+type GroupListRow = {
+  activeProgramId?: string | null;
+  groupId: string;
+  name: string;
+};
+type ActiveWeekListRow = {
+  groupId: string;
+  isActive: boolean;
+  programId: string;
+  programTitle: string;
+};
+type UserLeaderboardAccumulator = LeaderboardRow & {
+  latestUpdatedAt: string;
+  weeklyUpdatedAt: string;
+};
+type TeamUserScoreAccumulator = {
+  cumulativeScore: number;
+  groupId: string;
+  latestUpdatedAt: string;
+  weeklyScore: number;
+  weeklyUpdatedAt: string;
+};
+type TeamScoreAccumulator = TeamLeaderboardRow & {
+  userCount: number;
+};
+
+function buildIndividualLeaderboardRows(rows: Array<ScoreListRow | null>, weekNumber: number): LeaderboardRow[] {
+  const rowsByUser = new Map<string, UserLeaderboardAccumulator>();
+
+  for (const row of rows) {
+    if (!row) {
+      continue;
+    }
+
+    const current =
+      rowsByUser.get(row.userId) ??
+      ({
+        cumulativeScore: 0,
+        displayName: row.displayName,
+        latestUpdatedAt: "",
+        weeklyScore: 0,
+        weeklyUpdatedAt: ""
+      } satisfies UserLeaderboardAccumulator);
+
+    if (row.updatedAt > current.latestUpdatedAt) {
+      current.displayName = row.displayName;
+      current.latestUpdatedAt = row.updatedAt;
+    }
+
+    current.cumulativeScore = Math.max(current.cumulativeScore, row.cumulativeScore);
+
+    if (row.weekNumber === weekNumber && row.updatedAt >= current.weeklyUpdatedAt) {
+      current.weeklyScore = row.weeklyScore;
+      current.weeklyUpdatedAt = row.updatedAt;
+    }
+
+    rowsByUser.set(row.userId, current);
+  }
+
+  return Array.from(rowsByUser.values())
+    .map(({ cumulativeScore, displayName, weeklyScore }) => ({
+      cumulativeScore,
+      displayName,
+      weeklyScore
+    }))
+    .sort((left, right) => right.weeklyScore - left.weeklyScore || left.displayName.localeCompare(right.displayName));
+}
+
+function buildTeamLeaderboardRows(
+  scoreRows: Array<ScoreListRow | null>,
+  groupRows: Array<GroupListRow | null>,
+  activeWeekRows: Array<ActiveWeekListRow | null>,
+  weekNumber: number,
+  programId: string,
+  programTitle: string
+): TeamLeaderboardRow[] {
+  const groupNames = new Map<string, string>();
+  const teamScoresByGroup = new Map<string, TeamScoreAccumulator>();
+  const teamScoresByUser = new Map<string, TeamUserScoreAccumulator>();
+  const validScoreRows = scoreRows.filter((row): row is ScoreListRow => row != null);
+  const comparableProgramIds = getComparableProgramIds(activeWeekRows, programId, programTitle);
+  const comparableGroupIds = getComparableGroupIds(activeWeekRows, programId, programTitle);
+  const leaderboardScoreRows = validScoreRows.filter((row) => comparableProgramIds.has(row.programId));
+
+  for (const group of groupRows) {
+    if (!group) {
+      continue;
+    }
+
+    groupNames.set(group.groupId, group.name);
+
+    if (comparableGroupIds.has(group.groupId) || group.activeProgramId === programId) {
+      teamScoresByGroup.set(group.groupId, {
+        cumulativeScore: 0,
+        groupId: group.groupId,
+        groupName: group.name,
+        userCount: 0,
+        weeklyScore: 0
+      });
+    }
+  }
+
+  for (const row of leaderboardScoreRows) {
+    const userTeamKey = `${row.groupId}:${row.userId}`;
+    const current =
+      teamScoresByUser.get(userTeamKey) ??
+      ({
+        cumulativeScore: 0,
+        groupId: row.groupId,
+        latestUpdatedAt: "",
+        weeklyScore: 0,
+        weeklyUpdatedAt: ""
+      } satisfies TeamUserScoreAccumulator);
+
+    current.cumulativeScore = Math.max(current.cumulativeScore, row.cumulativeScore);
+
+    if (row.weekNumber === weekNumber && row.updatedAt >= current.weeklyUpdatedAt) {
+      current.weeklyScore = row.weeklyScore;
+      current.weeklyUpdatedAt = row.updatedAt;
+    }
+
+    current.latestUpdatedAt = row.updatedAt > current.latestUpdatedAt ? row.updatedAt : current.latestUpdatedAt;
+    teamScoresByUser.set(userTeamKey, current);
+
+    if (!teamScoresByGroup.has(row.groupId)) {
+      teamScoresByGroup.set(row.groupId, {
+        cumulativeScore: 0,
+        groupId: row.groupId,
+        groupName: groupNames.get(row.groupId) ?? row.groupId,
+        userCount: 0,
+        weeklyScore: 0
+      });
+    }
+  }
+
+  for (const userScore of teamScoresByUser.values()) {
+    const current =
+      teamScoresByGroup.get(userScore.groupId) ??
+      ({
+        cumulativeScore: 0,
+        groupId: userScore.groupId,
+        groupName: groupNames.get(userScore.groupId) ?? userScore.groupId,
+        userCount: 0,
+        weeklyScore: 0
+      } satisfies TeamScoreAccumulator);
+
+    current.cumulativeScore += userScore.cumulativeScore;
+    current.weeklyScore += userScore.weeklyScore;
+    current.userCount += 1;
+    teamScoresByGroup.set(userScore.groupId, current);
+  }
+
+  return Array.from(teamScoresByGroup.values())
+    .map(({ cumulativeScore, groupId, groupName, userCount, weeklyScore }) => ({
+      cumulativeScore: calculateTeamScore(cumulativeScore, userCount),
+      groupId,
+      groupName,
+      weeklyScore: calculateTeamScore(weeklyScore, userCount)
+    }))
+    .sort((left, right) => right.weeklyScore - left.weeklyScore || left.groupName.localeCompare(right.groupName));
+}
+
+function calculateTeamScore(totalIndividualScore: number, userCount: number): number {
+  if (userCount <= 0) {
+    return 0;
+  }
+
+  return Math.round((totalIndividualScore / userCount) * 3);
+}
+
+function getComparableProgramIds(
+  activeWeekRows: Array<ActiveWeekListRow | null>,
+  programId: string,
+  programTitle: string
+): Set<string> {
+  const programIds = new Set([programId]);
+
+  for (const row of activeWeekRows) {
+    if (!row?.isActive) {
+      continue;
+    }
+
+    if (row.programId === programId || (programTitle && row.programTitle === programTitle)) {
+      programIds.add(row.programId);
+    }
+  }
+
+  return programIds;
+}
+
+function getComparableGroupIds(
+  activeWeekRows: Array<ActiveWeekListRow | null>,
+  programId: string,
+  programTitle: string
+): Set<string> {
+  const groupIds = new Set<string>();
+
+  for (const row of activeWeekRows) {
+    if (!row?.isActive) {
+      continue;
+    }
+
+    if (row.programId === programId || (programTitle && row.programTitle === programTitle)) {
+      groupIds.add(row.groupId);
+    }
+  }
+
+  return groupIds;
 }
 
 export async function getCurrentUserScoreSummary(input: {
@@ -1132,7 +1348,7 @@ export async function getCurrentUserScoreSummary(input: {
     const user = await getCurrentUser();
 
     // Sync persists the leaderboard row. The dashboard display is derived from SectionProgress below.
-    const [, completedSections] = await Promise.all([
+    const [, sectionProgressPoints] = await Promise.all([
       requireSaved(
         client.mutations.syncUserScore({
           groupId: input.groupId,
@@ -1141,7 +1357,7 @@ export async function getCurrentUserScoreSummary(input: {
         }),
         "Score sync failed."
       ),
-      getCompletedSectionsFromProgress({
+      getSectionProgressPointsFromProgress({
         client,
         groupId: input.groupId,
         program: input.program,
@@ -1151,7 +1367,7 @@ export async function getCurrentUserScoreSummary(input: {
     ]);
 
     // dayProgress and max values are derived from program structure + local SectionProgress
-    const localScore = calculateScores(input.program, input.activeWeekNumber, completedSections);
+    const localScore = calculateScores(input.program, input.activeWeekNumber, sectionProgressPoints);
 
     return {
       ok: true,
@@ -1372,14 +1588,15 @@ export async function loadJournalExport(input: {
       userId: row.userId,
       weekNumber: row.weekNumber
     }));
-    const completedSections = new Set<CompletedSectionKey>(
-      progressRows
-        .filter((row) => row.completed)
-        .map((row) => sectionKey(row.weekNumber, row.dayNumber, row.sectionId))
+    const sectionProgressPoints = new Map<CompletedSectionKey, number>(
+      progressRows.map((row) => [
+        sectionKey(row.weekNumber, row.dayNumber, row.sectionId),
+        row.pointsEarned
+      ])
     );
     const weeklyTotals = Object.fromEntries(
       input.program.weeks.map((week) => {
-        const score = calculateScores(input.program, week.weekNumber, completedSections);
+        const score = calculateScores(input.program, week.weekNumber, sectionProgressPoints);
         return [
           week.weekNumber,
           {
@@ -1389,7 +1606,7 @@ export async function loadJournalExport(input: {
         ];
       })
     );
-    const cumulative = calculateScores(input.program, input.program.weeks[0]?.weekNumber ?? 1, completedSections);
+    const cumulative = calculateScores(input.program, input.program.weeks[0]?.weekNumber ?? 1, sectionProgressPoints);
 
     return {
       ok: true,
@@ -1410,7 +1627,6 @@ export async function loadJournalExport(input: {
     return serviceError(error);
   }
 }
-
 export async function loadJournalDay(input: {
   groupId: string;
   program: Program;
@@ -1497,7 +1713,7 @@ export async function loadJournalDay(input: {
       ok: true,
       data: {
           answers,
-          completedSectionIds: progressRows.filter((row) => row.completed).map((row) => row.sectionId),
+          completedSectionIds: progressRows.filter((row) => row.pointsEarned > 0).map((row) => row.sectionId),
           encryptedAnswerKeys: encryptedAnswers.map(({ answer }) => journalPromptAnswerKey(answer.sectionId, answer.promptId)),
           encryptedAnswerCount: encryptedAnswers.length,
           expectedAnswerIdsByKey: Object.fromEntries(
@@ -1508,6 +1724,7 @@ export async function loadJournalDay(input: {
           ),
           failedAnswerKeys,
           needsReauth,
+          sectionPointsEarned: Object.fromEntries(progressRows.map((row) => [row.sectionId, row.pointsEarned])),
           warning
       }
     };
@@ -1621,21 +1838,46 @@ function buildSectionProgressId(input: {
   return `${input.userId}:${input.groupId}:${input.programId}:${input.weekNumber}:${input.dayNumber}:${input.sectionId}`;
 }
 
-async function getCompletedSectionsFromProgress(input: {
+function getSavedSectionPoints(
+  section: ProgramSection,
+  completedSectionIds: string[],
+  sectionPointsEarned?: Record<string, number>
+): number {
+  const maxPoints = Math.max(0, section.points);
+  const rawPoints = sectionPointsEarned?.[section.id];
+
+  if (rawPoints != null) {
+    return clampPoints(rawPoints, maxPoints);
+  }
+
+  return completedSectionIds.includes(section.id) ? maxPoints : 0;
+}
+
+function clampPoints(value: number, maxPoints: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.min(maxPoints, Math.max(0, Math.round(value)));
+}
+
+async function getSectionProgressPointsFromProgress(input: {
   client: DataClient;
   groupId: string;
   program: Program;
   programId: string;
   userId: string;
-}): Promise<Set<CompletedSectionKey>> {
+}): Promise<Map<CompletedSectionKey, number>> {
   const progressDescriptors = getSectionProgressDescriptors(input);
   const progressResults = await Promise.all(
     progressDescriptors.map((descriptor) => input.client.models.SectionProgress.get({ progressId: descriptor.progressId }))
   );
 
-  return new Set<CompletedSectionKey>(
+  return new Map<CompletedSectionKey, number>(
     progressResults.flatMap((result) =>
-      result.data?.completed ? [sectionKey(result.data.weekNumber, result.data.dayNumber, result.data.sectionId)] : []
+      result.data
+        ? [[sectionKey(result.data.weekNumber, result.data.dayNumber, result.data.sectionId), result.data.pointsEarned]]
+        : []
     )
   );
 }
@@ -1647,6 +1889,7 @@ export async function saveJournalDay(input: {
   weekNumber: number;
   dayNumber: number;
   completedSectionIds: string[];
+  sectionPointsEarned?: Record<string, number>;
   answers: Record<string, { promptId: string; sectionId: string; value: string }>;
   blockedAnswerKeys?: string[];
 }): Promise<ServiceResult<void>> {
@@ -1664,18 +1907,19 @@ export async function saveJournalDay(input: {
         ?.days.find((day) => day.dayNumber === input.dayNumber)
         ?.sections ?? [];
 
-    // Write all section progress in parallel
-    await Promise.all([
-      ...input.completedSectionIds.map((sectionId) => {
-        const section = allSectionIds.find((candidate) => candidate.id === sectionId);
+    // Write all section progress in parallel.
+    await Promise.all(
+      allSectionIds.map((section) => {
+        const pointsEarned = getSavedSectionPoints(section, input.completedSectionIds, input.sectionPointsEarned);
         const progressId = buildSectionProgressId({
           dayNumber: input.dayNumber,
           groupId: input.groupId,
           programId: input.program.program.id,
-          sectionId,
+          sectionId: section.id,
           userId: user.userId,
           weekNumber: input.weekNumber
         });
+
         return upsert(
           () =>
             client.models.SectionProgress.create({
@@ -1685,39 +1929,21 @@ export async function saveJournalDay(input: {
               programId: input.program.program.id,
               weekNumber: input.weekNumber,
               dayNumber: input.dayNumber,
-              sectionId,
-              completed: true,
-              pointsEarned: section?.points ?? 0,
+              sectionId: section.id,
+              completed: pointsEarned > 0,
+              pointsEarned,
               updatedAt: now
             }),
           () =>
             client.models.SectionProgress.update({
               progressId,
-              completed: true,
-              pointsEarned: section?.points ?? 0,
+              completed: pointsEarned > 0,
+              pointsEarned,
               updatedAt: now
             })
         );
-      }),
-      ...allSectionIds
-        .filter((section) => !input.completedSectionIds.includes(section.id))
-        .map((section) => {
-          const progressId = buildSectionProgressId({
-            dayNumber: input.dayNumber,
-            groupId: input.groupId,
-            programId: input.program.program.id,
-            sectionId: section.id,
-            userId: user.userId,
-            weekNumber: input.weekNumber
-          });
-          return client.models.SectionProgress.update({
-            progressId,
-            completed: false,
-            pointsEarned: 0,
-            updatedAt: now
-          });
-        })
-    ]);
+      })
+    );
 
     // Score sync must come after progress writes; Lambda computes score server-side
     await requireSaved(
@@ -1939,26 +2165,12 @@ async function updateOwnMembershipDisplayNames(
   );
 }
 
-async function updateOwnScoreDisplayNames(client: DataClient, userId: string, displayName: string): Promise<void> {
-  const scores = await client.models.UserScore.list({
-    filter: {
-      userId: {
-        eq: userId
-      }
-    }
-  });
-
-  await Promise.all(
-    scores.data.filter((score): score is NonNullable<typeof score> => score != null).map((score) =>
-      requireSaved(
-        client.models.UserScore.update({
-          scoreId: score.scoreId,
-          displayName,
-          updatedAt: new Date().toISOString()
-        }),
-        "A score display name could not be updated."
-      )
-    )
+async function syncOwnScoreDisplayNames(client: DataClient, displayName: string): Promise<void> {
+  await requireSaved(
+    client.mutations.syncDisplayName({
+      displayName
+    }),
+    "Score display names could not be updated."
   );
 }
 

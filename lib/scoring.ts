@@ -1,6 +1,7 @@
 import type { Program, ProgramSection } from "@/types/program";
 
 export type CompletedSectionKey = `${number}:${number}:${string}`;
+export type SectionProgressPoints = Map<CompletedSectionKey, number> | Set<CompletedSectionKey>;
 
 export type DayProgress = {
   dayNumber: number;
@@ -23,7 +24,7 @@ export function sectionKey(weekNumber: number, dayNumber: number, sectionId: str
 export function calculateScores(
   program: Program,
   activeWeekNumber: number,
-  completedSections: Set<CompletedSectionKey>
+  progress: SectionProgressPoints
 ): ScoreSummary {
   let weeklyScore = 0;
   let cumulativeScore = 0;
@@ -43,12 +44,14 @@ export function calculateScores(
           dayProgressMap.set(day.dayNumber, { ...current, maxPoints: current.maxPoints + points });
         }
 
-        if (completedSections.has(sectionKey(week.weekNumber, day.dayNumber, section.id))) {
-          cumulativeScore += points;
+        const earnedPoints = getEarnedPoints(progress, sectionKey(week.weekNumber, day.dayNumber, section.id), section);
+
+        if (earnedPoints > 0) {
+          cumulativeScore += earnedPoints;
           if (week.weekNumber === activeWeekNumber) {
-            weeklyScore += points;
+            weeklyScore += earnedPoints;
             const current = dayProgressMap.get(day.dayNumber)!;
-            dayProgressMap.set(day.dayNumber, { ...current, pointsEarned: current.pointsEarned + points });
+            dayProgressMap.set(day.dayNumber, { ...current, pointsEarned: current.pointsEarned + earnedPoints });
           }
         }
       }
@@ -62,4 +65,26 @@ export function calculateScores(
 
 function getSectionPoints(section: ProgramSection): number {
   return Math.max(0, section.points);
+}
+
+function getEarnedPoints(
+  progress: SectionProgressPoints,
+  key: CompletedSectionKey,
+  section: ProgramSection
+): number {
+  const maxPoints = getSectionPoints(section);
+
+  if (progress instanceof Map) {
+    return clampPoints(progress.get(key) ?? 0, maxPoints);
+  }
+
+  return progress.has(key) ? maxPoints : 0;
+}
+
+function clampPoints(value: number, maxPoints: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.min(maxPoints, Math.max(0, Math.round(value)));
 }

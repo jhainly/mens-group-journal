@@ -1,6 +1,7 @@
-import type { Program } from "@/types/program";
+import type { Program, ProgramSection } from "@/types/program";
 import type { SectionProgress } from "@/types/domain";
 import { journalPromptStorageIds, journalSectionReflectionKey, resolveJournalAnswer } from "@/lib/journalAnswerKeys";
+import { getProgramDayDisplayName } from "@/lib/programDays";
 
 export type WeeklyExportTotal = {
   maxScore: number;
@@ -38,7 +39,6 @@ const MARGIN_X = 54;
 const TOP_Y = 738;
 const LINE_HEIGHT = 15;
 const BODY_FONT_SIZE = 10;
-const TITLE_FONT_SIZE = 15;
 const WEEK_FONT_SIZE = 13;
 const DAY_FONT_SIZE = 11;
 const SECTION_FONT_SIZE = 12;
@@ -97,14 +97,14 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
       };
 
       addLine(`Week ${week.weekNumber}: ${week.title}`, { bold: true, fontSize: WEEK_FONT_SIZE, gapAfter: 14 });
-      addLine(`Day ${day.dayNumber}: ${day.title}`, { bold: true, fontSize: DAY_FONT_SIZE, gapAfter: 14 });
+      addLine(getProgramDayDisplayName(day), { bold: true, fontSize: DAY_FONT_SIZE, gapAfter: 14 });
       addLine("");
 
       for (const section of day.sections) {
         const key = `${week.weekNumber}:${day.dayNumber}:${section.id}`;
-        const completed = completedSections.has(key);
         const progress = progressBySection.get(key);
-        const earned = completed ? progress?.pointsEarned ?? section.points : 0;
+        const earned = Math.min(section.points, Math.max(0, progress?.pointsEarned ?? 0));
+        const completed = completedSections.has(key) || earned > 0;
 
         addLine(`${completed ? "[x]" : "[ ]"} ${section.title} (${earned}/${section.points} points)`, {
           bold: true,
@@ -117,8 +117,27 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
           addWrapped("", section.body, { indent: 1 }, 20);
         }
 
+        if (section.completionItems && section.completionItems.length > 0) {
+          const completionCount = getCompletionCount(section, earned);
+          for (const [itemIndex, item] of section.completionItems.entries()) {
+            addWrapped("", `${itemIndex < completionCount ? "[x]" : "[ ]"} ${item.label}`, { indent: 1 }, 4);
+          }
+        } else if (section.maxCompletions && section.maxCompletions > 1 && section.pointsPerCompletion) {
+          const unit = section.completionUnit ?? "completion";
+          const completionCount = getCompletionCount(section, earned);
+          addWrapped("", `${completionCount} of ${section.maxCompletions} ${unit}${section.maxCompletions === 1 ? "" : "s"} completed`, { indent: 1 }, 4);
+        }
+
         for (const scripture of section.scripture ?? []) {
           addWrapped("", `${scripture.reference}: ${scripture.text}`, { indent: 1, italic: true }, 20, SCRIPTURE_MAX_CHARS);
+        }
+
+        if (section.breathPrayer && section.breathPrayer.length > 0) {
+          addWrapped("", "Breathe the following prayer:", { indent: 1, bold: true }, 8);
+          for (const [pairIndex, pair] of section.breathPrayer.entries()) {
+            addWrapped("", `Inhale ${pairIndex + 1}: ${pair.inhale}`, { indent: 1.2 }, 2);
+            addWrapped("", `Exhale ${pairIndex + 1}: ${pair.exhale}`, { indent: 1.2 }, 8);
+          }
         }
 
         const prompts = section.prompts ?? [];
@@ -149,6 +168,11 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
   }
 
   return pages.length > 0 ? pages : [[{ text: "No journal content available." }]];
+}
+
+function getCompletionCount(section: ProgramSection, pointsEarned: number): number {
+  const pointsPerCompletion = section.pointsPerCompletion ?? 1;
+  return Math.min(section.maxCompletions ?? 1, Math.max(0, Math.round(pointsEarned / pointsPerCompletion)));
 }
 
 function buildPdf(pages: PdfPage[]): string {

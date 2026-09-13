@@ -164,6 +164,9 @@ export function LoginForm() {
       <Link className="button secondary" href="/reset-password">
         Forgot password?
       </Link>
+      <p className="muted">
+        New here? <Link href="/create-account">Create an account</Link>.
+      </p>
     </form>
   );
 }

@@ -11,6 +11,7 @@ import {
   loadActiveProgramForGroup,
   type UserGroupSummary
 } from "@/lib/services/dataClient";
+import { getProgramWeekDisplayName } from "@/lib/programDays";
 import type { ScoreSummary } from "@/lib/scoring";
 import type { Program } from "@/types/program";
 
@@ -161,7 +162,11 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
       <section className="panel stack">
         <div>
           <h1>{activeGroup?.name ?? "Join a group"}</h1>
-          {program ? <p className="muted">{program.program.title}{program.program.description ? `: ${program.program.description}` : ""}</p> : null}
+          {program ? (
+            <p className="muted">
+              {program.program.title} &middot; {getSelectedWeekTitle(program, selectedWeekNumber)}
+            </p>
+          ) : null}
           {activeGroup && !program ? <p className="muted">Your leader hasn&apos;t published content for this group yet.</p> : null}
         </div>
         {groups.length > 1 ? (
@@ -276,4 +281,9 @@ function getMaxWeeklyScore(program: Program, activeWeekNumber: number): number {
 
 function getNewestWeekNumber(program: Program): number {
   return program.weeks.reduce((newest, week) => Math.max(newest, week.weekNumber), 1);
+}
+
+function getSelectedWeekTitle(program: Program, selectedWeekNumber: number): string {
+  const week = program.weeks.find((candidate) => candidate.weekNumber === selectedWeekNumber);
+  return week ? getProgramWeekDisplayName(week) : `Week ${selectedWeekNumber}`;
 }

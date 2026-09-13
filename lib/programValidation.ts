@@ -4,8 +4,7 @@ import type { Program, ProgramImportPreview } from "@/types/program";
 
 const promptSchema = z.object({
   id: z.string().min(1),
-  label: z.string().min(1),
-  optional: z.boolean().optional()
+  label: z.string().min(1)
 });
 
 const scriptureSchema = z.object({
@@ -13,10 +12,25 @@ const scriptureSchema = z.object({
   text: z.string().min(1)
 });
 
+const breathPrayerPairSchema = z.object({
+  inhale: z.string().min(1),
+  exhale: z.string().min(1)
+});
+
+const completionItemSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1)
+});
+
 const sectionSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   body: z.string().optional(),
+  completionUnit: z.string().min(1).optional(),
+  completionItems: z.array(completionItemSchema).optional(),
+  maxCompletions: z.number().int().positive().optional(),
+  pointsPerCompletion: z.number().int().positive().optional(),
+  breathPrayer: z.array(breathPrayerPairSchema).optional(),
   scripture: z.array(scriptureSchema).optional(),
   prompts: z.array(promptSchema).optional(),
   points: z.number().int().nonnegative()
@@ -24,6 +38,7 @@ const sectionSchema = z.object({
 
 const daySchema = z.object({
   dayNumber: z.number().int().positive(),
+  label: z.string().min(1).optional(),
   title: z.string().min(1),
   sections: z.array(sectionSchema).min(1)
 });
@@ -111,6 +126,22 @@ function validateProgramSemantics(program: Program): string[] {
             );
           }
           promptIds.add(prompt.id);
+        }
+
+        const completionItemIds = new Set<string>();
+        for (const item of section.completionItems ?? []) {
+          if (completionItemIds.has(item.id)) {
+            warnings.push(
+              `Duplicate completion item id "${item.id}" in section "${section.id}" for week ${week.weekNumber}, day ${day.dayNumber}.`
+            );
+          }
+          completionItemIds.add(item.id);
+        }
+
+        if (section.completionItems && section.maxCompletions && section.completionItems.length !== section.maxCompletions) {
+          warnings.push(
+            `Section "${section.id}" in week ${week.weekNumber}, day ${day.dayNumber} has ${section.completionItems.length} completion items but maxCompletions is ${section.maxCompletions}.`
+          );
         }
       }
     }
