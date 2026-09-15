@@ -32,7 +32,14 @@ export function JoinGroupForm({ accountConfirmed = false }: { accountConfirmed?:
     <form className="panel stack" onSubmit={handleSubmit}>
       <div>
         <h1>Join a group</h1>
-        {accountConfirmed ? <p className="muted">Your account is verified. Enter your group code to continue.</p> : null}
+        {accountConfirmed ? (
+          <p className="muted">Your account is verified. Enter your group code to continue.</p>
+        ) : (
+          <p className="muted">
+            Enter the code your leader gave you. If you already belong to a group, this adds another one and switches
+            you to it; your existing groups stay available from the Groups switcher.
+          </p>
+        )}
       </div>
       <label className="field">
         <span>Group code</span>

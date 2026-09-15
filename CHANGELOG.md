@@ -14,6 +14,8 @@ Entry types: `Added`, `Changed`, `Fixed`, `Removed`, `Content` (weekly program m
 ### Added
 
 - "Resend code" button on the account verification step.
+- "Join another group" on the dashboard and "Join a group" on the account page, so existing members can join a new
+  program's group with a code (previously the join link only appeared for members with no group).
 - `npm run sandbox`, `sandbox:once`, and `sandbox:delete` scripts pinned to the `lifepoint` AWS profile (us-east-1).
 - Optional SES email sender `Lifepoint Men <no-reply@lifepointpa.org>`, enabled with `LIFEPOINT_SES_SENDER=1` once the
   domain identity is verified; Cognito's default sender remains in use until then.
