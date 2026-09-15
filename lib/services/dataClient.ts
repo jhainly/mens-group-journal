@@ -1088,7 +1088,6 @@ export type LeaderboardStandings = {
 export async function listLeaderboard(input: {
   groupId: string;
   programId: string;
-  programTitle: string;
   weekNumber: number;
 }): Promise<ServiceResult<LeaderboardStandings>> {
   try {
@@ -1122,8 +1121,7 @@ export async function listLeaderboard(input: {
       groups.data,
       activeWeekRows.data,
       input.weekNumber,
-      input.programId,
-      input.programTitle
+      input.programId
     );
 
     return {
@@ -1272,16 +1270,16 @@ function buildTeamLeaderboardRows(
   groupRows: Array<GroupListRow | null>,
   activeWeekRows: Array<ActiveWeekListRow | null>,
   weekNumber: number,
-  programId: string,
-  programTitle: string
+  programId: string
 ): TeamLeaderboardRow[] {
   const groupNames = new Map<string, string>();
   const teamScoresByGroup = new Map<string, TeamScoreAccumulator>();
   const teamScoresByUser = new Map<string, TeamUserScoreAccumulator>();
   const validScoreRows = scoreRows.filter((row): row is ScoreListRow => row != null);
-  const comparableProgramIds = getComparableProgramIds(activeWeekRows, programId, programTitle);
-  const comparableGroupIds = getComparableGroupIds(activeWeekRows, programId, programTitle);
-  const leaderboardScoreRows = validScoreRows.filter((row) => comparableProgramIds.has(row.programId));
+  // Only groups enrolled in this exact program (same program id) are compared. Matching on
+  // program title would lump every "Deep Roots" session together.
+  const comparableGroupIds = getComparableGroupIds(activeWeekRows, programId);
+  const leaderboardScoreRows = validScoreRows.filter((row) => row.programId === programId);
 
   for (const group of groupRows) {
     if (!group) {
@@ -1369,39 +1367,11 @@ function calculateTeamScore(totalIndividualScore: number, userCount: number): nu
   return Math.round((totalIndividualScore / userCount) * 3);
 }
 
-function getComparableProgramIds(
-  activeWeekRows: Array<ActiveWeekListRow | null>,
-  programId: string,
-  programTitle: string
-): Set<string> {
-  const programIds = new Set([programId]);
-
-  for (const row of activeWeekRows) {
-    if (!row?.isActive) {
-      continue;
-    }
-
-    if (row.programId === programId || (programTitle && row.programTitle === programTitle)) {
-      programIds.add(row.programId);
-    }
-  }
-
-  return programIds;
-}
-
-function getComparableGroupIds(
-  activeWeekRows: Array<ActiveWeekListRow | null>,
-  programId: string,
-  programTitle: string
-): Set<string> {
+function getComparableGroupIds(activeWeekRows: Array<ActiveWeekListRow | null>, programId: string): Set<string> {
   const groupIds = new Set<string>();
 
   for (const row of activeWeekRows) {
-    if (!row?.isActive) {
-      continue;
-    }
-
-    if (row.programId === programId || (programTitle && row.programTitle === programTitle)) {
+    if (row?.isActive && row.programId === programId) {
       groupIds.add(row.groupId);
     }
   }

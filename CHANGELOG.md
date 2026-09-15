@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Lifepoint Men's Group Journal are recorded here.
+All notable changes to Lifepoint Men (formerly the Lifepoint Men's Group Journal) are recorded here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Entries are grouped by the date they
 land on `main` rather than by release number, because the app deploys continuously through Amplify Hosting. When you
@@ -9,6 +9,32 @@ date first.
 
 Entry types: `Added`, `Changed`, `Fixed`, `Removed`, `Content` (weekly program material), `Docs`.
 
+## 2026-09-14
+
+### Added
+
+- "Resend code" button on the account verification step.
+- `npm run sandbox`, `sandbox:once`, and `sandbox:delete` scripts pinned to the `lifepoint` AWS profile (us-east-1).
+- Optional SES email sender `Lifepoint Men <no-reply@lifepointpa.org>`, enabled with `LIFEPOINT_SES_SENDER=1` once the
+  domain identity is verified; Cognito's default sender remains in use until then.
+- `LIFEPOINT_BOOTSTRAP_ADMIN_EMAIL` deploy-time option that adds an existing user to `ADMINS` (for fresh sandboxes).
+
+### Changed
+
+- Site renamed from "Lifepoint Men's Group Journal" to "Lifepoint Men" (page title, header, home page, verification
+  email subject).
+- The dashboard and leaderboard switcher is labeled "Groups"; entries still read "Program - Group".
+- Group standings on the leaderboard compare only groups enrolled in the same program id, so separate Deep Roots
+  sessions are never mixed (previously groups were also matched by program title).
+- The converter turns the Deep Roots TEAM Meeting into an 8-point "Weekly Meeting" placed last on Day 1 (the whole
+  program meets Tuesday evening, then splits into TEAMs) and replaces "contact me at ...@priorityone.org" with
+  "a group leader". Weeks 1-2, the import template, and the YAML reference were updated to match.
+
+### Docs
+
+- README documents the deployment differences from the Deep Roots app: us-east-1, Cognito default email sender, and
+  default Amplify Hosting domain (no SES sender or custom domain here).
+
 ## 2026-09-12
 
 ### Added
@@ -16,7 +42,7 @@ Entry types: `Added`, `Changed`, `Fixed`, `Removed`, `Content` (weekly program m
 - Deep Roots program support, ported from the Priority One Deep Roots fork of this app: partial scoring
   (`completionUnit`, `maxCompletions`, `pointsPerCompletion`) with count pickers or named checkboxes
   (`completionItems`), structured breath prayers, explicit day labels, and display-only zero-point sections.
-- Program switcher: groups appear as "Program - Group" on the dashboard and leaderboard, defaulting to the first
+- Groups switcher on the dashboard and leaderboard lists groups as "Program - Group", defaulting to the first
   non-archived group. Each group runs one program.
 - Group archiving. Admins archive a group when its program ends; members keep read-only access to journals, scores,
   and leaderboard while saves and score sync stop. Archived groups cannot receive imports until unarchived.
@@ -26,8 +52,8 @@ Entry types: `Added`, `Changed`, `Fixed`, `Removed`, `Content` (weekly program m
 - `sync-display-name` Lambda so leaderboard names update when a member changes their display name.
 - Login form links to account creation.
 - `npm run adapt-week`: converts a Priority One Deep Roots week YAML to the men's group format (Wednesday-Tuesday
-  reflection days, 8-point Tuesday evening TEAM Meeting replacing Zoom and Check-In, Tuesday deadline wording, stable
-  per-session program id).
+  reflection days, Zoom and Check-In folded into the meeting so the week stays 40 points, Tuesday deadline wording,
+  stable per-session program id).
 - `.gitattributes` normalizing line endings to LF.
 - This changelog.
 

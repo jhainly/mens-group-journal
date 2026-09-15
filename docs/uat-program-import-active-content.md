@@ -68,7 +68,7 @@ Record these values before testing:
 | 6 | Leave `Make imported weeks visible to group members immediately` checked and click `Import weeks`. | Page displays `Published 1 week to 1 group.` |
 | 7 | If an error appears, copy the exact error text. | Test fails. Record the error under Actual Result. Current known failure: `Variable 'content' has an invalid value.` |
 | 8 | Open `/dashboard`. | Dashboard loads without server error. |
-| 9 | If more than one group exists, select the same group used during import from the Program switcher. | Dashboard switches to the selected group; the switcher shows `Program - Group`. |
+| 9 | If more than one group exists, select the same group used during import from the Groups switcher. | Dashboard switches to the selected group; entries read `Program - Group`. |
 | 10 | Review the program section of the dashboard. | Dashboard shows the imported program title, selected week title, week summary, days, and available points from the persisted snapshot. |
 | 11 | Open day 1 from the dashboard. | Day journal page opens for the imported program's day 1 content. |
 | 12 | Compare day title, sections, scripture, prompts, breath prayers, completion checkboxes, and point values to the imported YAML. | Day journal content matches the imported YAML exactly; zero-point sections show no checkbox. |

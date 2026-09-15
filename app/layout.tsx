@@ -7,7 +7,7 @@ import { ConfigureAmplify } from "@/components/ConfigureAmplify";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Lifepoint Men's Group Journal",
+  title: "Lifepoint Men",
   description: "Private guided journaling and discipleship for Lifepoint Church men's groups",
   icons: {
     icon: "/logo.png"
@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <header className="topbar">
             <Link className="brand" href="/dashboard">
               <Image src="/logo.png" alt="Lifepoint Church" width={28} height={28} />
-              Lifepoint Men&apos;s Group Journal
+              Lifepoint Men
             </Link>
             <AppNav />
           </header>

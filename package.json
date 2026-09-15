@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "adapt-week": "node scripts/adapt-deep-roots-week.mjs"
+    "adapt-week": "node scripts/adapt-deep-roots-week.mjs",
+    "sandbox": "ampx sandbox --profile lifepoint",
+    "sandbox:once": "ampx sandbox --once --profile lifepoint",
+    "sandbox:delete": "ampx sandbox delete --profile lifepoint"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.7.3",

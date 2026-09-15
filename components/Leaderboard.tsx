@@ -28,7 +28,6 @@ export function Leaderboard() {
   const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [activeProgramId, setActiveProgramId] = useState<string | null>(null);
-  const [activeProgramTitle, setActiveProgramTitle] = useState("");
   const [activeWeekNumber, setActiveWeekNumber] = useState<number | null>(null);
   const [weekOptions, setWeekOptions] = useState<WeekOption[]>([]);
   const [status, setStatus] = useState("Loading group...");
@@ -74,7 +73,6 @@ export function Leaderboard() {
     setIndividualRows([]);
     setTeamRows([]);
     setActiveProgramId(null);
-    setActiveProgramTitle("");
     setActiveWeekNumber(null);
     setWeekOptions([]);
     setStatus("Loading weeks...");
@@ -87,7 +85,6 @@ export function Leaderboard() {
       if (!programResult.ok) {
         setActiveWeekNumber(null);
         setActiveProgramId(null);
-        setActiveProgramTitle("");
         setWeekOptions([]);
         setIndividualRows([]);
         setTeamRows([]);
@@ -99,7 +96,6 @@ export function Leaderboard() {
 
       setWeekOptions(weeks);
       setActiveProgramId(programResult.data.programId);
-      setActiveProgramTitle(programResult.data.program.program.title);
       setActiveWeekNumber(weeks.at(-1)?.weekNumber ?? null);
       setStatus("");
     });
@@ -125,7 +121,6 @@ export function Leaderboard() {
     void listLeaderboard({
       groupId: activeGroup.groupId,
       programId: activeProgramId,
-      programTitle: activeProgramTitle,
       weekNumber: activeWeekNumber
     }).then((leaderboardResult) => {
       if (cancelled) {
@@ -145,7 +140,7 @@ export function Leaderboard() {
     return () => {
       cancelled = true;
     };
-  }, [activeGroup, activeProgramId, activeProgramTitle, activeWeekNumber]);
+  }, [activeGroup, activeProgramId, activeWeekNumber]);
 
   function changeGroup(groupId: string) {
     const nextGroup = groups.find((group) => group.groupId === groupId) ?? null;
@@ -157,7 +152,6 @@ export function Leaderboard() {
     setSelectedGroupId(nextGroup.groupId);
     setActiveGroup(nextGroup);
     setActiveProgramId(null);
-    setActiveProgramTitle("");
     setActiveWeekNumber(null);
     setWeekOptions([]);
     setIndividualRows([]);
@@ -169,7 +163,7 @@ export function Leaderboard() {
       <h1>Leaderboard</h1>
       {groups.length > 1 ? (
         <label className="field compact-field">
-          <span>Program</span>
+          <span>Groups</span>
           <select value={activeGroup?.groupId ?? ""} onChange={(event) => changeGroup(event.target.value)}>
             {groups.map((group) => (
               <option key={group.groupId} value={group.groupId}>

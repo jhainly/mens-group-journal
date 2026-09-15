@@ -171,7 +171,7 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
         </div>
         {groups.length > 1 ? (
           <label className="field compact-field">
-            <span>Program</span>
+            <span>Groups</span>
             <select value={activeGroup?.groupId ?? ""} onChange={(event) => changeGroup(event.target.value)}>
               {groups.map((group) => (
                 <option key={group.groupId} value={group.groupId}>

@@ -12,8 +12,12 @@
  *   - Weekday checkbox lists (Chapter Challenge etc.) are relabeled the same way.
  *   - "Monday through Friday" style phrases become the five mission days.
  *   - The Zoom Meeting and Weekly Check-In sections are removed and their points are folded into
- *     the TEAM Meeting, which becomes the Tuesday evening group meeting (week total stays 40).
+ *     the TEAM Meeting, which becomes the "Weekly Meeting" (the whole program meets Tuesday evening,
+ *     then splits into TEAMs; week total stays 40) and is moved to the end of Day 1 so it is the
+ *     last weekly mission task.
  *   - "by Friday at midnight" deadlines become "before Tuesday evening's meeting".
+ *   - "or contact me at <someone>@priorityone.org" becomes "or a group leader"; any other Priority One
+ *     contact detail is reported for manual review.
  *   - sourcePdfUrl is dropped; the men's group app exports the member's own journal instead.
  *
  * Everything else (questions, breath prayers, TEAM wording, Deep Roots references) is kept verbatim.
@@ -32,9 +36,12 @@ const DAY_MAP = new Map([
 const MISSION_DAYS_SENTENCE = "Wednesday, Thursday, Friday, Monday, and Tuesday";
 const DEFAULT_DESCRIPTION = "Deep Roots weekly missions adapted for the Lifepoint men's group.";
 const MEETING_BODY_FROM = "Meet with your TEAM for 1 hour this week.";
-const MEETING_BODY_TO = "Meet with your TEAM at the Tuesday evening group meeting.";
+const MEETING_BODY_TO =
+  "Attend the Tuesday evening weekly meeting. The whole program meets together for group discussion, then splits into TEAMs for small group discussion.";
 const REMOVED_SECTION_IDS = new Set(["friday-zoom", "zoom-meeting", "weekly-check-in", "team-scoring"]);
-const MEETING_SECTION_ID = "team-meeting";
+const SOURCE_MEETING_SECTION_ID = "team-meeting";
+const MEETING_SECTION_ID = "weekly-meeting";
+const MEETING_SECTION_TITLE = "Weekly Meeting";
 
 main();
 
@@ -122,36 +129,48 @@ function adaptDay(day, notes, weekNumber) {
 }
 
 /**
- * Remove the Zoom Meeting and Weekly Check-In sections and add their points to the TEAM Meeting,
- * which becomes the Tuesday evening group meeting.
+ * Remove the Zoom Meeting and Weekly Check-In sections, add their points to the Deep Roots TEAM
+ * Meeting, and turn that section into the "Weekly Meeting" (the whole program meets Tuesday
+ * evening, then splits into TEAMs). The meeting is moved to the end of the day so it is the last
+ * weekly mission task.
  */
 function foldMeetingSections(sections, notes, weekNumber, dayNumber) {
   const removed = sections.filter((section) => REMOVED_SECTION_IDS.has(section.id));
-  if (removed.length === 0) {
-    return sections;
-  }
+  const meeting = sections.find((section) => section.id === SOURCE_MEETING_SECTION_ID);
+  const kept = sections.filter(
+    (section) => !REMOVED_SECTION_IDS.has(section.id) && section.id !== SOURCE_MEETING_SECTION_ID
+  );
 
-  const meeting = sections.find((section) => section.id === MEETING_SECTION_ID);
   if (!meeting) {
-    notes.push(
-      `week ${weekNumber} day ${dayNumber}: removed ${removed.map((s) => s.id).join(", ")} but found no "${MEETING_SECTION_ID}" section to receive their points.`
-    );
-    return sections.filter((section) => !REMOVED_SECTION_IDS.has(section.id));
+    if (removed.length > 0) {
+      notes.push(
+        `week ${weekNumber} day ${dayNumber}: removed ${removed.map((s) => s.id).join(", ")} but found no "${SOURCE_MEETING_SECTION_ID}" section to receive their points.`
+      );
+    }
+    return kept;
   }
 
   const foldedPoints = removed.reduce((total, section) => total + (section.points ?? 0), 0);
-  return sections
-    .filter((section) => !REMOVED_SECTION_IDS.has(section.id))
-    .map((section) => {
-      if (section.id !== MEETING_SECTION_ID) return section;
-      const body = section.body?.includes(MEETING_BODY_FROM)
-        ? section.body.replace(MEETING_BODY_FROM, MEETING_BODY_TO)
-        : section.body;
-      if (body === section.body) {
-        notes.push(`week ${weekNumber} day ${dayNumber}: TEAM Meeting body did not contain "${MEETING_BODY_FROM}"; check it mentions the Tuesday evening meeting.`);
-      }
-      return { ...section, body, points: (section.points ?? 0) + foldedPoints };
-    });
+  let body;
+  if (meeting.body?.includes(MEETING_BODY_FROM)) {
+    body = meeting.body.replace(MEETING_BODY_FROM, MEETING_BODY_TO);
+  } else {
+    body = meeting.body ? `${MEETING_BODY_TO} ${meeting.body}` : MEETING_BODY_TO;
+    notes.push(
+      `week ${weekNumber} day ${dayNumber}: TEAM Meeting body did not start with "${MEETING_BODY_FROM}"; the weekly meeting lead-in was prepended instead - read the result.`
+    );
+  }
+
+  return [
+    ...kept,
+    {
+      ...meeting,
+      id: MEETING_SECTION_ID,
+      title: MEETING_SECTION_TITLE,
+      body,
+      points: (meeting.points ?? 0) + foldedPoints
+    }
+  ];
 }
 
 function adaptSection(section, notes, where) {
@@ -197,6 +216,12 @@ function remapIdWords(id) {
 
 function adaptText(text, notes, where) {
   let result = text;
+
+  // Priority One contact details do not apply to the Lifepoint program.
+  result = result.replace(/\bor contact me at \S+@priorityone\.org\b/gi, "or a group leader");
+  if (/@priorityone\.org|priorityone\.org/i.test(result)) {
+    notes.push(`${where}: still contains a Priority One contact/link - "${truncate(result)}"`);
+  }
 
   result = result.replace(/\bby Friday at midnight\b/gi, "before Tuesday evening's meeting");
   result = result.replace(/\bevery day, Monday through Friday\b/g, `every mission day (${MISSION_DAYS_SENTENCE})`);

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { confirmSignUp, signUp } from "aws-amplify/auth";
+import { confirmSignUp, resendSignUpCode, signUp } from "aws-amplify/auth";
 import { configureAmplify } from "@/lib/amplifyClient";
 
 export function CreateAccountForm() {
@@ -13,11 +13,30 @@ export function CreateAccountForm() {
   const [confirmationCode, setConfirmationCode] = useState("");
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
+  async function resendCode() {
+    setError("");
+    setNotice("");
+    setIsResending(true);
+
+    try {
+      await configureAmplify();
+      await resendSignUpCode({ username: email });
+      setNotice(`A new code was sent to ${email}. Check your spam folder if it does not arrive within a minute.`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The code could not be resent.");
+    } finally {
+      setIsResending(false);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setNotice("");
     setIsSubmitting(true);
 
     try {
@@ -94,9 +113,17 @@ export function CreateAccountForm() {
         </label>
       ) : null}
       {error ? <p className="warning">{error}</p> : null}
-      <button className="button" disabled={isSubmitting} type="submit">
-        {needsConfirmation ? "Confirm account" : "Create account"}
-      </button>
+      {notice ? <p className="muted">{notice}</p> : null}
+      <div className="row">
+        <button className="button" disabled={isSubmitting || isResending} type="submit">
+          {needsConfirmation ? "Confirm account" : "Create account"}
+        </button>
+        {needsConfirmation ? (
+          <button className="button secondary" disabled={isSubmitting || isResending} onClick={() => void resendCode()} type="button">
+            {isResending ? "Sending..." : "Resend code"}
+          </button>
+        ) : null}
+      </div>
     </form>
   );
 }

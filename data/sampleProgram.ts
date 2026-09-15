@@ -3,9 +3,10 @@ import type { Program } from "@/types/program";
 /**
  * Starter template shown in the admin import page.
  *
- * It follows the conventions in docs/program-yaml-reference.md: Day 1 is the weekly mission overview and the
- * reflection days run Wednesday, Thursday, Friday, Monday, Tuesday with the week due before Tuesday evening's
- * group meeting. Real weekly content lives in imports/; paste one of those files into the import page.
+ * It follows the conventions in docs/program-yaml-reference.md: Day 1 is the weekly mission overview ending with
+ * the Weekly Meeting, and the reflection days run Wednesday, Thursday, Friday, Monday, Tuesday with the week due
+ * before Tuesday evening's meeting. Real weekly content lives in imports/; paste one of those files into the
+ * import page.
  */
 export const sampleProgram: Program = {
   program: {
@@ -63,9 +64,9 @@ export const sampleProgram: Program = {
               pointsPerCompletion: 1
             },
             {
-              id: "team-meeting",
-              title: "TEAM Meeting",
-              body: "Meet with your TEAM at the Tuesday evening group meeting. Check in with each other, recite the memory verse, discuss the daily book questions, and pray for each other.",
+              id: "weekly-meeting",
+              title: "Weekly Meeting",
+              body: "Attend the Tuesday evening weekly meeting. The whole program meets together for group discussion, then splits into TEAMs for small group discussion. Check in with each other, recite the memory verse, discuss the daily book questions, and pray for each other.",
               points: 8
             }
           ]

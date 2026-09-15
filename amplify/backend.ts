@@ -1,6 +1,8 @@
 import { defineBackend } from "@aws-amplify/backend";
+import { Stack } from "aws-cdk-lib";
+import { CfnUserPoolUserToGroupAttachment } from "aws-cdk-lib/aws-cognito";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { auth } from "./auth/resource.ts";
+import { auth, senderDomain, senderEmail, senderName, useSesSender } from "./auth/resource.ts";
 import { data } from "./data/resource.ts";
 import { joinGroupByCode } from "./functions/join-group-by-code/resource.ts";
 import { manageAdminUsers } from "./functions/manage-admin-users/resource.ts";
@@ -15,6 +17,31 @@ const backend = defineBackend({
   syncDisplayName,
   syncUserScore
 });
+
+// Send Cognito email through the verified SES domain identity when enabled (see auth/resource.ts).
+if (useSesSender) {
+  backend.auth.resources.cfnResources.cfnUserPool.emailConfiguration = {
+    emailSendingAccount: "DEVELOPER",
+    from: `${senderName} <${senderEmail}>`,
+    sourceArn: Stack.of(backend.auth.resources.userPool).formatArn({
+      service: "ses",
+      resource: "identity",
+      resourceName: senderDomain
+    })
+  };
+}
+
+// One-time bootstrap: LIFEPOINT_BOOTSTRAP_ADMIN_EMAIL=<email> adds that (already signed-up) user to ADMINS during
+// deploy. Useful for a fresh sandbox where no admin exists yet. Unset it again once the user is in the group.
+const bootstrapAdminEmail = process.env.LIFEPOINT_BOOTSTRAP_ADMIN_EMAIL?.trim();
+
+if (bootstrapAdminEmail) {
+  new CfnUserPoolUserToGroupAttachment(backend.auth.resources.userPool, "BootstrapAdminUser", {
+    groupName: "ADMINS",
+    username: bootstrapAdminEmail,
+    userPoolId: backend.auth.resources.userPool.userPoolId
+  });
+}
 
 backend.manageAdminUsers.addEnvironment("USER_POOL_ID", backend.auth.resources.userPool.userPoolId);
 backend.manageAdminUsers.resources.lambda.addToRolePolicy(

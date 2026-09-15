@@ -59,14 +59,14 @@ weeks:
             maxCompletions: 5
             points: 5
             pointsPerCompletion: 1
-          - id: team-meeting
-            title: TEAM Meeting
-            body: Meet with your TEAM at the Tuesday evening group meeting. Check in with each other, recite the memory verse, discuss the daily book questions, and pray for each other.
-            points: 8
           - id: relational-action
             title: Relational Action
             body: Have a phone free hour of deep conversation with a family member or friend this week. Schedule it. Turn your phone off and keep it in a separate room or in your car. Ask the other person to do the same. Blame it on Deep Roots.
             points: 5
+          - id: weekly-meeting
+            title: Weekly Meeting
+            body: Attend the Tuesday evening weekly meeting. The whole program meets together for group discussion, then splits into TEAMs for small group discussion. Check in with each other, recite the memory verse, discuss the daily book questions, and pray for each other.
+            points: 8
       - dayNumber: 2
         label: Wednesday
         title: Reading and Reflection

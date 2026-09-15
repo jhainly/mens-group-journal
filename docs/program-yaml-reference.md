@@ -26,8 +26,9 @@ The converter applies these rules and prints anything it wants a human to double
 | Reflection days labeled Monday, Tuesday, Wednesday, Thursday, Friday | Relabeled Wednesday, Thursday, Friday, Monday, Tuesday (same order, same day numbers). Section, prompt, and checkbox ids that embed the weekday are renamed to match (`monday-q1` -> `wednesday-q1`). |
 | Weekday checkbox lists (Chapter Challenge, Physical Action) | Same relabeling, so the checkboxes read Wednesday, Thursday, Friday, Monday, Tuesday. |
 | "every day, Monday through Friday" | "every mission day (Wednesday, Thursday, Friday, Monday, and Tuesday)" |
-| `Zoom Meeting` (2 points) and `Weekly Check-In` / TEAM Scoring (1 point) | Removed. Their points are added to `TEAM Meeting`, whose body starts "Meet with your TEAM at the Tuesday evening group meeting." The week still totals 40 points. |
+| `TEAM Meeting` (5 points), `Zoom Meeting` (2 points), and `Weekly Check-In` / TEAM Scoring (1 point) | Combined into one 8-point `Weekly Meeting` section (`id: weekly-meeting`), moved to the end of Day 1 so it is the last weekly mission task. Its body starts "Attend the Tuesday evening weekly meeting. The whole program meets together for group discussion, then splits into TEAMs for small group discussion." followed by the rest of the Deep Roots meeting text. The week still totals 40 points. |
 | "by Friday at midnight" | "before Tuesday evening's meeting" |
+| "or contact me at <someone>@priorityone.org" | "or a group leader". Any other Priority One contact detail is reported for manual review. |
 | `sourcePdfUrl` | Dropped. The men's group app exports the member's own journal as a PDF instead of serving the Priority One handout. |
 | `program.id` | Replaced by `--program-id`. |
 | `program.description` | Replaced with a men's group description. |
@@ -76,10 +77,10 @@ weeks:
             maxCompletions: 5
             points: 5
             pointsPerCompletion: 1
-          # Other Weekly Mission sections go here.
-          - id: team-meeting
-            title: TEAM Meeting
-            body: Meet with your TEAM at the Tuesday evening group meeting. Check in with each other, recite the memory verse, discuss the daily book questions, and pray for each other.
+          # Other Weekly Mission sections go here. The Weekly Meeting is always last.
+          - id: weekly-meeting
+            title: Weekly Meeting
+            body: Attend the Tuesday evening weekly meeting. The whole program meets together for group discussion, then splits into TEAMs for small group discussion. Check in with each other, recite the memory verse, discuss the daily book questions, and pray for each other.
             points: 8
 ```
 
@@ -109,8 +110,9 @@ weeks:
 - `id` values are lowercase, stable, and hyphenated. Section ids must be unique within a day.
 - Use `body` for instructions copied or adapted from the source.
 - Use `points: 0` for instructional sections. Zero-point sections are display-only: no checkbox, no point label, no fallback reflection box, but they can still show instructions, breath prayers, or prompts.
-- There is no `Weekly Check-In` or `Zoom Meeting` section; the app tracks scores and the meeting is Tuesday evening.
-- `TEAM Meeting` is worth 8 points (5 meeting + 2 former Zoom + 1 former check-in) so a week still totals 40.
+- There is no `TEAM Meeting`, `Weekly Check-In`, or `Zoom Meeting` section. Unlike Deep Roots, where TEAMs meet on their own, the whole Lifepoint program meets together on Tuesday evening and then splits into TEAMs, and the app tracks scores.
+- `Weekly Meeting` (`id: weekly-meeting`) is the last section of Day 1 and is worth 8 points (5 former TEAM Meeting + 2 former Zoom + 1 former check-in) so a week still totals 40.
+- Do not include Priority One contact details (for example the author's email) in men's group content; the converter strips them and reports the affected prompt for review.
 - The weekly `Chapter Challenge` belongs on Day 1 and uses one named checkbox per mission day when it is worth 1 point per day.
 - Daily book-question sections use `title: Answer the daily book question.` and are zero-point prompt sections when the weekly `Chapter Challenge` already awards those points.
 - A multi-part `Chapter Reading` stays one section with one named checkbox per chapter or reading.
@@ -171,7 +173,8 @@ Before importing a converted week:
 - Confirm `program.id` matches the current session id used by earlier weeks.
 - Confirm Day 1 is `Weekly Mission` and reflection days are labeled Wednesday, Thursday, Friday, Monday, Tuesday.
 - Confirm `Chapter Challenge` checkboxes read Wednesday through Tuesday.
-- Confirm there is no `Zoom Meeting` or `Weekly Check-In` section and `TEAM Meeting` is 8 points.
+- Confirm there is no `TEAM Meeting`, `Zoom Meeting`, or `Weekly Check-In` section, and that `Weekly Meeting` is the last Day 1 section worth 8 points.
+- Confirm no Priority One contact details remain in the text.
 - Confirm deadlines say `before Tuesday evening's meeting`.
 - Confirm every question from the source is present as a prompt and breath prayers are between the Bible questions and the apply prompts.
 - Confirm the week totals 40 points (35 on Day 1 plus 1 per reflection day).

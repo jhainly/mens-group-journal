@@ -12,7 +12,7 @@ export default async function HomePage() {
   return (
     <section className="panel stack">
       <p className="eyebrow">Private discipleship journal</p>
-      <h1>Lifepoint Men&apos;s Group Journal</h1>
+      <h1>Lifepoint Men</h1>
       <p>
         A focused place for Lifepoint Church men&apos;s groups to walk through guided weekly programs, keep personal
         reflections private, track steady participation, and stay connected with their group.

@@ -67,14 +67,14 @@ weeks:
             maxCompletions: 5
             points: 5
             pointsPerCompletion: 1
-          - id: team-meeting
-            title: TEAM Meeting
-            body: Meet with your TEAM at the Tuesday evening group meeting. Check in with each other, recite the memory verse, discuss the book questions, and pray for each other.
-            points: 8
           - id: relational-action
             title: Relational Action
             body: Identify an activity, task, or chore you would normally do yourself this week and find someone to do it with you. Choose something that will take 60 minutes or more. This can be a meal, a drive, a home project, a hobby, etc.
             points: 5
+          - id: weekly-meeting
+            title: Weekly Meeting
+            body: Attend the Tuesday evening weekly meeting. The whole program meets together for group discussion, then splits into TEAMs for small group discussion. Check in with each other, recite the memory verse, discuss the book questions, and pray for each other.
+            points: 8
       - dayNumber: 2
         label: Wednesday
         title: Reading and Reflection
@@ -177,7 +177,7 @@ weeks:
               - id: friday-q2
                 label: What do you learn about human beings from this passage?
               - id: friday-q3
-                label: God created the world good and made human beings in His image to know Him, enjoy His love, and spread His goodness. Yet every one of us has rejected God and chosen to live our own way. The Bible calls this sin. Sin separates us from our holy and loving God, brings brokenness into our lives and relationships, and leads to eternal separation from Him in hell. BUT God loves us so much that He sent His Son, Jesus, to rescue us. Jesus became God in the flesh, lived the perfect life we could not live, died on the cross to take the punishment our sins deserve, and rose from the dead, conquering Satan, sin, and death. God wants you to be saved and to enjoy Him forever. If you have not trusted in Jesus, talk with your TEAM or contact me at bsullivan@priorityone.org to learn more about how you can do this. If you haven't placed your trust in Jesus, what is stopping you? If you have placed your trust in Jesus, what men in your life need to hear that God loves them and has a great plan for their lives through Jesus? Write down their names and pray for them right now.
+                label: God created the world good and made human beings in His image to know Him, enjoy His love, and spread His goodness. Yet every one of us has rejected God and chosen to live our own way. The Bible calls this sin. Sin separates us from our holy and loving God, brings brokenness into our lives and relationships, and leads to eternal separation from Him in hell. BUT God loves us so much that He sent His Son, Jesus, to rescue us. Jesus became God in the flesh, lived the perfect life we could not live, died on the cross to take the punishment our sins deserve, and rose from the dead, conquering Satan, sin, and death. God wants you to be saved and to enjoy Him forever. If you have not trusted in Jesus, talk with your TEAM or a group leader to learn more about how you can do this. If you haven't placed your trust in Jesus, what is stopping you? If you have placed your trust in Jesus, what men in your life need to hear that God loves them and has a great plan for their lives through Jesus? Write down their names and pray for them right now.
           - id: breath-prayer
             title: Breath Prayer
             breathPrayer:

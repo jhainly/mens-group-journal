@@ -1,6 +1,6 @@
-# Lifepoint Men's Group Journal
+# Lifepoint Men
 
-Private guided journaling and discipleship app for Lifepoint men's groups.
+Private guided journaling and discipleship app for Lifepoint men's groups (formerly the Men's Group Journal).
 
 Members work through weekly program content with daily prompts. Personal reflections are encrypted in the browser — the server never sees plaintext. Group scores are visible on a leaderboard; reflection content is not.
 
@@ -9,9 +9,10 @@ Built with Next.js, TypeScript, AWS Amplify Gen 2, Amazon Cognito, AppSync, and 
 ## Current State
 
 - The app is branded for Lifepoint Church. Program content now comes from Priority One's **Deep Roots** weekly missions (8-week sessions, two per year), adapted to the men's group schedule: reflection days Wednesday, Thursday, Friday, Monday, Tuesday, with the week due before the Tuesday evening group meeting. `docs/program-yaml-reference.md` is the source of truth for the format and `npm run adapt-week` converts a Priority One week into it.
-- Each group runs one program. A member who belongs to several groups picks one from a "Program - Group" switcher; the original 12-week program lives on in archived, read-only groups alongside the new Deep Roots groups.
+- Each group runs one program. A member who belongs to several groups picks one from the Groups switcher, where entries read "Program - Group"; the original 12-week program lives on in archived, read-only groups alongside the new Deep Roots groups.
+- The whole Lifepoint program meets together on Tuesday evenings and then splits into TEAMs, so each week ends with an 8-point Weekly Meeting instead of Deep Roots' separate TEAM Meeting, Zoom call, and score check-in.
 - Weekly missions support partial scoring: count pickers (`0 1 2` days completed) and named checkboxes (Wednesday through Tuesday, Introduction / Chapter 1), plus structured breath prayers.
-- The leaderboard shows member rankings within a group and group standings across groups on the same program; group scores are the group's average individual score multiplied by 3 (maximum 120 for a 40-point week).
+- The leaderboard shows member rankings within a group and group standings across the groups enrolled in the same program (matched by program id, so different Deep Roots sessions are never compared); group scores are the group's average individual score multiplied by 3 (maximum 120 for a 40-point week).
 - Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
 
 ## Local Setup
@@ -38,6 +39,20 @@ npm run lint
 npm run build
 ```
 
+## Deployment, Domain, and Email (what this app does NOT do)
+
+This app shares its codebase lineage with Priority One's Deep Roots app (`priority-one-deep-roots-app`), which was forked from this repo and later became the source of ported improvements. Their infrastructure differs on purpose:
+
+| | Lifepoint Men (this repo) | Priority One Deep Roots |
+| --- | --- | --- |
+| Region | **us-east-1** | us-east-2 |
+| Cognito email sender | Cognito default (`no-reply@verificationemail.com`) until the `lifepointpa.org` SES identity is verified; then `Lifepoint Men <no-reply@lifepointpa.org>` via SES in us-east-1, enabled with `LIFEPOINT_SES_SENDER=1`. See [docs/production-email-setup.md](docs/production-email-setup.md). | Custom SES sender `deeproots-no-reply@priorityone.org` via a verified `priorityone.org` identity in us-east-2 |
+| Site domain | Default Amplify Hosting `amplifyapp.com` URL | Custom domain `https://deeproots.priorityone.org/` in Amplify Hosting |
+
+Never copy the Deep Roots sender address, SES identity, or domain into this repo; the Lifepoint equivalents live in `amplify/auth/resource.ts` and must stay behind the `LIFEPOINT_SES_SENDER` switch until the identity is verified, or sign-up and password-reset emails stop.
+
+For a fresh sandbox with no admin yet, `LIFEPOINT_BOOTSTRAP_ADMIN_EMAIL=<email>` at deploy time adds that already-signed-up user to `ADMINS`.
+
 ## Amplify Backend
 
 The backend is defined in:
@@ -50,21 +65,34 @@ The backend is defined in:
 Run a sandbox backend:
 
 ```bash
-npx ampx sandbox
+npm run sandbox
 ```
 
 This generates `amplify_outputs.json` for Cognito and Amplify Data. The file is gitignored — it is local environment output.
 
-For a one-time backend validation/deploy:
+For a one-time backend validation/deploy, or to tear the sandbox down:
 
 ```bash
-npx ampx sandbox --once
+npm run sandbox:once
+npm run sandbox:delete
 ```
+
+The sandbox scripts always pass `--profile lifepoint`, an AWS profile pinned to **us-east-1** (where this app's production stack lives), so the sandbox region never depends on the shell's default. Define it once in `~/.aws/config` alongside your existing SSO profile:
+
+```ini
+[profile lifepoint]
+sso_session = <your sso session>
+sso_account_id = <account id>
+sso_role_name = <role>
+region = us-east-1
+```
+
+Avoid running `npx ampx sandbox` directly; without the profile it deploys to whatever region the shell resolves.
 
 If AWS SSO credentials have expired, refresh them first:
 
 ```bash
-aws sso login
+aws sso login --sso-session <your sso session>
 ```
 
 Production deploys from `main` through Amplify Hosting. Schema changes must stay additive (new optional fields and models only) because the production tables hold live member data.
@@ -87,7 +115,7 @@ Then open the HTTPS URL shown by Next.js.
 
 - Create an account with email verification; new accounts are guided into the group join flow automatically.
 - Join a group using a server-verified group code.
-- Switch between programs (one per group) from the dashboard and leaderboard; archived programs are labeled and read-only.
+- Switch groups (and therefore programs, one per group) from the dashboard and leaderboard; archived groups are labeled and read-only.
 - Dashboard with weekly and lifetime score bars, week navigation, and clear empty states when no content has been published yet.
 - Daily journal screen with section completion, partial-scoring pickers and checkboxes, breath prayers, and private encrypted reflections. Days use the labels defined in the program (Weekly Mission, then Wednesday through Tuesday for Deep Roots content).
 - Leaderboard with weekly and all-time views: member rankings within the group and group standings across the program. No reflection content is visible.
@@ -116,6 +144,7 @@ To start a new session, create new groups (members join with a new code), archiv
 
 - [CHANGELOG.md](CHANGELOG.md): notable changes by date.
 - [docs/program-yaml-reference.md](docs/program-yaml-reference.md): YAML conventions, converter rules, and the import review checklist.
+- [docs/production-email-setup.md](docs/production-email-setup.md): moving Cognito email to SES as `no-reply@lifepointpa.org`, including the DNS records.
 - [docs/dynamodb-data-model.md](docs/dynamodb-data-model.md): data model notes.
 - [docs/security-review-2026-06-10.md](docs/security-review-2026-06-10.md): June 2026 security review and open findings.
 - [docs/uat-program-import-active-content.md](docs/uat-program-import-active-content.md): UAT script for import and active content loading.
@@ -129,7 +158,7 @@ app/                         Next.js App Router routes
   create-account/            Account creation and verification
   reset-password/            Password reset flow
   join/                      Group code join flow
-  dashboard/                 Member dashboard, program switcher, score summary
+  dashboard/                 Member dashboard, group switcher, score summary
   program/week/[...]/        Program day journal screens
   leaderboard/               Member rankings and group standings
   admin/                     Redirects to admin/groups
