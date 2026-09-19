@@ -7,5 +7,6 @@ export type SectionProgress = {
   sectionId: string;
   completed: boolean;
   pointsEarned: number;
+  completedItemIds?: string[];
   updatedAt: string;
 };

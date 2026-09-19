@@ -49,6 +49,7 @@ export function DayJournal({
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [completedSectionIds, setCompletedSectionIds] = useState<string[]>([]);
   const [sectionPointsEarned, setSectionPointsEarned] = useState<Record<string, number>>({});
+  const [sectionCompletedItemIds, setSectionCompletedItemIds] = useState<Record<string, string[]>>({});
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [program, setProgram] = useState<Program | null>(null);
   const [day, setDay] = useState<ProgramDay | null>(null);
@@ -68,6 +69,7 @@ export function DayJournal({
   const answersRef = useRef<Record<string, string>>({});
   const completedSectionIdsRef = useRef<string[]>([]);
   const sectionPointsEarnedRef = useRef<Record<string, number>>({});
+  const sectionCompletedItemIdsRef = useRef<Record<string, string[]>>({});
   const dirtyAnswerKeysRef = useRef<Set<string>>(new Set());
   const isSavingRef = useRef(false);
   const saveAgainRef = useRef(false);
@@ -129,10 +131,12 @@ export function DayJournal({
     answersRef.current = {};
     completedSectionIdsRef.current = [];
     sectionPointsEarnedRef.current = {};
+    sectionCompletedItemIdsRef.current = {};
     dirtyAnswerKeysRef.current.clear();
     queuedApprovedReplacementKeysRef.current.clear();
     setCompletedSectionIds([]);
     setSectionPointsEarned({});
+    setSectionCompletedItemIds({});
     setFailedAnswerKeys([]);
     setApprovedReplacementKeys([]);
 
@@ -194,10 +198,12 @@ export function DayJournal({
       answersRef.current = result.data.answers;
       completedSectionIdsRef.current = result.data.completedSectionIds;
       sectionPointsEarnedRef.current = result.data.sectionPointsEarned;
+      sectionCompletedItemIdsRef.current = result.data.sectionCompletedItemIds;
       dirtyAnswerKeysRef.current.clear();
       queuedApprovedReplacementKeysRef.current.clear();
       setCompletedSectionIds(result.data.completedSectionIds);
       setSectionPointsEarned(result.data.sectionPointsEarned);
+      setSectionCompletedItemIds(result.data.sectionCompletedItemIds);
       setNeedsReauth(result.data.needsReauth);
       setFailedAnswerKeys(result.data.failedAnswerKeys);
       setApprovedReplacementKeys([]);
@@ -271,6 +277,7 @@ export function DayJournal({
       dayNumber: day.dayNumber,
       completedSectionIds: completedSectionIdsRef.current,
       sectionPointsEarned: sectionPointsEarnedRef.current,
+      sectionCompletedItemIds: sectionCompletedItemIdsRef.current,
       blockedAnswerKeys,
       answers: answerPayload
     });
@@ -517,7 +524,7 @@ export function DayJournal({
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [answers, completedSectionIds, sectionPointsEarned]);
+  }, [answers, completedSectionIds, sectionPointsEarned, sectionCompletedItemIds]);
 
   function toggleSection(sectionId: string) {
     hasUserChangedRef.current = true;
@@ -533,29 +540,39 @@ export function DayJournal({
     hasUserChangedRef.current = true;
     setSaveStatus("idle");
     setSaveError("");
-    updateSectionProgress(section.id, getPointsFromCompletionCount(section, completionCount));
+    updateSectionProgress(section.id, getPointsFromCompletionCount(section, completionCount), []);
   }
 
-  function updateCompletionItem(section: ProgramSection, itemIndex: number, checked: boolean) {
-    const nextCompletionCount = checked ? itemIndex : itemIndex + 1;
-    updatePartialSection(section, nextCompletionCount);
+  function updateCompletionItem(section: ProgramSection, itemId: string, checked: boolean) {
+    const currentItemIds = getCompletionItemIdsFromRefs(section);
+    const nextItemIds = checked
+      ? currentItemIds.filter((candidate) => candidate !== itemId)
+      : orderCompletionItemIds(section, [...currentItemIds, itemId]);
+
+    updateSectionProgress(section.id, getPointsFromCompletionItemIds(section, nextItemIds), nextItemIds);
     void saveRef.current();
   }
 
-  function updateSectionProgress(sectionId: string, pointsEarned: number) {
+  function updateSectionProgress(sectionId: string, pointsEarned: number, completedItemIds?: string[]) {
     const nextPointsEarned = getClampedSectionPoints(
       day?.sections.find((candidate) => candidate.id === sectionId),
       pointsEarned
     );
     const nextSectionPointsEarned = { ...sectionPointsEarnedRef.current, [sectionId]: nextPointsEarned };
+    const nextSectionCompletedItemIds = {
+      ...sectionCompletedItemIdsRef.current,
+      [sectionId]: nextPointsEarned > 0 ? completedItemIds ?? sectionCompletedItemIdsRef.current[sectionId] ?? [] : []
+    };
     const nextCompletedSectionIds =
       nextPointsEarned > 0
         ? Array.from(new Set([...completedSectionIdsRef.current, sectionId]))
         : completedSectionIdsRef.current.filter((id) => id !== sectionId);
 
     sectionPointsEarnedRef.current = nextSectionPointsEarned;
+    sectionCompletedItemIdsRef.current = nextSectionCompletedItemIds;
     completedSectionIdsRef.current = nextCompletedSectionIds;
     setSectionPointsEarned(nextSectionPointsEarned);
+    setSectionCompletedItemIds(nextSectionCompletedItemIds);
     setCompletedSectionIds(nextCompletedSectionIds);
   }
 
@@ -642,6 +659,25 @@ export function DayJournal({
 
   function getCompletionItems(section: ProgramSection) {
     return section.completionItems ?? [];
+  }
+
+  function getCompletionItemIds(section: ProgramSection): string[] {
+    return orderCompletionItemIds(section, sectionCompletedItemIds[section.id] ?? []);
+  }
+
+  function getCompletionItemIdsFromRefs(section: ProgramSection): string[] {
+    return orderCompletionItemIds(section, sectionCompletedItemIdsRef.current[section.id] ?? []);
+  }
+
+  function orderCompletionItemIds(section: ProgramSection, itemIds: string[]): string[] {
+    const selectedItemIds = new Set(itemIds);
+    return getCompletionItems(section)
+      .filter((item) => selectedItemIds.has(item.id))
+      .map((item) => item.id);
+  }
+
+  function getPointsFromCompletionItemIds(section: ProgramSection, itemIds: string[]): number {
+    return getPointsFromCompletionCount(section, itemIds.length);
   }
 
   function getPointsFromCompletionCount(section: ProgramSection, completionCount: number): number {
@@ -810,14 +846,14 @@ export function DayJournal({
                   {hasCompletionItems(section) ? (
                     <div className="completion-checklist" role="group" aria-label={getCompletionControlLabel(section)}>
                       {getCompletionItems(section).map((item, itemIndex) => {
-                        const checked = itemIndex < getCompletionCount(section, sectionPointsEarned[section.id] ?? 0);
+                        const checked = getCompletionItemIds(section).includes(item.id);
 
                         return (
                           <label className="completion-check-item" key={item.id}>
                             <input
                               checked={checked}
                               disabled={isReadOnly}
-                              onChange={() => updateCompletionItem(section, itemIndex, checked)}
+                              onChange={() => updateCompletionItem(section, item.id, checked)}
                               type="checkbox"
                             />
                             <span>{item.label}</span>

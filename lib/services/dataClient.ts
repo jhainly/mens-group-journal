@@ -134,6 +134,7 @@ export type JournalDayState = {
   failedAnswerKeys: string[];
   needsReauth: boolean;
   sectionPointsEarned: Record<string, number>;
+  sectionCompletedItemIds: Record<string, string[]>;
   warning?: string;
 };
 export type CurrentUserProfile = {
@@ -1767,6 +1768,12 @@ export async function loadJournalDay(input: {
           failedAnswerKeys,
           needsReauth,
           sectionPointsEarned: Object.fromEntries(progressRows.map((row) => [row.sectionId, row.pointsEarned])),
+          sectionCompletedItemIds: Object.fromEntries(
+            progressRows.map((row) => {
+              const section = activeDay?.sections.find((candidate) => candidate.id === row.sectionId);
+              return [row.sectionId, getLoadedCompletedItemIds(section, row.completedItemIds ?? [])];
+            })
+          ),
           warning
       }
     };
@@ -1880,6 +1887,27 @@ function buildSectionProgressId(input: {
   return `${input.userId}:${input.groupId}:${input.programId}:${input.weekNumber}:${input.dayNumber}:${input.sectionId}`;
 }
 
+function getLoadedCompletedItemIds(
+  section: ProgramSection | undefined,
+  completedItemIds: (string | null)[]
+): string[] {
+  const validItemIds = new Set((section?.completionItems ?? []).map((item) => item.id));
+  return completedItemIds.filter((itemId): itemId is string => Boolean(itemId && validItemIds.has(itemId)));
+}
+
+function getSavedCompletedItemIds(
+  section: ProgramSection,
+  pointsEarned: number,
+  sectionCompletedItemIds?: Record<string, string[]>
+): string[] {
+  if (!section.completionItems?.length || pointsEarned <= 0) {
+    return [];
+  }
+
+  const validItemIds = new Set(section.completionItems.map((item) => item.id));
+  return (sectionCompletedItemIds?.[section.id] ?? []).filter((itemId) => validItemIds.has(itemId));
+}
+
 function getSavedSectionPoints(
   section: ProgramSection,
   completedSectionIds: string[],
@@ -1932,6 +1960,7 @@ export async function saveJournalDay(input: {
   dayNumber: number;
   completedSectionIds: string[];
   sectionPointsEarned?: Record<string, number>;
+  sectionCompletedItemIds?: Record<string, string[]>;
   answers: Record<string, { promptId: string; sectionId: string; value: string }>;
   blockedAnswerKeys?: string[];
 }): Promise<ServiceResult<void>> {
@@ -1953,6 +1982,7 @@ export async function saveJournalDay(input: {
     await Promise.all(
       allSectionIds.map((section) => {
         const pointsEarned = getSavedSectionPoints(section, input.completedSectionIds, input.sectionPointsEarned);
+        const completedItemIds = getSavedCompletedItemIds(section, pointsEarned, input.sectionCompletedItemIds);
         const progressId = buildSectionProgressId({
           dayNumber: input.dayNumber,
           groupId: input.groupId,
@@ -1974,6 +2004,7 @@ export async function saveJournalDay(input: {
               sectionId: section.id,
               completed: pointsEarned > 0,
               pointsEarned,
+              completedItemIds,
               updatedAt: now
             }),
           () =>
@@ -1981,6 +2012,7 @@ export async function saveJournalDay(input: {
               progressId,
               completed: pointsEarned > 0,
               pointsEarned,
+              completedItemIds,
               updatedAt: now
             })
         );

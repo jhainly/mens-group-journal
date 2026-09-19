@@ -119,8 +119,10 @@ function layoutJournalExport(input: JournalExportInput): PdfPage[] {
 
         if (section.completionItems && section.completionItems.length > 0) {
           const completionCount = getCompletionCount(section, earned);
+          const selectedCompletionItemIds = new Set(progress?.completedItemIds ?? []);
           for (const [itemIndex, item] of section.completionItems.entries()) {
-            addWrapped("", `${itemIndex < completionCount ? "[x]" : "[ ]"} ${item.label}`, { indent: 1 }, 4);
+            const checked = selectedCompletionItemIds.has(item.id);
+            addWrapped("", `${checked ? "[x]" : "[ ]"} ${item.label}`, { indent: 1 }, 4);
           }
         } else if (section.maxCompletions && section.maxCompletions > 1 && section.pointsPerCompletion) {
           const unit = section.completionUnit ?? "completion";

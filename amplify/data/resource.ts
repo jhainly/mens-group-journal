@@ -229,6 +229,7 @@ const schema = a.schema({
       sectionId: a.string().required(),
       completed: a.boolean().required(),
       pointsEarned: a.integer().required(),
+      completedItemIds: a.string().array(),
       updatedAt: a.datetime().required()
     })
     .identifier(["progressId"])
