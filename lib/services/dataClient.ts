@@ -1427,6 +1427,79 @@ export async function getCurrentUserScoreSummary(input: {
   }
 }
 
+export async function setDashboardDayCompletion(input: {
+  groupId: string;
+  program: Program;
+  weekNumber: number;
+  dayNumber: number;
+  sectionId: string;
+  completed: boolean;
+}): Promise<ServiceResult<void>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    const section =
+      input.program.weeks
+        .find((week) => week.weekNumber === input.weekNumber)
+        ?.days.find((day) => day.dayNumber === input.dayNumber)
+        ?.sections.find((candidate) => candidate.id === input.sectionId) ?? null;
+
+    if (!section) {
+      return { ok: false, error: "That program day could not be found." };
+    }
+
+    const pointsEarned = input.completed ? Math.max(0, section.points) : 0;
+    const now = new Date().toISOString();
+    const progressId = buildSectionProgressId({
+      dayNumber: input.dayNumber,
+      groupId: input.groupId,
+      programId: input.program.program.id,
+      sectionId: input.sectionId,
+      userId: user.userId,
+      weekNumber: input.weekNumber
+    });
+
+    await upsert(
+      () =>
+        client.models.SectionProgress.create({
+          progressId,
+          userId: user.userId,
+          groupId: input.groupId,
+          programId: input.program.program.id,
+          weekNumber: input.weekNumber,
+          dayNumber: input.dayNumber,
+          sectionId: input.sectionId,
+          completed: pointsEarned > 0,
+          pointsEarned,
+          completedItemIds: [],
+          updatedAt: now
+        }),
+      () =>
+        client.models.SectionProgress.update({
+          progressId,
+          completed: pointsEarned > 0,
+          pointsEarned,
+          completedItemIds: [],
+          updatedAt: now
+        })
+    );
+
+    await requireSaved(
+      client.mutations.syncUserScore({
+        groupId: input.groupId,
+        weekNumber: input.weekNumber,
+        programId: input.program.program.id
+      }),
+      "Score sync failed."
+    );
+
+    return { ok: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
 export async function loadActiveProgramForGroup(groupId: string): Promise<ServiceResult<ActiveProgramSnapshot>> {
   try {
     await configureAmplify();
