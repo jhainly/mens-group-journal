@@ -79,6 +79,7 @@ export function ProgramNavigator({
             const completionChecked = completionSection
               ? earnedPoints >= Math.max(0, completionSection.points)
               : false;
+            const openLabel = completionSection ? "Access Daily Content" : "Open Mission";
 
             return (
               <li className="card day-card" key={day.dayNumber}>
@@ -111,7 +112,7 @@ export function ProgramNavigator({
                   <span className="day-progress-label">{earnedPoints}/{maxPoints} pts</span>
                 </div>
                 <Link className="button secondary day-card-open" href={`/program/week/${selectedWeek.weekNumber}/day/${day.dayNumber}`}>
-                  Open
+                  {openLabel}
                 </Link>
               </li>
             );
