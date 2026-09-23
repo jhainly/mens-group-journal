@@ -46,10 +46,10 @@ This app shares its codebase lineage with Priority One's Deep Roots app (`priori
 | | Lifepoint Men (this repo) | Priority One Deep Roots |
 | --- | --- | --- |
 | Region | **us-east-1** | us-east-2 |
-| Cognito email sender | Cognito default (`no-reply@verificationemail.com`) until the `lifepointpa.org` SES identity is verified; then `Lifepoint Men <no-reply@lifepointpa.org>` via SES in us-east-1, enabled with `LIFEPOINT_SES_SENDER=1`. See [docs/production-email-setup.md](docs/production-email-setup.md). | Custom SES sender `deeproots-no-reply@priorityone.org` via a verified `priorityone.org` identity in us-east-2 |
+| Cognito email sender | Cognito default (`no-reply@verificationemail.com`) until the next production email integration is chosen. This app will not use Mailgun or SES for the replacement path. See [docs/production-email-setup.md](docs/production-email-setup.md). | Custom SES sender `deeproots-no-reply@priorityone.org` via a verified `priorityone.org` identity in us-east-2 |
 | Site domain | Default Amplify Hosting `amplifyapp.com` URL | Custom domain `https://deeproots.priorityone.org/` in Amplify Hosting |
 
-Never copy the Deep Roots sender address, SES identity, or domain into this repo; the Lifepoint equivalents live in `amplify/auth/resource.ts` and must stay behind the `LIFEPOINT_SES_SENDER` switch until the identity is verified, or sign-up and password-reset emails stop.
+Never copy the Deep Roots sender address, SES identity, or domain into this repo; Lifepoint Men will use its own email integration when that replacement path is selected.
 
 For a fresh sandbox with no admin yet, `LIFEPOINT_BOOTSTRAP_ADMIN_EMAIL=<email>` at deploy time adds that already-signed-up user to `ADMINS`.
 
@@ -144,7 +144,7 @@ To start a new session, create new groups (members join with a new code), archiv
 
 - [CHANGELOG.md](CHANGELOG.md): notable changes by date.
 - [docs/program-yaml-reference.md](docs/program-yaml-reference.md): YAML conventions, converter rules, and the import review checklist.
-- [docs/production-email-setup.md](docs/production-email-setup.md): moving Cognito email to SES as `no-reply@lifepointpa.org`, including the DNS records.
+- [docs/production-email-setup.md](docs/production-email-setup.md): current production email posture and guardrails.
 - [docs/dynamodb-data-model.md](docs/dynamodb-data-model.md): data model notes.
 - [docs/security-review-2026-06-10.md](docs/security-review-2026-06-10.md): June 2026 security review and open findings.
 - [docs/uat-program-import-active-content.md](docs/uat-program-import-active-content.md): UAT script for import and active content loading.
