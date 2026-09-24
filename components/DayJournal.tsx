@@ -649,7 +649,7 @@ export function DayJournal({
   }
 
   function shouldShowPointLabel(section: ProgramSection): boolean {
-    return section.points > 0 || isPartialSection(section);
+    return (section.points > 0 || isPartialSection(section)) && !isDashboardCompletionSection(section);
   }
 
   function getSectionMaxPoints(section?: ProgramSection): number {
