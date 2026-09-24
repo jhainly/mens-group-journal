@@ -625,7 +625,23 @@ export function DayJournal({
   }
 
   function shouldShowCompletionControl(section: ProgramSection): boolean {
-    return section.points > 0;
+    return section.points > 0 && !isDashboardCompletionSection(section);
+  }
+
+  function isDashboardCompletionSection(section: ProgramSection): boolean {
+    if (!day || day.title.trim().toLowerCase() !== "reading and reflection") {
+      return false;
+    }
+
+    const simpleCompletionSections = day.sections
+      .filter((daySection) => daySection.points > 0)
+      .filter((daySection) => !isDashboardPartialSection(daySection));
+
+    return simpleCompletionSections.length === 1 && simpleCompletionSections[0]?.id === section.id;
+  }
+
+  function isDashboardPartialSection(section: ProgramSection): boolean {
+    return Boolean(section.completionItems?.length || (section.maxCompletions && section.maxCompletions > 1));
   }
 
   function shouldShowFallbackReflection(section: ProgramSection): boolean {
