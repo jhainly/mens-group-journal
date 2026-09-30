@@ -16,6 +16,7 @@ import {
 import { formatPoints } from "@/lib/format";
 import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
 import { getProgramDayDisplayName } from "@/lib/programDays";
+import { isWeekendContentLocked, weekendLockMessage } from "@/lib/weekendLock";
 import {
   listCurrentUserGroups,
   loadActiveProgramForGroup,
@@ -224,7 +225,8 @@ export function DayJournal({
     }
   }, [answers]);
 
-  const isReadOnly = Boolean(activeGroup?.isArchived);
+  const isWeekendLocked = isWeekendContentLocked();
+  const isReadOnly = Boolean(activeGroup?.isArchived) || isWeekendLocked;
 
   async function save(approvedKeys = approvedReplacementKeys) {
     if (!activeGroup || !program || !day) return;
@@ -527,6 +529,10 @@ export function DayJournal({
   }, [answers, completedSectionIds, sectionPointsEarned, sectionCompletedItemIds]);
 
   function toggleSection(sectionId: string) {
+    if (isReadOnly) {
+      return;
+    }
+
     hasUserChangedRef.current = true;
     setSaveStatus("idle");
     setSaveError("");
@@ -537,6 +543,10 @@ export function DayJournal({
   }
 
   function updatePartialSection(section: ProgramSection, completionCount: number) {
+    if (isReadOnly) {
+      return;
+    }
+
     hasUserChangedRef.current = true;
     setSaveStatus("idle");
     setSaveError("");
@@ -544,6 +554,10 @@ export function DayJournal({
   }
 
   function updateCompletionItem(section: ProgramSection, itemId: string, checked: boolean) {
+    if (isReadOnly) {
+      return;
+    }
+
     const currentItemIds = getCompletionItemIdsFromRefs(section);
     const nextItemIds = checked
       ? currentItemIds.filter((candidate) => candidate !== itemId)
@@ -577,6 +591,10 @@ export function DayJournal({
   }
 
   function updateAnswer(promptId: string, sectionId: string, value: string) {
+    if (isReadOnly) {
+      return;
+    }
+
     hasUserChangedRef.current = true;
     setSaveStatus("idle");
     setSaveError("");
@@ -807,7 +825,7 @@ export function DayJournal({
         </div>
         {isReadOnly ? (
           <p className="archived-notice" role="status">
-            This program is archived. Your journal is read-only.
+            {activeGroup?.isArchived ? "This program is archived. Your journal is read-only." : weekendLockMessage}
           </p>
         ) : null}
         {day ? (

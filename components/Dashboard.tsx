@@ -13,6 +13,7 @@ import {
   type UserGroupSummary
 } from "@/lib/services/dataClient";
 import { getProgramWeekDisplayName } from "@/lib/programDays";
+import { isWeekendContentLocked, weekendLockMessage } from "@/lib/weekendLock";
 import type { ScoreSummary } from "@/lib/scoring";
 import type { Program } from "@/types/program";
 
@@ -30,6 +31,8 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
   const [programStatus, setProgramStatus] = useState("Loading program...");
   const [status, setStatus] = useState("Loading scores...");
   const [updatingDayNumbers, setUpdatingDayNumbers] = useState<number[]>([]);
+  const isWeekendLocked = isWeekendContentLocked();
+  const isReadOnly = Boolean(activeGroup?.isArchived) || isWeekendLocked;
 
   useEffect(() => {
     let cancelled = false;
@@ -160,7 +163,7 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
   }
 
   async function updateDashboardDayCompletion(input: DayCompletionChange) {
-    if (!activeGroup || !program || activeGroup.isArchived) {
+    if (!activeGroup || !program || isReadOnly) {
       return;
     }
 
@@ -224,6 +227,11 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
             This program is archived. You can still read your journal and scores, but nothing new can be saved.
           </p>
         ) : null}
+        {isWeekendLocked ? (
+          <p className="archived-notice" role="status">
+            {weekendLockMessage}
+          </p>
+        ) : null}
         {program ? (
           <div className="stack">
             <ScoreBar
@@ -260,7 +268,7 @@ export function Dashboard({ initialWeekNumber }: DashboardProps) {
             ) : null
           }
           dayProgress={scores.dayProgress}
-          disabledDayCompletion={Boolean(activeGroup?.isArchived)}
+          disabledDayCompletion={isReadOnly}
           onDayCompletionChange={updateDashboardDayCompletion}
           onSelectedWeekNumberChange={setSelectedWeekNumber}
           program={program}

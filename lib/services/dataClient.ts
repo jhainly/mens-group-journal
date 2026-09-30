@@ -15,6 +15,7 @@ import {
 import { journalPromptAnswerKey, journalPromptStorageIds, journalSectionReflectionKey } from "@/lib/journalAnswerKeys";
 import { hashProgram, programSchema } from "@/lib/programValidation";
 import { calculateScores, sectionKey, type CompletedSectionKey, type ScoreSummary } from "@/lib/scoring";
+import { isWeekendContentLocked, weekendLockMessage } from "@/lib/weekendLock";
 import type { Schema } from "@/amplify/data/resource";
 import type { JournalExportInput } from "@/lib/pdfExport";
 import type { SectionProgress } from "@/types/domain";
@@ -1439,6 +1440,10 @@ export async function setDashboardDayCompletion(input: {
   completed: boolean;
 }): Promise<ServiceResult<void>> {
   try {
+    if (isWeekendContentLocked()) {
+      return { ok: false, error: weekendLockMessage };
+    }
+
     await configureAmplify();
     const client = getDataClient();
     const user = await getCurrentUser();
@@ -2041,6 +2046,10 @@ export async function saveJournalDay(input: {
   blockedAnswerKeys?: string[];
 }): Promise<ServiceResult<void>> {
   try {
+    if (isWeekendContentLocked()) {
+      return { ok: false, error: weekendLockMessage };
+    }
+
     await configureAmplify();
     const client = getDataClient();
     const user = await getCurrentUser();
