@@ -96,6 +96,19 @@ export function YamlImportPreview({ groups: providedGroups, onPublished }: YamlI
     setReplacementImpacts([]);
   }
 
+  async function loadYamlFile(file: File | undefined) {
+    if (!file) {
+      return;
+    }
+
+    const fileSource = await file.text();
+    setSource(fileSource);
+    setPreview(null);
+    setErrors([]);
+    setReplacementImpacts([]);
+    setMessage(`Loaded ${file.name}. Click Preview program to review it.`);
+  }
+
   async function publish() {
     const archivedGroupIds = new Set(groups.filter((group) => group.isArchived).map((group) => group.groupId));
     const targetGroupIds = selectedGroupIds.filter((groupId) => !archivedGroupIds.has(groupId));
@@ -156,6 +169,10 @@ export function YamlImportPreview({ groups: providedGroups, onPublished }: YamlI
       <div className="stack">
         <section className="panel stack import-program-panel">
           <h2>YAML source</h2>
+          <label className="field">
+            <span>YAML file</span>
+            <input accept=".yaml,.yml,text/yaml,text/x-yaml" onChange={(event) => void loadYamlFile(event.target.files?.[0])} type="file" />
+          </label>
           <label className="field">
             <span>Program content</span>
             <textarea value={source} onChange={(event) => setSource(event.target.value)} />

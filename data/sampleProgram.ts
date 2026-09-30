@@ -1,5 +1,60 @@
 import type { Program } from "@/types/program";
 
+function sampleReflectionDay(dayNumber: number, label: string) {
+  const idPrefix = label.toLowerCase();
+
+  return {
+    dayNumber,
+    label,
+    title: "Reading and Reflection",
+    sections: [
+      {
+        id: "chapter-challenge",
+        title: "Answer the daily book question.",
+        points: 0,
+        prompts: [{ id: `${idPrefix}-book-question`, label: "Daily book question from the source content." }]
+      },
+      {
+        id: "spiritual-action",
+        title: "Spiritual Action: Reading and Reflection",
+        body: "Read the assigned passage slowly two times.",
+        points: 1,
+        prompts: [
+          { id: `${idPrefix}-q1`, label: "First Bible reading question from the source content." },
+          { id: `${idPrefix}-q2`, label: "Second Bible reading question from the source content." },
+          { id: `${idPrefix}-q3`, label: "Third Bible reading question from the source content." }
+        ]
+      },
+      {
+        id: "breath-prayer",
+        title: "Breath Prayer",
+        breathPrayer: [
+          { inhale: "You breathed life into me...", exhale: "Every breath is Your gift to me." },
+          { inhale: "You sustain me each moment...", exhale: "My existence depends on You." }
+        ],
+        points: 0
+      },
+      {
+        id: "apply-gods-truth",
+        title: "Apply God's Truth to Your Life",
+        points: 0,
+        prompts: [
+          {
+            id: `${idPrefix}-apply-summary`,
+            label:
+              "Write down one or two sentences that summarize what God might be saying to you through reading and praying His word."
+          },
+          {
+            id: `${idPrefix}-apply-action`,
+            label:
+              "Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer."
+          }
+        ]
+      }
+    ]
+  };
+}
+
 /**
  * Starter template shown in the admin import page.
  *
@@ -71,56 +126,11 @@ export const sampleProgram: Program = {
             }
           ]
         },
-        {
-          dayNumber: 2,
-          label: "Wednesday",
-          title: "Reading and Reflection",
-          sections: [
-            {
-              id: "chapter-challenge",
-              title: "Answer the daily book question.",
-              points: 0,
-              prompts: [{ id: "wednesday-book-question", label: "Daily book question from the source content." }]
-            },
-            {
-              id: "spiritual-action",
-              title: "Spiritual Action: Reading and Reflection",
-              body: "Read the assigned passage slowly two times.",
-              points: 1,
-              prompts: [
-                { id: "wednesday-q1", label: "First Bible reading question from the source content." },
-                { id: "wednesday-q2", label: "Second Bible reading question from the source content." },
-                { id: "wednesday-q3", label: "Third Bible reading question from the source content." }
-              ]
-            },
-            {
-              id: "breath-prayer",
-              title: "Breath Prayer",
-              breathPrayer: [
-                { inhale: "You breathed life into me...", exhale: "Every breath is Your gift to me." },
-                { inhale: "You sustain me each moment...", exhale: "My existence depends on You." }
-              ],
-              points: 0
-            },
-            {
-              id: "apply-gods-truth",
-              title: "Apply God's Truth to Your Life",
-              points: 0,
-              prompts: [
-                {
-                  id: "wednesday-apply-summary",
-                  label:
-                    "Write down one or two sentences that summarize what God might be saying to you through reading and praying His word."
-                },
-                {
-                  id: "wednesday-apply-action",
-                  label:
-                    "Write down one practical action step you will take today to live out what you learned in your reading, reflection, and prayer."
-                }
-              ]
-            }
-          ]
-        }
+        sampleReflectionDay(2, "Wednesday"),
+        sampleReflectionDay(3, "Thursday"),
+        sampleReflectionDay(4, "Friday"),
+        sampleReflectionDay(5, "Monday"),
+        sampleReflectionDay(6, "Tuesday")
       ]
     }
   ]

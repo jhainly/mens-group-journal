@@ -34,7 +34,7 @@ The converter applies these rules and prints anything it wants a human to double
 | `program.description` | Replaced with a men's group description. |
 | Everything else | Kept verbatim, including Deep Roots, TEAM, and TEAM Captain wording. |
 
-After converting, open `/admin/programs/import`, paste the file, preview it, and check the review list at the end of this guide before importing.
+After converting, open `/admin/programs/import`, choose or paste the file, preview it, and check the review list at the end of this guide before importing.
 
 ## File Conventions
 
