@@ -1280,7 +1280,7 @@ function buildTeamLeaderboardRows(
   // Only groups enrolled in this exact program (same program id) are compared. Matching on
   // program title would lump every "Deep Roots" session together.
   const comparableGroupIds = getComparableGroupIds(activeWeekRows, programId);
-  const leaderboardScoreRows = validScoreRows.filter((row) => row.programId === programId);
+  const enrolledGroupIds = new Set<string>();
 
   for (const group of groupRows) {
     if (!group) {
@@ -1290,6 +1290,7 @@ function buildTeamLeaderboardRows(
     groupNames.set(group.groupId, group.name);
 
     if (comparableGroupIds.has(group.groupId) || group.activeProgramId === programId) {
+      enrolledGroupIds.add(group.groupId);
       teamScoresByGroup.set(group.groupId, {
         cumulativeScore: 0,
         groupId: group.groupId,
@@ -1299,6 +1300,8 @@ function buildTeamLeaderboardRows(
       });
     }
   }
+
+  const leaderboardScoreRows = validScoreRows.filter((row) => row.programId === programId && enrolledGroupIds.has(row.groupId));
 
   for (const row of leaderboardScoreRows) {
     const userTeamKey = `${row.groupId}:${row.userId}`;
