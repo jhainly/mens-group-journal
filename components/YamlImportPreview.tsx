@@ -2,6 +2,7 @@
 
 import yaml from "js-yaml";
 import { useEffect, useState } from "react";
+import { BibleReferenceText } from "@/components/BibleReferenceText";
 import { sampleProgram } from "@/data/sampleProgram";
 import { formatPoints } from "@/lib/format";
 import { resolveSelectedGroup, setSelectedGroupId } from "@/lib/groupSelection";
@@ -389,7 +390,7 @@ function RenderedSectionPreview({ section }: { section: ProgramSection }) {
             {shouldShowPointLabel(section) ? <p className="eyebrow">{getSectionPointLabel(section)}</p> : null}
             <h3>{section.title}</h3>
           </div>
-          {section.body ? <p>{section.body}</p> : null}
+          {section.body ? <p><BibleReferenceText text={section.body} /></p> : null}
           {partial ? (
             <div className="field preview-partial-control">
               <span>{getCompletionControlLabel(section)}</span>
@@ -398,7 +399,7 @@ function RenderedSectionPreview({ section }: { section: ProgramSection }) {
                   {getCompletionItems(section).map((item) => (
                     <label className="completion-check-item" key={item.id}>
                       <input disabled type="checkbox" />
-                      <span>{item.label}</span>
+                      <span><BibleReferenceText text={item.label} /></span>
                     </label>
                   ))}
                 </div>
@@ -419,8 +420,8 @@ function RenderedSectionPreview({ section }: { section: ProgramSection }) {
           ) : null}
           {section.scripture?.map((scripture) => (
             <blockquote className="scripture" key={scripture.reference}>
-              <strong>{scripture.reference}</strong>
-              <p>{scripture.text}</p>
+              <strong><BibleReferenceText text={scripture.reference} /></strong>
+              <p><BibleReferenceText text={scripture.text} /></p>
             </blockquote>
           ))}
           {section.breathPrayer && section.breathPrayer.length > 0 ? (
@@ -431,11 +432,11 @@ function RenderedSectionPreview({ section }: { section: ProgramSection }) {
                   <div className="breath-prayer-row" key={`${pair.inhale}-${pairIndex}`}>
                     <div>
                       <span>Inhale {pairIndex + 1}</span>
-                      <p>{pair.inhale}</p>
+                      <p><BibleReferenceText text={pair.inhale} /></p>
                     </div>
                     <div>
                       <span>Exhale {pairIndex + 1}</span>
-                      <p>{pair.exhale}</p>
+                      <p><BibleReferenceText text={pair.exhale} /></p>
                     </div>
                   </div>
                 ))}
@@ -444,7 +445,7 @@ function RenderedSectionPreview({ section }: { section: ProgramSection }) {
           ) : null}
           {section.prompts?.map((prompt) => (
             <label className="field" key={prompt.id}>
-              <span>{prompt.label}</span>
+              <span><BibleReferenceText text={prompt.label} /></span>
               <textarea className="journal-textarea" disabled placeholder="Write your response" />
             </label>
           ))}

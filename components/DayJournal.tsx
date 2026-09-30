@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "aws-amplify/auth";
+import { BibleReferenceText } from "@/components/BibleReferenceText";
 import { canEncryptJournalAnswers, getJournalEncryptionRequirementMessage } from "@/lib/encryption";
 import { configureAmplify } from "@/lib/amplifyClient";
 import { clearJournalEncryptionSecret } from "@/lib/journalKey";
@@ -873,7 +874,7 @@ export function DayJournal({
                 {shouldShowPointLabel(section) ? <p className="eyebrow">{getSectionPointLabel(section)}</p> : null}
                 <h2>{section.title}</h2>
               </div>
-              {section.body ? <p>{section.body}</p> : null}
+              {section.body ? <p><BibleReferenceText text={section.body} /></p> : null}
               {isPartialSection(section) ? (
                 <div className="field compact-field">
                   <span>{getCompletionControlLabel(section)}</span>
@@ -890,7 +891,7 @@ export function DayJournal({
                               onChange={() => updateCompletionItem(section, item.id, checked)}
                               type="checkbox"
                             />
-                            <span>{item.label}</span>
+                            <span><BibleReferenceText text={item.label} /></span>
                           </label>
                         );
                       })}
@@ -924,8 +925,8 @@ export function DayJournal({
               ) : null}
               {section.scripture?.map((scripture) => (
                 <blockquote className="scripture" key={scripture.reference}>
-                  <strong>{scripture.reference}</strong>
-                  <p>{scripture.text}</p>
+                  <strong><BibleReferenceText text={scripture.reference} /></strong>
+                  <p><BibleReferenceText text={scripture.text} /></p>
                 </blockquote>
               ))}
               {section.breathPrayer && section.breathPrayer.length > 0 ? (
@@ -936,11 +937,11 @@ export function DayJournal({
                       <div className="breath-prayer-row" key={`${pair.inhale}-${pairIndex}`}>
                         <div>
                           <span>Inhale {pairIndex + 1}</span>
-                          <p>{pair.inhale}</p>
+                          <p><BibleReferenceText text={pair.inhale} /></p>
                         </div>
                         <div>
                           <span>Exhale {pairIndex + 1}</span>
-                          <p>{pair.exhale}</p>
+                          <p><BibleReferenceText text={pair.exhale} /></p>
                         </div>
                       </div>
                     ))}
@@ -957,7 +958,7 @@ export function DayJournal({
                       const replacementApproved = approvedReplacementKeys.includes(answerKey);
                       return (
                         <div className="field" key={answerKey}>
-                          <span>{prompt.label}</span>
+                          <span><BibleReferenceText text={prompt.label} /></span>
                           {decryptFailed ? (
                             <span className="warning">
                               A saved reflection exists here, but this session cannot decrypt it.

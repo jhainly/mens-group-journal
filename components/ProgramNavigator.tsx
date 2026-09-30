@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { BibleReferenceText } from "@/components/BibleReferenceText";
 import { getProgramDayDisplayName, getProgramWeekDisplayName } from "@/lib/programDays";
 import type { DayProgress } from "@/lib/scoring";
 import type { Program, ProgramDay, ProgramSection } from "@/types/program";
@@ -65,7 +66,7 @@ export function ProgramNavigator({
         </div>
         {action ?? null}
       </div>
-      {selectedWeek.summary ? <p className="muted">{selectedWeek.summary}</p> : null}
+      {selectedWeek.summary ? <p className="muted"><BibleReferenceText text={selectedWeek.summary} /></p> : null}
 
       <div className="section-block stack">
         <ul className="list">
