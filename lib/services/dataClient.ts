@@ -139,8 +139,11 @@ export type JournalDayState = {
   warning?: string;
 };
 export type CurrentUserProfile = {
+  avatarUrl?: string;
   displayName: string;
   email?: string;
+  lpInfraUserId?: string;
+  planningCenterPersonId?: string;
 };
 
 export async function ensureUserProfile(displayName?: string): Promise<ServiceResult<void>> {
@@ -151,12 +154,19 @@ export async function ensureUserProfile(displayName?: string): Promise<ServiceRe
     const attributes = await fetchUserAttributes();
     const now = new Date().toISOString();
     const profile = await client.models.UserProfile.get({ userId: user.userId });
+    const syncedProfile = getSyncedProfileAttributes(attributes, displayName);
 
     if (profile.data) {
-      if (displayName && profile.data.displayName !== displayName) {
+      if (
+        profile.data.displayName !== syncedProfile.displayName ||
+        profile.data.email !== syncedProfile.email ||
+        profile.data.planningCenterPersonId !== syncedProfile.planningCenterPersonId ||
+        profile.data.lpInfraUserId !== syncedProfile.lpInfraUserId ||
+        profile.data.avatarUrl !== syncedProfile.avatarUrl
+      ) {
         await client.models.UserProfile.update({
           userId: user.userId,
-          displayName,
+          ...syncedProfile,
           updatedAt: now
         });
       }
@@ -165,8 +175,7 @@ export async function ensureUserProfile(displayName?: string): Promise<ServiceRe
 
     await client.models.UserProfile.create({
       userId: user.userId,
-      displayName: displayName ?? attributes.preferred_username ?? attributes.email ?? "Member",
-      email: attributes.email,
+      ...syncedProfile,
       createdAt: now,
       updatedAt: now
     });
@@ -175,6 +184,28 @@ export async function ensureUserProfile(displayName?: string): Promise<ServiceRe
   } catch (error) {
     return serviceError(error);
   }
+}
+
+function getSyncedProfileAttributes(
+  attributes: Awaited<ReturnType<typeof fetchUserAttributes>>,
+  displayName?: string
+): {
+  avatarUrl?: string;
+  displayName: string;
+  email?: string;
+  lpInfraUserId?: string;
+  planningCenterPersonId?: string;
+} {
+  const customAttributes = attributes as Record<string, string | undefined>;
+  const syncedDisplayName = displayName ?? attributes.preferred_username ?? attributes.email ?? "Member";
+
+  return {
+    avatarUrl: customAttributes["picture"],
+    displayName: syncedDisplayName,
+    email: attributes.email,
+    lpInfraUserId: customAttributes["custom:lpInfraUserId"],
+    planningCenterPersonId: customAttributes["custom:pcPersonId"]
+  };
 }
 
 export async function ensureJournalKeyEnvelope(input: {
@@ -240,8 +271,11 @@ export async function getCurrentUserProfile(): Promise<ServiceResult<CurrentUser
       return {
         ok: true,
         data: {
+          avatarUrl: refreshed.data?.avatarUrl ?? undefined,
           displayName: refreshed.data?.displayName ?? attributes.preferred_username ?? attributes.email ?? "Member",
-          email: refreshed.data?.email ?? attributes.email
+          email: refreshed.data?.email ?? attributes.email,
+          lpInfraUserId: refreshed.data?.lpInfraUserId ?? undefined,
+          planningCenterPersonId: refreshed.data?.planningCenterPersonId ?? undefined
         }
       };
     }
@@ -249,8 +283,11 @@ export async function getCurrentUserProfile(): Promise<ServiceResult<CurrentUser
     return {
       ok: true,
       data: {
+        avatarUrl: profile.data.avatarUrl ?? undefined,
         displayName: profile.data.displayName,
-        email: profile.data.email ?? attributes.email
+        email: profile.data.email ?? attributes.email,
+        lpInfraUserId: profile.data.lpInfraUserId ?? undefined,
+        planningCenterPersonId: profile.data.planningCenterPersonId ?? undefined
       }
     };
   } catch (error) {

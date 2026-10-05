@@ -41,6 +41,25 @@ a {
   text-underline-offset: 3px;
 }
 
+.divider-label {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 0.85rem;
+  font-weight: 700;
+  gap: 10px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.divider-label::before,
+.divider-label::after {
+  background: var(--line);
+  content: "";
+  flex: 1;
+  height: 1px;
+}
+
 button,
 input,
 textarea,

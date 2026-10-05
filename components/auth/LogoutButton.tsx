@@ -18,7 +18,7 @@ export function LogoutButton() {
       await signOut();
     } finally {
       clearJournalEncryptionSecret();
-      router.push("/");
+      window.location.href = "/api/v1/users/planning-center/logout";
       router.refresh();
       setIsLoggingOut(false);
     }

@@ -14,6 +14,7 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const accountConfirmed = searchParams.get("account") === "confirmed";
   const passwordReset = searchParams.get("password") === "reset";
+  const planningCenterError = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
@@ -118,6 +119,11 @@ export function LoginForm() {
         {passwordReset ? <p className="muted">Your password has been reset. Sign in with your new password.</p> : null}
         {mode === "confirm" ? <p className="muted">Enter the code sent to your email to finish account setup.</p> : null}
       </div>
+      <a className="button" href={`/api/v1/users/planning-center/login?next=${encodeURIComponent(searchParams.get("next") ?? "/dashboard")}`}>
+        Sign in with Planning Center
+      </a>
+      {planningCenterError ? <p className="warning">{planningCenterError}</p> : null}
+      <div className="divider-label">Legacy account sign-in</div>
       <label className="field">
         <span>Email</span>
         <input
