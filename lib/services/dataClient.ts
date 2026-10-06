@@ -72,6 +72,8 @@ export type AdminRoleUser = {
   email: string;
   enabled: boolean;
   isAdmin: boolean;
+  planningCenterEmail?: string;
+  planningCenterLinked: boolean;
   status: string;
   username: string;
 };
@@ -820,6 +822,8 @@ export async function listAdminRoleUsers(): Promise<ServiceResult<AdminRoleUser[
           email: user.email,
           enabled: user.enabled,
           isAdmin: user.isAdmin,
+          planningCenterEmail: user.planningCenterEmail ?? undefined,
+          planningCenterLinked: user.planningCenterLinked,
           status: user.status,
           username: user.username
         }))

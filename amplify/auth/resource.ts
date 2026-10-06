@@ -20,6 +20,10 @@ export const auth = defineAuth({
   },
   groups: ["ADMINS", "LEADERS"],
   userAttributes: {
+    "custom:pcEmail": {
+      dataType: "String",
+      mutable: true
+    },
     "custom:lpInfraUserId": {
       dataType: "String",
       mutable: true

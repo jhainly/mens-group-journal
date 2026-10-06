@@ -42,13 +42,15 @@ On each Planning Center sign-in, the app:
 - Resolves an existing link by the stable Planning Center person ID.
 - Falls back to an exact email match the first time an existing account is connected.
 - Starts a Cognito custom auth flow for the linked Cognito user, preserving that user's existing `sub`, groups, scores, and journal data.
-- Refreshes the stored Planning Center and LifePoint Infrastructure IDs on every successful sign-in.
+- Refreshes the stored Planning Center email, Planning Center person ID, and LifePoint Infrastructure ID on every successful sign-in.
 
 If the Planning Center email and existing app email do not match, the user is prompted once for the existing app email and password. The app verifies both identities, upgrades any legacy journal-key envelope, and links Planning Center to the existing Cognito user. Future Planning Center sign-ins use the saved person ID and do not require the emails to match.
 
 The pre-authentication account lookup uses AppSync Lambda authorization. Only the short-lived proof signed after a successful Planning Center OAuth callback can invoke that read-only lookup. The operation does not use a public API key. Writing the link requires both that proof and an authenticated Cognito session.
 
 Existing password sign-in remains available as "Legacy account sign-in" during the migration.
+
+The admin user list reports linkage from the two stable IDs and displays the verified Planning Center email stored in `custom:pcEmail`. Accounts linked before that attribute was introduced remain marked as linked; their email is backfilled on their next Planning Center sign-in.
 
 ## New users
 

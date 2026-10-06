@@ -23,6 +23,7 @@ test("creates and confirms a Planning Center account without sending a Cognito i
   assert.equal(createInput.MessageAction, "SUPPRESS");
   assert.equal(createInput.Username, "person@example.com");
   assert.equal(attributeValue(createInput.UserAttributes, "email_verified"), "true");
+  assert.equal(attributeValue(createInput.UserAttributes, "custom:pcEmail"), "person@example.com");
   assert.equal(attributeValue(createInput.UserAttributes, "custom:pcPersonId"), "pc-person-123");
   assert.equal(attributeValue(createInput.UserAttributes, "preferred_username"), "Test Person");
 

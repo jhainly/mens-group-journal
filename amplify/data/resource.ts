@@ -14,6 +14,8 @@ const schema = a.schema({
     email: a.string().required(),
     enabled: a.boolean().required(),
     isAdmin: a.boolean().required(),
+    planningCenterEmail: a.email(),
+    planningCenterLinked: a.boolean().required(),
     status: a.string().required(),
     username: a.string().required()
   }),

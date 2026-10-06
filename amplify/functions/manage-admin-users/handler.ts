@@ -117,19 +117,27 @@ async function listUsersWithAdminRole(userPoolId: string) {
   } while (token);
 
   return users
-    .map((user) => ({
-      displayName: getAttribute(user, "preferred_username") ?? getAttribute(user, "email") ?? user.Username ?? "User",
-      email: getAttribute(user, "email") ?? "",
-      enabled: user.Enabled ?? false,
-      isAdmin: user.Username ? adminUsernames.has(user.Username) : false,
-      status: user.UserStatus ?? "UNKNOWN",
-      username: user.Username ?? ""
-    }))
+    .map((user) => toAdminRoleUser(user, adminUsernames))
     .sort((left, right) => {
       const leftLabel = left.email || left.displayName || left.username;
       const rightLabel = right.email || right.displayName || right.username;
       return leftLabel.localeCompare(rightLabel);
     });
+}
+
+export function toAdminRoleUser(user: UserType, adminUsernames: Set<string>) {
+  return {
+    displayName: getAttribute(user, "preferred_username") ?? getAttribute(user, "email") ?? user.Username ?? "User",
+    email: getAttribute(user, "email") ?? "",
+    enabled: user.Enabled ?? false,
+    isAdmin: user.Username ? adminUsernames.has(user.Username) : false,
+    planningCenterEmail: getAttribute(user, "custom:pcEmail") ?? null,
+    planningCenterLinked: Boolean(
+      getAttribute(user, "custom:pcPersonId") && getAttribute(user, "custom:lpInfraUserId")
+    ),
+    status: user.UserStatus ?? "UNKNOWN",
+    username: user.Username ?? ""
+  };
 }
 
 async function listAdminUsernames(userPoolId: string): Promise<Set<string>> {

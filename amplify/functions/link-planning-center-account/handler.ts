@@ -94,10 +94,11 @@ async function listAllUsers(userPoolId: string): Promise<UserType[]> {
   return users;
 }
 
-async function updatePlanningCenterAttributes(
+export async function updatePlanningCenterAttributes(
   userPoolId: string,
   user: UserType,
-  proof: PlanningCenterLoginProof
+  proof: PlanningCenterLoginProof,
+  cognitoClient = client
 ): Promise<void> {
   if (!user.Username) {
     throw new Error("The app account does not have a Cognito username.");
@@ -105,16 +106,18 @@ async function updatePlanningCenterAttributes(
 
   if (
     getAttribute(user, "custom:pcPersonId") === proof.planningCenterPersonId &&
-    getAttribute(user, "custom:lpInfraUserId") === proof.lpInfraUserId
+    getAttribute(user, "custom:lpInfraUserId") === proof.lpInfraUserId &&
+    getAttribute(user, "custom:pcEmail") === proof.email
   ) {
     return;
   }
 
-  await client.send(
+  await cognitoClient.send(
     new AdminUpdateUserAttributesCommand({
       UserAttributes: [
         { Name: "custom:pcPersonId", Value: proof.planningCenterPersonId },
-        { Name: "custom:lpInfraUserId", Value: proof.lpInfraUserId }
+        { Name: "custom:lpInfraUserId", Value: proof.lpInfraUserId },
+        { Name: "custom:pcEmail", Value: proof.email }
       ],
       Username: user.Username,
       UserPoolId: userPoolId

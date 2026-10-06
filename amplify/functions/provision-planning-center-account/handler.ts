@@ -73,7 +73,8 @@ export async function provisionPlanningCenterAccount(
           { Name: "email_verified", Value: "true" },
           { Name: "preferred_username", Value: normalizeDisplayName(proof.name, proof.email) },
           { Name: "custom:pcPersonId", Value: proof.planningCenterPersonId },
-          { Name: "custom:lpInfraUserId", Value: proof.lpInfraUserId }
+          { Name: "custom:lpInfraUserId", Value: proof.lpInfraUserId },
+          { Name: "custom:pcEmail", Value: proof.email }
         ],
         Username: proof.email,
         UserPoolId: userPoolId

@@ -57,8 +57,17 @@ export function AdminRolePanel() {
               <div>
                 <strong>{user.displayName}</strong>
                 <p className="muted">
-                  {user.email || user.username}
+                  App account: {user.email || user.username}
                   {!user.enabled ? " · disabled" : user.status !== "CONFIRMED" ? ` · ${user.status.toLowerCase()}` : ""}
+                </p>
+                <p className="muted">
+                  <strong>Planning Center: {user.planningCenterLinked ? "Linked" : "Not linked"}</strong>
+                  {user.planningCenterLinked ? (
+                    <>
+                      <br />
+                      {user.planningCenterEmail ?? "Email will appear after the next Planning Center sign-in"}
+                    </>
+                  ) : null}
                 </p>
               </div>
               <label className="checkbox-row">
