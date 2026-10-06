@@ -66,7 +66,11 @@ weeks:
           - id: weekly-meeting
             title: Weekly Meeting
             body: Attend the Tuesday evening weekly meeting. The whole program meets together for group discussion, then splits into TEAMs for small group discussion. Check in with each other, recite the memory verse, discuss the daily book questions, and pray for each other.
-            points: 8
+            points: 4
+          - id: lifepoint-mens-breakfast
+            title: Lifepoint Men's Breakfast
+            body: Attend the Lifepoint Men's Breakfast on Saturday, October 10, 2026 at 8:00 a.m. Register on the Church Center app.
+            points: 4
       - dayNumber: 2
         label: Wednesday
         title: Reading and Reflection
