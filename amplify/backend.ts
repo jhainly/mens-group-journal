@@ -5,6 +5,7 @@ import { auth } from "./auth/resource.ts";
 import { data } from "./data/resource.ts";
 import { joinGroupByCode } from "./functions/join-group-by-code/resource.ts";
 import { manageAdminUsers } from "./functions/manage-admin-users/resource.ts";
+import { planningCenterAuthChallenge } from "./functions/planning-center-auth-challenge/resource.ts";
 import { syncDisplayName } from "./functions/sync-display-name/resource.ts";
 import { syncUserScore } from "./functions/sync-user-score/resource.ts";
 
@@ -13,6 +14,7 @@ const backend = defineBackend({
   data,
   joinGroupByCode,
   manageAdminUsers,
+  planningCenterAuthChallenge,
   syncDisplayName,
   syncUserScore
 });
