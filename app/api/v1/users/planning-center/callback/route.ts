@@ -4,14 +4,14 @@ import {
   exchangePlanningCenterCode,
   planningCenterNextCookie,
   planningCenterProofCookie,
-  planningCenterStateCookie,
-  upsertPlanningCenterCognitoUser
+  planningCenterStateCookie
 } from "@/lib/planningCenterAuth";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
-  const authUrl = new URL("/auth", request.url);
+  const publicUrl = getPublicUrl(request);
+  const authUrl = new URL("/auth", publicUrl);
   const expectedState = request.cookies.get(planningCenterStateCookie)?.value;
   const returnedState = request.nextUrl.searchParams.get("state");
   const code = request.nextUrl.searchParams.get("code");
@@ -29,15 +29,14 @@ export async function GET(request: NextRequest) {
 
     const planningCenterUser = await exchangePlanningCenterCode({
       code,
-      requestOrigin: request.nextUrl.origin
+      requestOrigin: publicUrl
     });
-    const cognitoUser = await upsertPlanningCenterCognitoUser(planningCenterUser);
     const proof = createPlanningCenterLoginProof({
-      cognitoUsername: cognitoUser.username,
+      cognitoUsername: planningCenterUser.email,
       user: planningCenterUser
     });
-    const completeUrl = new URL("/auth/planning-center/complete", request.url);
-    completeUrl.searchParams.set("loginId", cognitoUser.loginId);
+    const completeUrl = new URL("/auth/planning-center/complete", publicUrl);
+    completeUrl.searchParams.set("loginId", planningCenterUser.email);
     completeUrl.searchParams.set("next", nextPath);
 
     const response = NextResponse.redirect(completeUrl);
@@ -47,7 +46,7 @@ export async function GET(request: NextRequest) {
       maxAge: 2 * 60,
       path: "/",
       sameSite: "lax",
-      secure: request.nextUrl.protocol === "https:"
+      secure: publicUrl.startsWith("https:")
     });
 
     return response;
@@ -58,6 +57,10 @@ export async function GET(request: NextRequest) {
     response.cookies.delete(planningCenterProofCookie);
     return response;
   }
+}
+
+function getPublicUrl(request: NextRequest): string {
+  return (process.env.APP_PUBLIC_URL?.trim() || request.nextUrl.origin).replace(/\/+$/, "");
 }
 
 function clearOauthCookies(response: NextResponse): void {

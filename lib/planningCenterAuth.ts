@@ -1,15 +1,4 @@
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
-import {
-  AdminAddUserToGroupCommand,
-  AdminCreateUserCommand,
-  AdminRemoveUserFromGroupCommand,
-  AdminSetUserPasswordCommand,
-  AdminUpdateUserAttributesCommand,
-  CognitoIdentityProviderClient,
-  ListUsersCommand,
-  type AttributeType,
-  type UserType
-} from "@aws-sdk/client-cognito-identity-provider";
 
 const DEFAULT_LP_INFRA_URL = "https://auth.lifepointapplications.com";
 const PROOF_TTL_SECONDS = 2 * 60;
@@ -17,13 +6,6 @@ const PROOF_TTL_SECONDS = 2 * 60;
 export const planningCenterStateCookie = "pc_login_state";
 export const planningCenterNextCookie = "pc_login_next";
 export const planningCenterProofCookie = "pc_login_proof";
-
-type AmplifyOutputs = {
-  auth?: {
-    aws_region?: string;
-    user_pool_id?: string;
-  };
-};
 
 type LpInfraTokenResponse = {
   user?: {
@@ -47,11 +29,6 @@ export type PlanningCenterUser = {
   name: string;
   planningCenterPersonId: string;
   role: "member" | "admin";
-};
-
-export type CognitoPlanningCenterUser = {
-  loginId: string;
-  username: string;
 };
 
 export type PlanningCenterLoginProof = {
@@ -142,47 +119,6 @@ export async function exchangePlanningCenterCode(input: {
   };
 }
 
-export async function upsertPlanningCenterCognitoUser(user: PlanningCenterUser): Promise<CognitoPlanningCenterUser> {
-  const { client, userPoolId } = await getCognitoClient();
-  const existingByPlanningCenterId = await findUserByPlanningCenterPersonId(client, userPoolId, user.planningCenterPersonId);
-  const existingByEmail = existingByPlanningCenterId ? null : await findUserByEmail(client, userPoolId, user.email);
-  const existing = existingByPlanningCenterId ?? existingByEmail;
-
-  if (existing?.Username) {
-    await updateCognitoUserAttributes(client, userPoolId, existing.Username, user);
-    await syncAdminGroup(client, userPoolId, existing.Username, user.role);
-    return {
-      loginId: user.email,
-      username: existing.Username
-    };
-  }
-
-  const username = user.email;
-  await client.send(
-    new AdminCreateUserCommand({
-      DesiredDeliveryMediums: [],
-      MessageAction: "SUPPRESS",
-      UserAttributes: getCognitoUserAttributes(user),
-      UserPoolId: userPoolId,
-      Username: username
-    })
-  );
-  await client.send(
-    new AdminSetUserPasswordCommand({
-      Password: randomPermanentPassword(),
-      Permanent: true,
-      UserPoolId: userPoolId,
-      Username: username
-    })
-  );
-  await syncAdminGroup(client, userPoolId, username, user.role);
-
-  return {
-    loginId: user.email,
-    username
-  };
-}
-
 export function createPlanningCenterLoginProof(input: {
   cognitoUsername: string;
   user: PlanningCenterUser;
@@ -245,135 +181,4 @@ function getPlanningCenterClientSecret(): string {
   }
 
   return clientSecret;
-}
-
-async function getCognitoClient() {
-  const outputs = (await import("@/amplify_outputs.json")) as { default: AmplifyOutputs };
-  const region = outputs.default.auth?.aws_region;
-  const userPoolId = outputs.default.auth?.user_pool_id;
-
-  if (!region || !userPoolId) {
-    throw new Error("Cognito outputs are not available.");
-  }
-
-  return {
-    client: new CognitoIdentityProviderClient({ region }),
-    userPoolId
-  };
-}
-
-async function findUserByPlanningCenterPersonId(
-  client: CognitoIdentityProviderClient,
-  userPoolId: string,
-  planningCenterPersonId: string
-): Promise<UserType | null> {
-  let paginationToken: string | undefined;
-
-  do {
-    const result = await client.send(
-      new ListUsersCommand({
-        PaginationToken: paginationToken,
-        UserPoolId: userPoolId
-      })
-    );
-    const match = result.Users?.find(
-      (user) => getAttribute(user.Attributes, "custom:pcPersonId") === planningCenterPersonId
-    );
-
-    if (match) {
-      return match;
-    }
-
-    paginationToken = result.PaginationToken;
-  } while (paginationToken);
-
-  return null;
-}
-
-async function findUserByEmail(
-  client: CognitoIdentityProviderClient,
-  userPoolId: string,
-  email: string
-): Promise<UserType | null> {
-  const result = await client.send(
-    new ListUsersCommand({
-      Filter: `email = "${escapeCognitoFilterValue(email)}"`,
-      UserPoolId: userPoolId
-    })
-  );
-
-  return result.Users?.find((user) => user.Enabled) ?? result.Users?.[0] ?? null;
-}
-
-async function updateCognitoUserAttributes(
-  client: CognitoIdentityProviderClient,
-  userPoolId: string,
-  username: string,
-  user: PlanningCenterUser
-): Promise<void> {
-  await client.send(
-    new AdminUpdateUserAttributesCommand({
-      UserAttributes: getCognitoUserAttributes(user),
-      UserPoolId: userPoolId,
-      Username: username
-    })
-  );
-}
-
-function getCognitoUserAttributes(user: PlanningCenterUser): AttributeType[] {
-  const attributes: AttributeType[] = [
-    { Name: "email", Value: user.email },
-    { Name: "email_verified", Value: "true" },
-    { Name: "preferred_username", Value: user.name },
-    { Name: "custom:pcPersonId", Value: user.planningCenterPersonId },
-    { Name: "custom:lpInfraUserId", Value: user.lpInfraUserId }
-  ];
-
-  if (user.avatar) {
-    attributes.push({ Name: "picture", Value: user.avatar });
-  }
-
-  return attributes;
-}
-
-async function syncAdminGroup(
-  client: CognitoIdentityProviderClient,
-  userPoolId: string,
-  username: string,
-  role: PlanningCenterUser["role"]
-): Promise<void> {
-  if (role === "admin") {
-    await client.send(
-      new AdminAddUserToGroupCommand({
-        GroupName: "ADMINS",
-        UserPoolId: userPoolId,
-        Username: username
-      })
-    );
-    return;
-  }
-
-  try {
-    await client.send(
-      new AdminRemoveUserFromGroupCommand({
-        GroupName: "ADMINS",
-        UserPoolId: userPoolId,
-        Username: username
-      })
-    );
-  } catch {
-    // If the user is not in ADMINS, Cognito can throw. The desired state is already satisfied.
-  }
-}
-
-function getAttribute(attributes: AttributeType[] | undefined, name: string): string | undefined {
-  return attributes?.find((attribute) => attribute.Name === name)?.Value;
-}
-
-function escapeCognitoFilterValue(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
-function randomPermanentPassword(): string {
-  return `${randomBytes(18).toString("base64url")}Aa1!`;
 }

@@ -38,22 +38,12 @@ For production, set the same secret in the Amplify app/backend environment befor
 
 On each Planning Center sign-in, the app:
 
-- Finds an existing Cognito user by Planning Center person ID.
-- Falls back to matching by email for first-time migration.
-- Creates a Cognito user when no match exists.
-- Refreshes email, display name, LifePoint IDs, and admin role on every sign-in.
+- Exchanges the Planning Center code for the verified LifePoint user profile.
+- Starts a Cognito custom auth flow using the verified email address.
+- Allows sign-in when the verified Planning Center email matches an existing Cognito user's email.
 
 Existing password sign-in remains available as "Legacy account sign-in" during the migration.
 
-## Production permission note
+## Current limitation
 
-The callback route uses Cognito admin APIs to find or create the mapped Cognito user. The deployed server runtime must be allowed to call:
-
-- `cognito-idp:ListUsers`
-- `cognito-idp:AdminCreateUser`
-- `cognito-idp:AdminSetUserPassword`
-- `cognito-idp:AdminUpdateUserAttributes`
-- `cognito-idp:AdminAddUserToGroup`
-- `cognito-idp:AdminRemoveUserFromGroup`
-
-If the hosting runtime cannot be granted these permissions directly, move the user upsert into an Amplify function with those permissions and call it from the callback route.
+This version does not auto-create Cognito users and does not update Cognito attributes during Planning Center sign-in. New users should still be created through the legacy account flow or by an admin until a separate provisioning path is added.
