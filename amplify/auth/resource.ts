@@ -1,5 +1,5 @@
 import { defineAuth } from "@aws-amplify/backend";
-import { planningCenterAuthChallenge } from "../functions/planning-center-auth-challenge/resource";
+import { planningCenterAuthChallenge } from "../functions/planning-center-auth-challenge/resource.ts";
 
 /**
  * Email sender for Cognito verification and password-reset messages.
