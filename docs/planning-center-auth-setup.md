@@ -39,11 +39,17 @@ For production, set the same secret in the Amplify app/backend environment befor
 On each Planning Center sign-in, the app:
 
 - Exchanges the Planning Center code for the verified LifePoint user profile.
-- Starts a Cognito custom auth flow using the verified email address.
-- Allows sign-in when the verified Planning Center email matches an existing Cognito user's email.
+- Resolves an existing link by the stable Planning Center person ID.
+- Falls back to an exact email match the first time an existing account is connected.
+- Starts a Cognito custom auth flow for the linked Cognito user, preserving that user's existing `sub`, groups, scores, and journal data.
+- Refreshes the stored Planning Center and LifePoint Infrastructure IDs on every successful sign-in.
+
+If the Planning Center email and existing app email do not match, the user is prompted once for the existing app email and password. The app verifies both identities, upgrades any legacy journal-key envelope, and links Planning Center to the existing Cognito user. Future Planning Center sign-ins use the saved person ID and do not require the emails to match.
+
+The pre-authentication account lookup uses AppSync Lambda authorization. Only the short-lived proof signed after a successful Planning Center OAuth callback can invoke that read-only lookup. The operation does not use a public API key. Writing the link requires both that proof and an authenticated Cognito session.
 
 Existing password sign-in remains available as "Legacy account sign-in" during the migration.
 
-## Current limitation
+## New users
 
-This version does not auto-create Cognito users and does not update Cognito attributes during Planning Center sign-in. New users should still be created through the legacy account flow or by an admin until a separate provisioning path is added.
+This version links existing Cognito users but does not auto-create them. A new user must create and verify an app account once, then repeat Planning Center sign-in to connect it. Automatic provisioning can be added separately without changing existing user IDs.

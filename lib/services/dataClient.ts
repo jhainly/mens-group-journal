@@ -145,6 +145,10 @@ export type CurrentUserProfile = {
   lpInfraUserId?: string;
   planningCenterPersonId?: string;
 };
+export type PlanningCenterAccountResolution = {
+  loginId: string;
+  matchType: "email" | "planningCenterPersonId";
+};
 
 export async function ensureUserProfile(displayName?: string): Promise<ServiceResult<void>> {
   try {
@@ -181,6 +185,68 @@ export async function ensureUserProfile(displayName?: string): Promise<ServiceRe
     });
 
     return { ok: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function resolvePlanningCenterAccount(
+  proof: string
+): Promise<ServiceResult<PlanningCenterAccountResolution | null>> {
+  try {
+    await configureAmplify();
+    const result = await getDataClient().queries.resolvePlanningCenterAccount(
+      { proof },
+      {
+        authMode: "lambda",
+        authToken: proof
+      }
+    );
+    const errors = getResultErrors(result);
+
+    if (errors.length > 0) {
+      throw new Error(errors.join(" "));
+    }
+
+    if (!result.data) {
+      return { ok: true, data: null };
+    }
+
+    return {
+      ok: true,
+      data: {
+        loginId: result.data.loginId,
+        matchType: result.data.matchType as PlanningCenterAccountResolution["matchType"]
+      }
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function linkCurrentUserToPlanningCenter(
+  proof: string
+): Promise<ServiceResult<{ loginId: string; planningCenterEmail: string }>> {
+  try {
+    await configureAmplify();
+    const result = await getDataClient().mutations.linkPlanningCenterAccount({ proof });
+    const errors = getResultErrors(result);
+
+    if (errors.length > 0) {
+      throw new Error(errors.join(" "));
+    }
+
+    if (!result.data) {
+      throw new Error("The Planning Center account could not be linked.");
+    }
+
+    return {
+      ok: true,
+      data: {
+        loginId: result.data.loginId,
+        planningCenterEmail: result.data.planningCenterEmail
+      }
+    };
   } catch (error) {
     return serviceError(error);
   }

@@ -1,6 +1,9 @@
 import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
 import { joinGroupByCode } from "../functions/join-group-by-code/resource.ts";
+import { linkPlanningCenterAccount } from "../functions/link-planning-center-account/resource.ts";
 import { manageAdminUsers } from "../functions/manage-admin-users/resource.ts";
+import { planningCenterApiAuthorizer } from "../functions/planning-center-api-authorizer/resource.ts";
+import { resolvePlanningCenterAccount } from "../functions/resolve-planning-center-account/resource.ts";
 import { syncDisplayName } from "../functions/sync-display-name/resource.ts";
 import { syncUserScore } from "../functions/sync-user-score/resource.ts";
 
@@ -25,6 +28,34 @@ const schema = a.schema({
     groupId: a.id().required(),
     groupName: a.string().required()
   }),
+
+  PlanningCenterAccountResolution: a.customType({
+    loginId: a.string().required(),
+    matchType: a.string().required()
+  }),
+
+  PlanningCenterAccountLinkResult: a.customType({
+    loginId: a.string().required(),
+    planningCenterEmail: a.email().required()
+  }),
+
+  resolvePlanningCenterAccount: a
+    .query()
+    .arguments({
+      proof: a.string().required()
+    })
+    .returns(a.ref("PlanningCenterAccountResolution"))
+    .authorization((allow) => [allow.custom()])
+    .handler(a.handler.function(resolvePlanningCenterAccount)),
+
+  linkPlanningCenterAccount: a
+    .mutation()
+    .arguments({
+      proof: a.string().required()
+    })
+    .returns(a.ref("PlanningCenterAccountLinkResult"))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(linkPlanningCenterAccount)),
 
   listAdminUsers: a
     .query()
@@ -304,7 +335,11 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "userPool"
+    defaultAuthorizationMode: "userPool",
+    lambdaAuthorizationMode: {
+      function: planningCenterApiAuthorizer,
+      timeToLiveInSeconds: 0
+    }
   },
   logging: {
     excludeVerboseContent: true,

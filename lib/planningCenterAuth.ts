@@ -1,7 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 
 const DEFAULT_LP_INFRA_URL = "https://auth.lifepointapplications.com";
-const PROOF_TTL_SECONDS = 2 * 60;
+const PROOF_TTL_SECONDS = 10 * 60;
 
 export const planningCenterStateCookie = "pc_login_state";
 export const planningCenterNextCookie = "pc_login_next";

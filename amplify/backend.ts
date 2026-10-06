@@ -4,8 +4,11 @@ import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource.ts";
 import { data } from "./data/resource.ts";
 import { joinGroupByCode } from "./functions/join-group-by-code/resource.ts";
+import { linkPlanningCenterAccount } from "./functions/link-planning-center-account/resource.ts";
 import { manageAdminUsers } from "./functions/manage-admin-users/resource.ts";
 import { planningCenterAuthChallenge } from "./functions/planning-center-auth-challenge/resource.ts";
+import { planningCenterApiAuthorizer } from "./functions/planning-center-api-authorizer/resource.ts";
+import { resolvePlanningCenterAccount } from "./functions/resolve-planning-center-account/resource.ts";
 import { syncDisplayName } from "./functions/sync-display-name/resource.ts";
 import { syncUserScore } from "./functions/sync-user-score/resource.ts";
 
@@ -13,8 +16,11 @@ const backend = defineBackend({
   auth,
   data,
   joinGroupByCode,
+  linkPlanningCenterAccount,
   manageAdminUsers,
   planningCenterAuthChallenge,
+  planningCenterApiAuthorizer,
+  resolvePlanningCenterAccount,
   syncDisplayName,
   syncUserScore
 });
@@ -40,6 +46,22 @@ backend.manageAdminUsers.resources.lambda.addToRolePolicy(
       "cognito-idp:ListUsers",
       "cognito-idp:ListUsersInGroup"
     ],
+    resources: [backend.auth.resources.userPool.userPoolArn]
+  })
+);
+
+backend.linkPlanningCenterAccount.addEnvironment("USER_POOL_ID", backend.auth.resources.userPool.userPoolId);
+backend.linkPlanningCenterAccount.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["cognito-idp:AdminUpdateUserAttributes", "cognito-idp:ListUsers"],
+    resources: [backend.auth.resources.userPool.userPoolArn]
+  })
+);
+
+backend.resolvePlanningCenterAccount.addEnvironment("USER_POOL_ID", backend.auth.resources.userPool.userPoolId);
+backend.resolvePlanningCenterAccount.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["cognito-idp:ListUsers"],
     resources: [backend.auth.resources.userPool.userPoolArn]
   })
 );
