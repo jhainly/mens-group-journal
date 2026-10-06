@@ -91,6 +91,13 @@ export function clearJournalEncryptionSecret(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+export function createJournalEncryptionSecret(): string {
+  assertBrowserCrypto();
+  const secret = bytesToBase64(randomBytes(JOURNAL_KEY_BYTES));
+  setCurrentJournalSecret(secret);
+  return secret;
+}
+
 // Only used for V1 password-change flow — V2 users don't need this
 export async function wrapCurrentJournalEncryptionSecret(input: {
   email: string;

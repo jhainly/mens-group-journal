@@ -3,6 +3,7 @@ import { joinGroupByCode } from "../functions/join-group-by-code/resource.ts";
 import { linkPlanningCenterAccount } from "../functions/link-planning-center-account/resource.ts";
 import { manageAdminUsers } from "../functions/manage-admin-users/resource.ts";
 import { planningCenterApiAuthorizer } from "../functions/planning-center-api-authorizer/resource.ts";
+import { provisionPlanningCenterAccount } from "../functions/provision-planning-center-account/resource.ts";
 import { resolvePlanningCenterAccount } from "../functions/resolve-planning-center-account/resource.ts";
 import { syncDisplayName } from "../functions/sync-display-name/resource.ts";
 import { syncUserScore } from "../functions/sync-user-score/resource.ts";
@@ -39,6 +40,11 @@ const schema = a.schema({
     planningCenterEmail: a.email().required()
   }),
 
+  PlanningCenterAccountProvisionResult: a.customType({
+    created: a.boolean().required(),
+    loginId: a.string().required()
+  }),
+
   resolvePlanningCenterAccount: a
     .query()
     .arguments({
@@ -47,6 +53,15 @@ const schema = a.schema({
     .returns(a.ref("PlanningCenterAccountResolution"))
     .authorization((allow) => [allow.custom()])
     .handler(a.handler.function(resolvePlanningCenterAccount)),
+
+  provisionPlanningCenterAccount: a
+    .mutation()
+    .arguments({
+      proof: a.string().required()
+    })
+    .returns(a.ref("PlanningCenterAccountProvisionResult"))
+    .authorization((allow) => [allow.custom()])
+    .handler(a.handler.function(provisionPlanningCenterAccount)),
 
   linkPlanningCenterAccount: a
     .mutation()

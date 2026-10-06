@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { confirmSignUp, resendSignUpCode, signUp } from "aws-amplify/auth";
 import { configureAmplify } from "@/lib/amplifyClient";
 
 export function CreateAccountForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -16,6 +18,33 @@ export function CreateAccountForm() {
   const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [showLegacyForm, setShowLegacyForm] = useState(false);
+  const planningCenterError = searchParams.get("error");
+
+  if (!showLegacyForm && !needsConfirmation) {
+    return (
+      <section className="panel stack">
+        <div>
+          <p className="eyebrow">Planning Center</p>
+          <h1>Create account</h1>
+          <p className="muted">Use your church account to create your Lifepoint Men account.</p>
+        </div>
+        {planningCenterError ? <p className="warning">{planningCenterError}</p> : null}
+        <a
+          className="button"
+          href="/api/v1/users/planning-center/login?intent=create&next=%2Fjoin"
+        >
+          Create with Planning Center
+        </a>
+        <button className="button secondary" onClick={() => setShowLegacyForm(true)} type="button">
+          Create with legacy email (emergency backup)
+        </button>
+        <p className="muted">
+          Already have an account? <Link href="/auth">Sign in</Link>
+        </p>
+      </section>
+    );
+  }
 
   async function resendCode() {
     setError("");
@@ -74,6 +103,7 @@ export function CreateAccountForm() {
   return (
     <form className="panel stack" onSubmit={handleSubmit} suppressHydrationWarning>
       <div>
+        <p className="eyebrow">Emergency backup</p>
         <h1>{needsConfirmation ? "Verify account" : "Create account"}</h1>
         {needsConfirmation ? <p className="muted">Enter the code sent to your email.</p> : null}
       </div>
@@ -121,6 +151,11 @@ export function CreateAccountForm() {
         {needsConfirmation ? (
           <button className="button secondary" disabled={isSubmitting || isResending} onClick={() => void resendCode()} type="button">
             {isResending ? "Sending..." : "Resend code"}
+          </button>
+        ) : null}
+        {!needsConfirmation ? (
+          <button className="button secondary" onClick={() => setShowLegacyForm(false)} type="button">
+            Back to Planning Center
           </button>
         ) : null}
       </div>

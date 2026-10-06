@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getPlanningCenterCallbackUrl,
   getPlanningCenterConfig,
+  getPlanningCenterAuthIntent,
+  planningCenterIntentCookie,
   planningCenterNextCookie,
   planningCenterStateCookie
 } from "@/lib/planningCenterAuth";
@@ -11,6 +13,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   const publicUrl = getPublicUrl(request);
+  const intent = getPlanningCenterAuthIntent(request.nextUrl.searchParams.get("intent"));
 
   try {
     const config = getPlanningCenterConfig(publicUrl);
@@ -36,10 +39,17 @@ export async function GET(request: NextRequest) {
       sameSite: "lax",
       secure: publicUrl.startsWith("https:")
     });
+    response.cookies.set(planningCenterIntentCookie, intent, {
+      httpOnly: true,
+      maxAge: 10 * 60,
+      path: "/",
+      sameSite: "lax",
+      secure: publicUrl.startsWith("https:")
+    });
 
     return response;
   } catch (error) {
-    const url = new URL("/auth", publicUrl);
+    const url = new URL(intent === "create" ? "/create-account" : "/auth", publicUrl);
     url.searchParams.set("error", error instanceof Error ? error.message : "Planning Center sign-in is not configured.");
     return NextResponse.redirect(url);
   }

@@ -8,8 +8,10 @@ import { configureAmplify } from "@/lib/amplifyClient";
 import { clearJournalEncryptionSecret } from "@/lib/journalKey";
 import {
   ensureJournalKeyEnvelope,
+  ensurePlanningCenterJournalKeyEnvelope,
   ensureUserProfile,
   linkCurrentUserToPlanningCenter,
+  provisionPlanningCenterAccount,
   resolvePlanningCenterAccount
 } from "@/lib/services/dataClient";
 
@@ -30,6 +32,9 @@ export function PlanningCenterCompleteSignIn() {
   const [error, setError] = useState("");
   const [isLinking, setIsLinking] = useState(false);
   const planningCenterEmail = searchParams.get("loginId") ?? "your Planning Center email";
+  const intent = searchParams.get("intent") === "create" ? "create" : "login";
+  const nextPath = getSafeNextPath(searchParams.get("next"));
+  const retryHref = getPlanningCenterRetryHref(intent, nextPath);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +59,23 @@ export function PlanningCenterCompleteSignIn() {
         }
 
         if (!resolution.data) {
+          if (intent === "create") {
+            const provisioned = await provisionPlanningCenterAccount(proofPayload);
+
+            if (!provisioned.ok) {
+              throw new Error(provisioned.error);
+            }
+
+            await signInWithPlanningCenter(provisioned.data.loginId, proofPayload);
+            await finishLinkedSignIn(proofPayload);
+
+            if (!cancelled) {
+              router.push(nextPath);
+              router.refresh();
+            }
+            return;
+          }
+
           setStage("link");
           return;
         }
@@ -62,7 +84,7 @@ export function PlanningCenterCompleteSignIn() {
         await finishLinkedSignIn(proofPayload);
 
         if (!cancelled) {
-          router.push(getSafeNextPath(searchParams.get("next")));
+          router.push(nextPath);
           router.refresh();
         }
       } catch (caught) {
@@ -80,7 +102,7 @@ export function PlanningCenterCompleteSignIn() {
     return () => {
       cancelled = true;
     };
-  }, [router, searchParams]);
+  }, [intent, nextPath, router]);
 
   async function handleLinkAccounts(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -121,7 +143,7 @@ export function PlanningCenterCompleteSignIn() {
       }
 
       await finishLinkedSignIn(proof);
-      router.push(getSafeNextPath(searchParams.get("next")));
+      router.push(nextPath);
       router.refresh();
     } catch (caught) {
       await signOut().catch(() => undefined);
@@ -143,6 +165,12 @@ export function PlanningCenterCompleteSignIn() {
 
     if (!profile.ok) {
       throw new Error(`Signed in, but profile setup failed: ${profile.error}`);
+    }
+
+    const journalKey = await ensurePlanningCenterJournalKeyEnvelope();
+
+    if (!journalKey.ok) {
+      throw new Error(`Signed in, but journal key setup failed: ${journalKey.error}`);
     }
   }
 
@@ -200,8 +228,8 @@ export function PlanningCenterCompleteSignIn() {
       {stage === "error" ? (
         <>
           <p className="warning">{error}</p>
-          <a className="button" href="/api/v1/users/planning-center/login">
-            Try again
+          <a className="button" href={retryHref}>
+            {intent === "create" ? "Try account creation again" : "Try again"}
           </a>
           <Link className="button secondary" href="/auth">
             Use legacy sign-in
@@ -276,4 +304,14 @@ function getSafeNextPath(value: string | null): string {
   }
 
   return value;
+}
+
+function getPlanningCenterRetryHref(intent: "create" | "login", nextPath: string): string {
+  const params = new URLSearchParams({ next: nextPath });
+
+  if (intent === "create") {
+    params.set("intent", "create");
+  }
+
+  return `/api/v1/users/planning-center/login?${params.toString()}`;
 }

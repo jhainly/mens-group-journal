@@ -8,6 +8,7 @@ import { linkPlanningCenterAccount } from "./functions/link-planning-center-acco
 import { manageAdminUsers } from "./functions/manage-admin-users/resource.ts";
 import { planningCenterAuthChallenge } from "./functions/planning-center-auth-challenge/resource.ts";
 import { planningCenterApiAuthorizer } from "./functions/planning-center-api-authorizer/resource.ts";
+import { provisionPlanningCenterAccount } from "./functions/provision-planning-center-account/resource.ts";
 import { resolvePlanningCenterAccount } from "./functions/resolve-planning-center-account/resource.ts";
 import { syncDisplayName } from "./functions/sync-display-name/resource.ts";
 import { syncUserScore } from "./functions/sync-user-score/resource.ts";
@@ -20,6 +21,7 @@ const backend = defineBackend({
   manageAdminUsers,
   planningCenterAuthChallenge,
   planningCenterApiAuthorizer,
+  provisionPlanningCenterAccount,
   resolvePlanningCenterAccount,
   syncDisplayName,
   syncUserScore
@@ -62,6 +64,14 @@ backend.resolvePlanningCenterAccount.addEnvironment("USER_POOL_ID", backend.auth
 backend.resolvePlanningCenterAccount.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: ["cognito-idp:ListUsers"],
+    resources: [backend.auth.resources.userPool.userPoolArn]
+  })
+);
+
+backend.provisionPlanningCenterAccount.addEnvironment("USER_POOL_ID", backend.auth.resources.userPool.userPoolId);
+backend.provisionPlanningCenterAccount.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["cognito-idp:AdminCreateUser", "cognito-idp:AdminSetUserPassword", "cognito-idp:ListUsers"],
     resources: [backend.auth.resources.userPool.userPoolArn]
   })
 );

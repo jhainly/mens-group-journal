@@ -6,6 +6,13 @@ const PROOF_TTL_SECONDS = 10 * 60;
 export const planningCenterStateCookie = "pc_login_state";
 export const planningCenterNextCookie = "pc_login_next";
 export const planningCenterProofCookie = "pc_login_proof";
+export const planningCenterIntentCookie = "pc_login_intent";
+
+export type PlanningCenterAuthIntent = "create" | "login";
+
+export function getPlanningCenterAuthIntent(value: string | null | undefined): PlanningCenterAuthIntent {
+  return value === "create" ? "create" : "login";
+}
 
 type LpInfraTokenResponse = {
   user?: {
@@ -35,6 +42,7 @@ export type PlanningCenterLoginProof = {
   avatar?: string;
   email: string;
   exp: number;
+  intent: PlanningCenterAuthIntent;
   lpInfraUserId: string;
   name: string;
   nonce: string;
@@ -121,12 +129,14 @@ export async function exchangePlanningCenterCode(input: {
 
 export function createPlanningCenterLoginProof(input: {
   cognitoUsername: string;
+  intent?: PlanningCenterAuthIntent;
   user: PlanningCenterUser;
 }): string {
   const proof: PlanningCenterLoginProof = {
     avatar: input.user.avatar,
     email: input.user.email,
     exp: Math.floor(Date.now() / 1000) + PROOF_TTL_SECONDS,
+    intent: input.intent ?? "login",
     lpInfraUserId: input.user.lpInfraUserId,
     name: input.user.name,
     nonce: randomBytes(16).toString("base64url"),

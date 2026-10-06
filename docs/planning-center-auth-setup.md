@@ -1,6 +1,6 @@
 # Planning Center authentication setup
 
-The app uses LifePoint Infrastructure as the Planning Center identity provider, then exchanges that verified identity for the existing Cognito user session. Keeping Cognito as the app session preserves current AppSync owner authorization, group memberships, scores, and journal data.
+The app uses LifePoint Infrastructure as the Planning Center identity provider, then exchanges that verified identity for a Cognito app session. Keeping Cognito as the app session preserves current AppSync owner authorization, group memberships, scores, and journal data.
 
 ## LifePoint Infrastructure app settings
 
@@ -52,4 +52,15 @@ Existing password sign-in remains available as "Legacy account sign-in" during t
 
 ## New users
 
-This version links existing Cognito users but does not auto-create them. A new user must create and verify an app account once, then repeat Planning Center sign-in to connect it. Automatic provisioning can be added separately without changing existing user IDs.
+Planning Center is the primary account-creation path. OAuth requests started from `/create-account` carry a signed, short-lived creation intent. If no Cognito account matches the verified Planning Center person ID or email, the proof-authorized provisioning function:
+
+- Creates a Cognito user with the verified email and stable Planning Center identifiers.
+- Suppresses Cognito's invitation email.
+- Confirms the account with an internal generated password that is never exposed to the browser.
+- Starts the same custom auth flow and creates the app profile and journal-key envelope.
+
+The provisioning operation is idempotent. Retries return the matching account, and only an interrupted account with the same Planning Center and LifePoint Infrastructure IDs can be moved out of `FORCE_CHANGE_PASSWORD`.
+
+Normal Planning Center sign-in never auto-creates an account. That separation prevents a user with an older app account under a different email from accidentally creating a duplicate instead of linking it.
+
+Legacy email/password account creation remains available from `/create-account` as an emergency backup during rollout.

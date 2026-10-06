@@ -5,6 +5,7 @@ import { getCurrentUser, fetchUserAttributes, updatePassword, updateUserAttribut
 import { configureAmplify } from "@/lib/amplifyClient";
 import { decryptJournalAnswer, encryptJournalAnswer, type EncryptedPayload } from "@/lib/encryption";
 import {
+  createJournalEncryptionSecret,
   getJournalEncryptionSecret,
   initializeJournalEncryptionSecret,
   initializeJournalEncryptionSecretFromSub,
@@ -149,6 +150,10 @@ export type PlanningCenterAccountResolution = {
   loginId: string;
   matchType: "email" | "planningCenterPersonId";
 };
+export type PlanningCenterAccountProvisionResult = {
+  created: boolean;
+  loginId: string;
+};
 
 export async function ensureUserProfile(displayName?: string): Promise<ServiceResult<void>> {
   try {
@@ -217,6 +222,40 @@ export async function resolvePlanningCenterAccount(
       data: {
         loginId: result.data.loginId,
         matchType: result.data.matchType as PlanningCenterAccountResolution["matchType"]
+      }
+    };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function provisionPlanningCenterAccount(
+  proof: string
+): Promise<ServiceResult<PlanningCenterAccountProvisionResult>> {
+  try {
+    await configureAmplify();
+    const result = await getDataClient().mutations.provisionPlanningCenterAccount(
+      { proof },
+      {
+        authMode: "lambda",
+        authToken: proof
+      }
+    );
+    const errors = getResultErrors(result);
+
+    if (errors.length > 0) {
+      throw new Error(errors.join(" "));
+    }
+
+    if (!result.data) {
+      throw new Error("The Planning Center account could not be created.");
+    }
+
+    return {
+      ok: true,
+      data: {
+        created: result.data.created,
+        loginId: result.data.loginId
       }
     };
   } catch (error) {
@@ -313,6 +352,45 @@ export async function ensureJournalKeyEnvelope(input: {
     if (!saved.ok) return saved;
 
     return { ok: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function ensurePlanningCenterJournalKeyEnvelope(): Promise<ServiceResult<void>> {
+  try {
+    await configureAmplify();
+    const client = getDataClient();
+    const user = await getCurrentUser();
+    let profile = (await client.models.UserProfile.get({ userId: user.userId })).data;
+
+    if (!profile) {
+      const created = await ensureUserProfile();
+
+      if (!created.ok) {
+        return created;
+      }
+
+      profile = (await client.models.UserProfile.get({ userId: user.userId })).data;
+    }
+
+    const existingEnvelope = getJournalKeyEnvelope(profile);
+
+    if (existingEnvelope?.version === 2) {
+      await initializeJournalEncryptionSecretFromSub({ sub: user.userId, envelope: existingEnvelope });
+      return { ok: true, data: undefined };
+    }
+
+    if (existingEnvelope?.version === 1) {
+      return {
+        ok: false,
+        error: "Use legacy sign-in once to finish upgrading your journal before using Planning Center."
+      };
+    }
+
+    const secret = createJournalEncryptionSecret();
+    const envelope = await wrapJournalSecretV2(user.userId, secret);
+    return saveJournalKeyEnvelope(client, user.userId, envelope);
   } catch (error) {
     return serviceError(error);
   }
