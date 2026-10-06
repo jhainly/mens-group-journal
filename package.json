@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:auth": "node --experimental-strip-types --test tests/planning-center-auth-challenge.test.mjs",
     "adapt-week": "node scripts/adapt-deep-roots-week.mjs",
     "sandbox": "ampx sandbox --profile lifepoint",
     "sandbox:once": "ampx sandbox --once --profile lifepoint",

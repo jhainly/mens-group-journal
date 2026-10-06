@@ -11,6 +11,7 @@ type CognitoCustomAuthEvent = {
   };
   response: {
     answerCorrect?: boolean;
+    challengeName?: "CUSTOM_CHALLENGE";
     failAuthentication?: boolean;
     issueTokens?: boolean;
     privateChallengeParameters?: Record<string, string>;
@@ -61,6 +62,7 @@ function defineAuthChallenge(event: CognitoCustomAuthEvent): CognitoCustomAuthEv
 
   event.response.issueTokens = false;
   event.response.failAuthentication = false;
+  event.response.challengeName = "CUSTOM_CHALLENGE";
 
   return event;
 }
