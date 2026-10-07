@@ -708,10 +708,6 @@ details[open] > .group-accordion-summary:hover {
   opacity: 0.78;
 }
 
-.leaderboard-grid {
-  align-items: start;
-}
-
 .leaderboard-list {
   min-width: 0;
 }

@@ -10,7 +10,6 @@ import {
   listLeaderboard,
   loadActiveProgramForGroup,
   type LeaderboardRow,
-  type TeamLeaderboardRow,
   type UserGroupSummary
 } from "@/lib/services/dataClient";
 import type { Program } from "@/types/program";
@@ -23,7 +22,6 @@ type WeekOption = {
 
 export function Leaderboard() {
   const [individualRows, setIndividualRows] = useState<LeaderboardRow[]>([]);
-  const [teamRows, setTeamRows] = useState<TeamLeaderboardRow[]>([]);
   const [view, setView] = useState<LeaderboardView>("weekly");
   const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
@@ -71,7 +69,6 @@ export function Leaderboard() {
     }
 
     setIndividualRows([]);
-    setTeamRows([]);
     setActiveProgramId(null);
     setActiveWeekNumber(null);
     setWeekOptions([]);
@@ -87,7 +84,6 @@ export function Leaderboard() {
         setActiveProgramId(null);
         setWeekOptions([]);
         setIndividualRows([]);
-        setTeamRows([]);
         setStatus("Your leader has not published content for this group yet.");
         return;
       }
@@ -115,7 +111,6 @@ export function Leaderboard() {
     }
 
     setIndividualRows([]);
-    setTeamRows([]);
     setStatus("Loading scores...");
 
     void listLeaderboard({
@@ -133,7 +128,6 @@ export function Leaderboard() {
       }
 
       setIndividualRows(leaderboardResult.data.individualRows);
-      setTeamRows(leaderboardResult.data.teamRows);
       setStatus("");
     });
 
@@ -155,7 +149,6 @@ export function Leaderboard() {
     setActiveWeekNumber(null);
     setWeekOptions([]);
     setIndividualRows([]);
-    setTeamRows([]);
   }
 
   return (
@@ -233,20 +226,12 @@ export function Leaderboard() {
       ) : null}
       {status ? <p className="muted">{status}</p> : null}
       {activeGroup && !status ? (
-        <div className="grid two leaderboard-grid">
-          <LeaderboardList
-            emptyMessage="No group member scores yet."
-            rows={getSortedRows(individualRows, view)}
-            title="My Group's Leaderboard"
-            view={view}
-          />
-          <LeaderboardList
-            emptyMessage="No group scores yet."
-            rows={getSortedTeamRows(teamRows, view)}
-            title="Group Leaderboard"
-            view={view}
-          />
-        </div>
+        <LeaderboardList
+          emptyMessage="No group member scores yet."
+          rows={getSortedRows(individualRows, view)}
+          title={`${activeGroup.name} Leaderboard`}
+          view={view}
+        />
       ) : null}
     </section>
   );
@@ -259,7 +244,7 @@ function LeaderboardList({
   view
 }: {
   emptyMessage: string;
-  rows: Array<LeaderboardRow | TeamLeaderboardRow>;
+  rows: LeaderboardRow[];
   title: string;
   view: LeaderboardView;
 }) {
@@ -269,9 +254,9 @@ function LeaderboardList({
       {rows.length > 0 ? (
         <ul className="list">
           {rows.map((row, index) => (
-            <li className="card leaderboard-row" key={getLeaderboardRowKey(row)}>
+            <li className="card leaderboard-row" key={row.displayName}>
               <span className="leaderboard-rank">{index + 1}</span>
-              <strong className="leaderboard-name">{getLeaderboardRowName(row)}</strong>
+              <strong className="leaderboard-name">{row.displayName}</strong>
               <span className="leaderboard-score">{formatPoints(getRowScore(row, view))}</span>
             </li>
           ))}
@@ -287,23 +272,9 @@ function getRowScore(row: Pick<LeaderboardRow, "cumulativeScore" | "weeklyScore"
   return view === "weekly" ? row.weeklyScore : row.cumulativeScore;
 }
 
-function getLeaderboardRowKey(row: LeaderboardRow | TeamLeaderboardRow): string {
-  return "groupId" in row ? row.groupId : row.displayName;
-}
-
-function getLeaderboardRowName(row: LeaderboardRow | TeamLeaderboardRow): string {
-  return "groupName" in row ? row.groupName : row.displayName;
-}
-
 function getSortedRows(rows: LeaderboardRow[], view: LeaderboardView): LeaderboardRow[] {
   return [...rows].sort(
     (left, right) => getRowScore(right, view) - getRowScore(left, view) || left.displayName.localeCompare(right.displayName)
-  );
-}
-
-function getSortedTeamRows(rows: TeamLeaderboardRow[], view: LeaderboardView): TeamLeaderboardRow[] {
-  return [...rows].sort(
-    (left, right) => getRowScore(right, view) - getRowScore(left, view) || left.groupName.localeCompare(right.groupName)
   );
 }
 

@@ -1261,15 +1261,8 @@ export type LeaderboardRow = {
   displayName: string;
   weeklyScore: number;
 };
-export type TeamLeaderboardRow = {
-  cumulativeScore: number;
-  groupId: string;
-  groupName: string;
-  weeklyScore: number;
-};
 export type LeaderboardStandings = {
   individualRows: LeaderboardRow[];
-  teamRows: TeamLeaderboardRow[];
 };
 
 export async function listLeaderboard(input: {
@@ -1280,42 +1273,23 @@ export async function listLeaderboard(input: {
   try {
     await configureAmplify();
     const client = getDataClient();
-    const [groupScores, programScores, groups, activeWeekRows] = await Promise.all([
-      client.models.UserScore.list({
-        filter: {
-          groupId: {
-            eq: input.groupId
-          },
-          programId: {
-            eq: input.programId
-          }
+    const groupScores = await client.models.UserScore.list({
+      filter: {
+        groupId: {
+          eq: input.groupId
+        },
+        programId: {
+          eq: input.programId
         }
-      }),
-      client.models.UserScore.list(),
-      client.models.Group.list(),
-      client.models.GroupProgramWeek.list({
-        filter: {
-          isActive: {
-            eq: true
-          }
-        }
-      })
-    ]);
+      }
+    });
 
     const individualRows = buildIndividualLeaderboardRows(groupScores.data, input.weekNumber);
-    const teamRows = buildTeamLeaderboardRows(
-      programScores.data,
-      groups.data,
-      activeWeekRows.data,
-      input.weekNumber,
-      input.programId
-    );
 
     return {
       ok: true,
       data: {
-        individualRows,
-        teamRows
+        individualRows
       }
     };
   } catch (error) {
@@ -1384,30 +1358,9 @@ type ScoreListRow = {
   weekNumber: number;
   weeklyScore: number;
 };
-type GroupListRow = {
-  activeProgramId?: string | null;
-  groupId: string;
-  name: string;
-};
-type ActiveWeekListRow = {
-  groupId: string;
-  isActive: boolean;
-  programId: string;
-  programTitle: string;
-};
 type UserLeaderboardAccumulator = LeaderboardRow & {
   latestUpdatedAt: string;
   weeklyUpdatedAt: string;
-};
-type TeamUserScoreAccumulator = {
-  cumulativeScore: number;
-  groupId: string;
-  latestUpdatedAt: string;
-  weeklyScore: number;
-  weeklyUpdatedAt: string;
-};
-type TeamScoreAccumulator = TeamLeaderboardRow & {
-  userCount: number;
 };
 
 function buildIndividualLeaderboardRows(rows: Array<ScoreListRow | null>, weekNumber: number): LeaderboardRow[] {
@@ -1450,123 +1403,6 @@ function buildIndividualLeaderboardRows(rows: Array<ScoreListRow | null>, weekNu
       weeklyScore
     }))
     .sort((left, right) => right.weeklyScore - left.weeklyScore || left.displayName.localeCompare(right.displayName));
-}
-
-function buildTeamLeaderboardRows(
-  scoreRows: Array<ScoreListRow | null>,
-  groupRows: Array<GroupListRow | null>,
-  activeWeekRows: Array<ActiveWeekListRow | null>,
-  weekNumber: number,
-  programId: string
-): TeamLeaderboardRow[] {
-  const groupNames = new Map<string, string>();
-  const teamScoresByGroup = new Map<string, TeamScoreAccumulator>();
-  const teamScoresByUser = new Map<string, TeamUserScoreAccumulator>();
-  const validScoreRows = scoreRows.filter((row): row is ScoreListRow => row != null);
-  // Only groups enrolled in this exact program (same program id) are compared. Matching on
-  // program title would lump every "Deep Roots" session together.
-  const comparableGroupIds = getComparableGroupIds(activeWeekRows, programId);
-  const enrolledGroupIds = new Set<string>();
-
-  for (const group of groupRows) {
-    if (!group) {
-      continue;
-    }
-
-    groupNames.set(group.groupId, group.name);
-
-    if (comparableGroupIds.has(group.groupId) || group.activeProgramId === programId) {
-      enrolledGroupIds.add(group.groupId);
-      teamScoresByGroup.set(group.groupId, {
-        cumulativeScore: 0,
-        groupId: group.groupId,
-        groupName: group.name,
-        userCount: 0,
-        weeklyScore: 0
-      });
-    }
-  }
-
-  const leaderboardScoreRows = validScoreRows.filter((row) => row.programId === programId && enrolledGroupIds.has(row.groupId));
-
-  for (const row of leaderboardScoreRows) {
-    const userTeamKey = `${row.groupId}:${row.userId}`;
-    const current =
-      teamScoresByUser.get(userTeamKey) ??
-      ({
-        cumulativeScore: 0,
-        groupId: row.groupId,
-        latestUpdatedAt: "",
-        weeklyScore: 0,
-        weeklyUpdatedAt: ""
-      } satisfies TeamUserScoreAccumulator);
-
-    current.cumulativeScore = Math.max(current.cumulativeScore, row.cumulativeScore);
-
-    if (row.weekNumber === weekNumber && row.updatedAt >= current.weeklyUpdatedAt) {
-      current.weeklyScore = row.weeklyScore;
-      current.weeklyUpdatedAt = row.updatedAt;
-    }
-
-    current.latestUpdatedAt = row.updatedAt > current.latestUpdatedAt ? row.updatedAt : current.latestUpdatedAt;
-    teamScoresByUser.set(userTeamKey, current);
-
-    if (!teamScoresByGroup.has(row.groupId)) {
-      teamScoresByGroup.set(row.groupId, {
-        cumulativeScore: 0,
-        groupId: row.groupId,
-        groupName: groupNames.get(row.groupId) ?? row.groupId,
-        userCount: 0,
-        weeklyScore: 0
-      });
-    }
-  }
-
-  for (const userScore of teamScoresByUser.values()) {
-    const current =
-      teamScoresByGroup.get(userScore.groupId) ??
-      ({
-        cumulativeScore: 0,
-        groupId: userScore.groupId,
-        groupName: groupNames.get(userScore.groupId) ?? userScore.groupId,
-        userCount: 0,
-        weeklyScore: 0
-      } satisfies TeamScoreAccumulator);
-
-    current.cumulativeScore += userScore.cumulativeScore;
-    current.weeklyScore += userScore.weeklyScore;
-    current.userCount += 1;
-    teamScoresByGroup.set(userScore.groupId, current);
-  }
-
-  return Array.from(teamScoresByGroup.values())
-    .map(({ cumulativeScore, groupId, groupName, userCount, weeklyScore }) => ({
-      cumulativeScore: calculateTeamScore(cumulativeScore, userCount),
-      groupId,
-      groupName,
-      weeklyScore: calculateTeamScore(weeklyScore, userCount)
-    }))
-    .sort((left, right) => right.weeklyScore - left.weeklyScore || left.groupName.localeCompare(right.groupName));
-}
-
-function calculateTeamScore(totalIndividualScore: number, userCount: number): number {
-  if (userCount <= 0) {
-    return 0;
-  }
-
-  return Math.round((totalIndividualScore / userCount) * 3);
-}
-
-function getComparableGroupIds(activeWeekRows: Array<ActiveWeekListRow | null>, programId: string): Set<string> {
-  const groupIds = new Set<string>();
-
-  for (const row of activeWeekRows) {
-    if (row?.isActive && row.programId === programId) {
-      groupIds.add(row.groupId);
-    }
-  }
-
-  return groupIds;
 }
 
 export async function getCurrentUserScoreSummary(input: {
