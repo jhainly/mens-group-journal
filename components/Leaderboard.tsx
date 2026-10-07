@@ -22,7 +22,7 @@ type WeekOption = {
 
 export function Leaderboard() {
   const [individualRows, setIndividualRows] = useState<LeaderboardRow[]>([]);
-  const [view, setView] = useState<LeaderboardView>("weekly");
+  const [view, setView] = useState<LeaderboardView>("allTime");
   const [groups, setGroups] = useState<UserGroupSummary[]>([]);
   const [activeGroup, setActiveGroup] = useState<UserGroupSummary | null>(null);
   const [activeProgramId, setActiveProgramId] = useState<string | null>(null);
